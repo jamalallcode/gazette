@@ -229,13 +229,13 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
           <div className="space-y-4 animate-fadeIn">
             <div className="flex items-center space-x-1 bg-amber-50 border border-amber-200 text-amber-850 p-3 rounded-xl text-[10.5px]">
               <AlertTriangle size={14} className="shrink-0" />
-              <span>Use the dynamic wildcard tags: <strong>{`{customer_name}`}</strong>, <strong>{`{order_id}`}</strong>, <strong>{`{total_bdt}`}</strong>, or <strong>{`{shop_name}`}</strong> to inject live checkout details automatically.</span>
+              <span>Use the dynamic wildcard tags: <strong>{`{customer_name}`}</strong>, <strong>{`{customer_phone}`}</strong>, <strong>{`{order_id}`}</strong>, <strong>{`{total_bdt}`}</strong>, or <strong>{`{shop_name}`}</strong> to inject live checkout details automatically.</span>
             </div>
 
             {/* Checkbox trigger options */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
-                { key: 'enableAutoPlaced', label: language === 'bn' ? 'অর্ডার প্লেস এসএমএস চালু' : 'Trigger on Placement', color: "border-l-indigo-600" },
+                { key: 'enableAutoPlaced', label: language === 'bn' ? 'অর্ডার প্লেস কাস্টমার এসএমএস চালু' : 'Customer placement SMS', color: "border-l-indigo-600" },
                 { key: 'enableAutoShipped', label: language === 'bn' ? 'শিপমেন্ট এসএমএস চালু' : 'Trigger on Shipment', color: "border-l-amber-500" },
                 { key: 'enableAutoDelivered', label: language === 'bn' ? 'ডেলিভারি এসএমএস চালু' : 'Trigger on Delivery', color: "border-l-emerald-600" }
               ].map(opt => (
@@ -290,6 +290,75 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
                   rows={2}
                   className="w-full border border-zinc-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-brand text-zinc-800"
                 />
+              </div>
+
+              {/* Admin Notification Controls Section */}
+              <div className="border-t border-dashed border-zinc-200 pt-4 mt-6 space-y-4">
+                <div className="space-y-0.5">
+                  <h3 className="text-xs font-bold text-zinc-800 flex items-center space-x-1.5">
+                    <span className="text-orange-500">★</span>
+                    <span>{language === 'bn' ? "এডমিন নোটিফিকেশন সেটিংস (অর্ডারের জন্য)" : "Admin Alerts Notification Rules"}</span>
+                  </h3>
+                  <p className="text-[10px] text-zinc-400">
+                    {language === 'bn' ? "যেকোনো কাস্টমার অর্ডার প্লেস করলে এডমিন নাম্বারে সতর্কীকরণ বার্তা পাঠানো হবে।" : "Triggers dynamic messages instantly sent to shop merchants when checkout carts are approved."}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Alert toggle checkbox */}
+                  <div className="border border-zinc-150 border-l-4 border-l-amber-500 bg-amber-50/20 p-3 rounded-xl flex items-center justify-between select-none">
+                    <div className="text-left">
+                      <span className="text-xs font-extrabold text-zinc-700 block">
+                        {language === 'bn' ? "এডমিন এলার্ট চালু করুন" : "Enable Merchant Alert"}
+                      </span>
+                      <span className="text-[9px] text-zinc-400">
+                        {language === 'bn' ? "এসএমএস নোটিফিকেশন পাঠাবে" : "Sends mock SMS notifications"}
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={settings.enableAdminAlertOnOrder !== false}
+                      onChange={(e) => handleSaveAllSettings({ ...settings, enableAdminAlertOnOrder: e.target.checked })}
+                      className="h-4 w-4 rounded text-[#f58220] border-zinc-300 accent-amber-500 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Admin target phone number input */}
+                  <div className="md:col-span-2 space-y-1 text-xs">
+                    <label className="text-[10px] uppercase font-black text-zinc-400 block">
+                      {language === 'bn' ? "এডমিন মোবাইল নম্বর (নোটিফিকেশন পেতে)" : "Admin Contact Number (Recipient)"}
+                    </label>
+                    <input
+                      type="tel"
+                      value={settings.adminPhone || ""}
+                      onChange={(e) => handleSaveAllSettings({ ...settings, adminPhone: e.target.value.replace(/\D/g, '') })}
+                      placeholder="e.g. 01784905075"
+                      maxLength={11}
+                      className="w-full border border-zinc-200 px-3 py-2 rounded-xl text-xs font-mono font-bold text-zinc-800"
+                    />
+                  </div>
+                </div>
+
+                {/* Admin sms template body */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] uppercase font-black tracking-wider text-zinc-400 block">
+                      {language === 'bn' ? "এডমিন নোটিফিকেশন বার্তা টেমপ্লেট" : "Admin Instant Dispatch Template"}
+                    </span>
+                    {settings.enableAdminAlertOnOrder !== false ? (
+                      <span className="text-[9px] font-black text-amber-600 uppercase">● Active Merchant Alert Trigger</span>
+                    ) : (
+                      <span className="text-[9px] text-zinc-400 uppercase">● Merchant Alert Disabled</span>
+                    )}
+                  </div>
+                  <textarea
+                    value={settings.adminTemplate || ""}
+                    onChange={(e) => handleSaveAllSettings({ ...settings, adminTemplate: e.target.value })}
+                    rows={2}
+                    placeholder="Enter admin alert text..."
+                    className="w-full border border-zinc-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-brand text-zinc-800"
+                  />
+                </div>
               </div>
             </div>
           </div>

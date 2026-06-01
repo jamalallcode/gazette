@@ -17,6 +17,7 @@ import LiveTrackingSystem from "./components/LiveTrackingSystem";
 import { TenantConfig, getSavedTenant, IS_RESELLER_ACTIVE, isResellerFeatureUnlocked } from "./data/tenantConfig";
 import ResellerConfigPanel from "./components/ResellerConfigPanel";
 import { triggerOrderSmsNotification } from "./utils/smsHelper";
+import { playNotificationChime } from "./utils/audioHelper";
 import { 
   Search, 
   SlidersHorizontal, 
@@ -765,6 +766,9 @@ export default function App() {
   const handleOrderSuccess = (newOrder: Order) => {
     setOrders((prev) => [newOrder, ...prev]);
 
+    // Play an auditory chime notification for the admin
+    playNotificationChime();
+
     // Trigger Facebook Pixel / GTM Purchase event
     triggerPixelEvent("Purchase", {
       orderId: newOrder.id,
@@ -773,8 +777,15 @@ export default function App() {
       numItems: newOrder.items.length
     });
     
-    // Trigger automated mobile SMS notification alert
+    // Trigger automated mobile SMS notification alert (and admin alert if enabled!)
     triggerOrderSmsNotification(newOrder, 'placed', activeTenant?.siteName || "Nabik Bazar");
+
+    // Dispatch a browser-wide notification event to alert the admin inside the app UI instantly
+    window.dispatchEvent(
+      new CustomEvent("app-toast", { 
+        detail: `🔔 [নতুন অর্ডার] ${newOrder.customerInfo.name} একটি অর্ডার করেছেন! মোট মূল্য: ৳${newOrder.totalBDT.toLocaleString()}` 
+      })
+    );
 
     // Deduct stock levels on server state simulator
     setProducts((prevProducts) =>

@@ -30,6 +30,9 @@ export interface SmsSettings {
     shipped: string;
     delivered: string;
   };
+  enableAdminAlertOnOrder?: boolean;
+  adminPhone?: string;
+  adminTemplate?: string;
 }
 
 export interface SmsLog {
@@ -117,7 +120,10 @@ const DEFAULT_SETTINGS: SmsSettings = {
     placed: "প্রিয় {customer_name}, Sellsull-এ আপনার {order_id} নম্বর অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। মোট মূল্য: ৳{total_bdt}। ধন্যবাদ!",
     shipped: "প্রিয় {customer_name}, আপনার {order_id} নম্বর অর্ডারটি কুরিয়ারে পাঠানো হয়েছে। শীঘ্রই ডেলিভারি রিসিভ করুন।",
     delivered: "প্রিয় {customer_name}, আপনার {order_id} নম্বর অর্ডারটি সফলভাবে ডেলিভারি করা হয়েছে! আমাদের সেবা কেমন লাগলো জানাবেন।"
-  }
+  },
+  enableAdminAlertOnOrder: true,
+  adminPhone: "01784905075",
+  adminTemplate: "[ADMIN ALERT] নতুন অর্ডার এসেছে! আইডি: {order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}।"
 };
 
 // Local storage keys
@@ -291,5 +297,21 @@ export function triggerOrderSmsNotification(
     recipientPhone = "01784905075"; // fallback simulation number
   }
 
-  return sendSmsSimulated(recipientPhone, customerName, formattedMessage, order.id);
+  // Send to Customer
+  const customerLog = sendSmsSimulated(recipientPhone, customerName, formattedMessage, order.id);
+
+  // Send admin alert on placement if enabled
+  if (eventType === 'placed' && settings.enableAdminAlertOnOrder !== false && settings.adminPhone) {
+    const rawAdminTemplate = settings.adminTemplate || "[ADMIN ALERT] নতুন অর্ডার এসেছে! আইডি: {order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}।";
+    const formattedAdminMessage = rawAdminTemplate
+      .replace(/{customer_name}/g, customerName)
+      .replace(/{order_id}/g, order.id)
+      .replace(/{customer_phone}/g, order.customerInfo.phone || "N/A")
+      .replace(/{total_bdt}/g, order.totalBDT.toString())
+      .replace(/{shop_name}/g, shopName);
+
+    sendSmsSimulated(settings.adminPhone.replace(/\D/g, '') || "01784905075", "Sellsull Admin Alert Routing", formattedAdminMessage, order.id);
+  }
+
+  return customerLog;
 }
