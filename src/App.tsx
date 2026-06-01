@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { INITIAL_PRODUCTS } from "./data/products";
 import { Product, CartItem, Order } from "./types";
 import { triggerPixelEvent, getPixelSettings, injectPixelAndGtmScripts } from "./utils/pixelHelper";
@@ -509,6 +509,7 @@ export default function App() {
   // Settings States
   const [currency, setCurrency] = useState<'BDT' | 'USD'>('BDT');
   const [language, setLanguage] = useState<'en' | 'bn'>('bn'); // default to Bangla
+  const isFirstSyncRef = useRef(true);
 
   // Global App States
   const [activeTenant, setActiveTenant] = useState<TenantConfig>(getSavedTenant());
@@ -583,30 +584,35 @@ export default function App() {
           });
 
           if (newlyDiscovered.length > 0) {
-            const latest = newlyDiscovered[0];
+            const isInitialBootLoad = currentLocalOrders.length === 0 && isFirstSyncRef.current;
             
-            // 1. Dispatch custom event toast
-            window.dispatchEvent(
-              new CustomEvent("app-toast", { 
-                detail: language === 'bn' 
-                  ? `🔔 [নতুন অনলাইন অর্ডার] ${latest.customerInfo.name} একটি অর্ডার করেছেন! মোট মূল্য: ৳${latest.totalBDT.toLocaleString()}`
-                  : `🔔 [New Online Order] ${latest.customerInfo.name} placed a new order! Total BDT: ${latest.totalBDT.toLocaleString()}` 
-              })
-            );
+            if (!isInitialBootLoad) {
+              const latest = newlyDiscovered[0];
+              
+              // 1. Dispatch custom event toast
+              window.dispatchEvent(
+                new CustomEvent("app-toast", { 
+                  detail: language === 'bn' 
+                    ? `🔔 [নতুন অনলাইন অর্ডার] ${latest.customerInfo.name} একটি অর্ডার করেছেন! মোট মূল্য: ৳${latest.totalBDT.toLocaleString()}`
+                    : `🔔 [New Online Order] ${latest.customerInfo.name} placed a new order! Total BDT: ${latest.totalBDT.toLocaleString()}` 
+                })
+              );
 
-            // 2. Play the beautiful auditory customer alert chime!
-            try {
-              playNotificationChime();
-            } catch (err) {
-              console.warn("Chime alert blocked:", err);
+              // 2. Play the beautiful auditory customer alert chime!
+              try {
+                playNotificationChime();
+              } catch (err) {
+                console.warn("Chime alert blocked:", err);
+              }
+
+              // 3. Save to unread orders notifications dropdown
+              setUnreadNotificationOrders((prev) => {
+                const uniques = newlyDiscovered.filter(no => !prev.some(po => po.id === no.id));
+                return [...uniques, ...prev];
+              });
             }
-
-            // 3. Save to unread orders notifications dropdown
-            setUnreadNotificationOrders((prev) => {
-              const uniques = newlyDiscovered.filter(no => !prev.some(po => po.id === no.id));
-              return [...uniques, ...prev];
-            });
           }
+          isFirstSyncRef.current = false;
         }
       } catch (e) {
         console.warn("Backend order sync failed, continuing offline mode:", e);
