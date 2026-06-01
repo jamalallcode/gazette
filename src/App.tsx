@@ -539,7 +539,19 @@ export default function App() {
     localStorage.setItem("nabik_orders", JSON.stringify(orders));
   }, [orders]);
 
-  const [unreadNotificationOrders, setUnreadNotificationOrders] = useState<Order[]>([]);
+  const ordersRef = useRef<Order[]>(orders);
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
+
+  const [unreadNotificationOrders, setUnreadNotificationOrders] = useState<Order[]>(() => {
+    const saved = localStorage.getItem("nabik_unread_notifications");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("nabik_unread_notifications", JSON.stringify(unreadNotificationOrders));
+  }, [unreadNotificationOrders]);
 
   // Bidirectional order synchronization (Poll server every 8 seconds)
   useEffect(() => {
@@ -565,10 +577,10 @@ export default function App() {
         const mergedFromBackend: Order[] = await response.json();
 
         if (Array.isArray(mergedFromBackend)) {
-          // Identify any orders that are completely new to this browser session
+          // Identify any orders that are completely new to this specific React memory tab session
           const newlyDiscovered: Order[] = [];
           mergedFromBackend.forEach((bo) => {
-            if (!currentLocalOrders.some((lo) => lo.id === bo.id)) {
+            if (!ordersRef.current.some((lo) => lo.id === bo.id)) {
               newlyDiscovered.push(bo);
             }
           });
@@ -584,7 +596,7 @@ export default function App() {
           });
 
           if (newlyDiscovered.length > 0) {
-            const isInitialBootLoad = currentLocalOrders.length === 0 && isFirstSyncRef.current;
+            const isInitialBootLoad = ordersRef.current.length === 0 && isFirstSyncRef.current;
             
             if (!isInitialBootLoad) {
               const latest = newlyDiscovered[0];
