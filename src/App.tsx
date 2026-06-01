@@ -11,6 +11,7 @@ import CheckoutModal from "./components/CheckoutModal";
 import AiAdvisorTab from "./components/AiAdvisorTab";
 import AdminPanel from "./components/AdminPanel";
 import PromoLandingTab from "./components/PromoLandingTab";
+import OrderSuccessModal from "./components/OrderSuccessModal";
 import AuthTab from "./components/AuthTab";
 import UserProfilePanel from "./components/UserProfilePanel";
 import LiveTrackingSystem from "./components/LiveTrackingSystem";
@@ -2702,6 +2703,15 @@ export default function App() {
         onOrderSuccess={handleOrderSuccess}
         langText={langText}
         currentUser={currentUser}
+      />
+
+      {/* Animated Order Success Modal Takeover/Overlay */}
+      <OrderSuccessModal
+        isOpen={placedOrderReceipt !== null}
+        order={placedOrderReceipt}
+        onClose={() => setPlacedOrderReceipt(null)}
+        language={language}
+        currency={currency}
       />
 
       {/* 9. Premium Blog Post Viewer Modal */}
