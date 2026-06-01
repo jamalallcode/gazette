@@ -33,6 +33,9 @@ export interface SmsSettings {
   enableAdminAlertOnOrder?: boolean;
   adminPhone?: string;
   adminTemplate?: string;
+  enableAdminWhatsappAlertOnOrder?: boolean;
+  adminWhatsappNumber?: string;
+  adminWhatsappTemplate?: string;
 }
 
 export interface SmsLog {
@@ -48,6 +51,7 @@ export interface SmsLog {
   charCount: number;
   segments: number;
   errorMessage?: string;
+  channel?: 'SMS' | 'WHATSAPP';
 }
 
 // 6 Popular Bangladesh / Global gateways supported
@@ -123,7 +127,10 @@ const DEFAULT_SETTINGS: SmsSettings = {
   },
   enableAdminAlertOnOrder: true,
   adminPhone: "01784905075",
-  adminTemplate: "[ADMIN ALERT] নতুন অর্ডার এসেছে! আইডি: {order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}।"
+  adminTemplate: "[ADMIN ALERT] নতুন অর্ডার এসেছে! আইডি: {order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}।",
+  enableAdminWhatsappAlertOnOrder: true,
+  adminWhatsappNumber: "01784905075",
+  adminWhatsappTemplate: "[WHATSAPP ALERT 🟢] নতুন কাস্টমার অর্ডার এসেছে! আইডি: #{order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}। অনুগ্রহ করে মার্চেন্ট ড্যাশবোর্ড চেক করুন।"
 };
 
 // Local storage keys
@@ -245,7 +252,55 @@ export function sendSmsSimulated(
     costBDT: cost,
     charCount,
     segments,
-    errorMessage
+    errorMessage,
+    channel: 'SMS'
+  };
+
+  const logs = getSmsLogs();
+  logs.unshift(newLog);
+  saveSmsLogs(logs);
+
+  // Dispatch global custom event so the UI can instantly refresh or fire toast notifications automatically!
+  window.dispatchEvent(new CustomEvent("sellsull_sms_fired", { detail: newLog }));
+
+  return newLog;
+}
+
+// WhatsApp Dispatch simulation
+export function sendWhatsappSimulated(
+  recipientPhone: string,
+  recipientName: string,
+  messageText: string,
+  orderId?: string
+): SmsLog {
+  const charCount = messageText.length;
+  const segments = Math.ceil(charCount / 160) || 1;
+  const cost = 0.00; // Free simulated WhatsApp alerts
+
+  let status: 'SUCCESS' | 'FAILED' = "SUCCESS";
+  let errorMessage: string | undefined = undefined;
+
+  if (!recipientPhone || recipientPhone.length < 10) {
+    status = "FAILED";
+    errorMessage = "Invalid WhatsApp phone format.";
+  }
+
+  const newLog: SmsLog = {
+    id: "WA-" + Math.floor(100000 + Math.random() * 900000),
+    timestamp: new Date().toLocaleString('bn-BD', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    }),
+    orderId,
+    recipientName,
+    recipientPhone,
+    message: messageText,
+    gatewayName: "WhatsApp Enterprise Cloud API (Meta Authorized)",
+    status,
+    costBDT: cost,
+    charCount,
+    segments,
+    errorMessage,
+    channel: 'WHATSAPP'
   };
 
   const logs = getSmsLogs();
@@ -300,7 +355,7 @@ export function triggerOrderSmsNotification(
   // Send to Customer
   const customerLog = sendSmsSimulated(recipientPhone, customerName, formattedMessage, order.id);
 
-  // Send admin alert on placement if enabled
+  // Send admin SMS alert on placement if enabled
   if (eventType === 'placed' && settings.enableAdminAlertOnOrder !== false && settings.adminPhone) {
     const rawAdminTemplate = settings.adminTemplate || "[ADMIN ALERT] নতুন অর্ডার এসেছে! আইডি: {order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}।";
     const formattedAdminMessage = rawAdminTemplate
@@ -311,6 +366,19 @@ export function triggerOrderSmsNotification(
       .replace(/{shop_name}/g, shopName);
 
     sendSmsSimulated(settings.adminPhone.replace(/\D/g, '') || "01784905075", "Sellsull Admin Alert Routing", formattedAdminMessage, order.id);
+  }
+
+  // Send admin WhatsApp alert on placement if enabled
+  if (eventType === 'placed' && settings.enableAdminWhatsappAlertOnOrder !== false && settings.adminWhatsappNumber) {
+    const rawWhatsappTemplate = settings.adminWhatsappTemplate || "[WHATSAPP ALERT 🟢] নতুন কাস্টমার অর্ডার এসেছে! আইডি: #{order_id}, কাস্টমার: {customer_name}, মোবাইল: {customer_phone}, মোট মূল্য: ৳{total_bdt}। অনুগ্রহ করে মার্চেন্ট ড্যাশবোর্ড চেক করুন।";
+    const formattedWhatsappMessage = rawWhatsappTemplate
+      .replace(/{customer_name}/g, customerName)
+      .replace(/{order_id}/g, order.id)
+      .replace(/{customer_phone}/g, order.customerInfo.phone || "N/A")
+      .replace(/{total_bdt}/g, order.totalBDT.toString())
+      .replace(/{shop_name}/g, shopName);
+
+    sendWhatsappSimulated(settings.adminWhatsappNumber.replace(/\D/g, '') || "01784905075", "Sellsull Admin WhatsApp Alert Routing", formattedWhatsappMessage, order.id);
   }
 
   return customerLog;

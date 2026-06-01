@@ -293,71 +293,151 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
               </div>
 
               {/* Admin Notification Controls Section */}
-              <div className="border-t border-dashed border-zinc-200 pt-4 mt-6 space-y-4">
+              <div className="border-t border-dashed border-zinc-200 pt-4 mt-6 space-y-6">
                 <div className="space-y-0.5">
-                  <h3 className="text-xs font-bold text-zinc-800 flex items-center space-x-1.5">
-                    <span className="text-orange-500">★</span>
+                  <h3 className="text-xs font-black text-zinc-800 flex items-center space-x-1.5 uppercase tracking-wide">
+                    <span className="text-[#f58220]">★</span>
                     <span>{language === 'bn' ? "এডমিন নোটিফিকেশন সেটিংস (অর্ডারের জন্য)" : "Admin Alerts Notification Rules"}</span>
                   </h3>
                   <p className="text-[10px] text-zinc-400">
-                    {language === 'bn' ? "যেকোনো কাস্টমার অর্ডার প্লেস করলে এডমিন নাম্বারে সতর্কীকরণ বার্তা পাঠানো হবে।" : "Triggers dynamic messages instantly sent to shop merchants when checkout carts are approved."}
+                    {language === 'bn' ? "যেকোনো কাস্টমার অর্ডার প্লেস করলে এডমিন নাম্বারে এসএমএস এবং হোয়াটসঅ্যাপ সতর্কীকরণ বার্তা পাঠানো হবে।" : "Triggers dynamic messages instantly sent to shop merchants when checkout carts are approved."}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Alert toggle checkbox */}
-                  <div className="border border-zinc-150 border-l-4 border-l-amber-500 bg-amber-50/20 p-3 rounded-xl flex items-center justify-between select-none">
-                    <div className="text-left">
-                      <span className="text-xs font-extrabold text-zinc-700 block">
-                        {language === 'bn' ? "এডমিন এলার্ট চালু করুন" : "Enable Merchant Alert"}
-                      </span>
-                      <span className="text-[9px] text-zinc-400">
-                        {language === 'bn' ? "এসএমএস নোটিফিকেশন পাঠাবে" : "Sends mock SMS notifications"}
-                      </span>
+                {/* 1. SMS ADMIN ALERT SUBSECTION */}
+                <div className="bg-zinc-50/50 p-4 rounded-2xl border border-zinc-150 space-y-4">
+                  <h4 className="text-[10.5px] font-black text-[#052b52] uppercase tracking-wider flex items-center space-x-1.5">
+                    <Smartphone size={12} className="text-[#f58220]" />
+                    <span>{language === 'bn' ? "১. মোবাইল এসএমএস অ্যালার্ট" : "1. Outgoing Mobile SMS Alerts"}</span>
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Alert toggle checkbox */}
+                    <div className="border border-zinc-150 border-l-4 border-l-amber-500 bg-amber-50/20 p-3 rounded-xl flex items-center justify-between select-none">
+                      <div className="text-left">
+                        <span className="text-xs font-extrabold text-zinc-700 block">
+                          {language === 'bn' ? "এডমিন এসএমএস অ্যালার্ট চালু" : "Enable SMS Alert"}
+                        </span>
+                        <span className="text-[9px] text-zinc-400">
+                          {language === 'bn' ? "নিয়মিত এসএমএস রেটে চার্জ হবে" : "Charges simulated SMS balance"}
+                        </span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={settings.enableAdminAlertOnOrder !== false}
+                        onChange={(e) => handleSaveAllSettings({ ...settings, enableAdminAlertOnOrder: e.target.checked })}
+                        className="h-4 w-4 rounded text-[#f58220] border-zinc-300 accent-amber-500 cursor-pointer"
+                      />
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.enableAdminAlertOnOrder !== false}
-                      onChange={(e) => handleSaveAllSettings({ ...settings, enableAdminAlertOnOrder: e.target.checked })}
-                      className="h-4 w-4 rounded text-[#f58220] border-zinc-300 accent-amber-500 cursor-pointer"
-                    />
+
+                    {/* Admin target phone number input */}
+                    <div className="md:col-span-2 space-y-1 text-xs">
+                      <label className="text-[10px] uppercase font-black text-zinc-400 block">
+                        {language === 'bn' ? "এডমিন মোবাইল নম্বর (এসএমএস এর জন্য)" : "Admin SMS Contact Number"}
+                      </label>
+                      <input
+                        type="tel"
+                        value={settings.adminPhone || ""}
+                        onChange={(e) => handleSaveAllSettings({ ...settings, adminPhone: e.target.value.replace(/\D/g, '') })}
+                        placeholder="e.g. 01784905075"
+                        maxLength={11}
+                        className="w-full border border-zinc-200 px-3 py-2 rounded-xl text-xs font-mono font-bold text-zinc-800"
+                      />
+                    </div>
                   </div>
 
-                  {/* Admin target phone number input */}
-                  <div className="md:col-span-2 space-y-1 text-xs">
-                    <label className="text-[10px] uppercase font-black text-zinc-400 block">
-                      {language === 'bn' ? "এডমিন মোবাইল নম্বর (নোটিফিকেশন পেতে)" : "Admin Contact Number (Recipient)"}
-                    </label>
-                    <input
-                      type="tel"
-                      value={settings.adminPhone || ""}
-                      onChange={(e) => handleSaveAllSettings({ ...settings, adminPhone: e.target.value.replace(/\D/g, '') })}
-                      placeholder="e.g. 01784905075"
-                      maxLength={11}
-                      className="w-full border border-zinc-200 px-3 py-2 rounded-xl text-xs font-mono font-bold text-zinc-800"
+                  {/* Admin sms template body */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[10px] uppercase font-black tracking-wider text-zinc-400 block">
+                        {language === 'bn' ? "এসএমএস টেমপ্লেট বার্তা" : "SMS Alert Body Template"}
+                      </span>
+                      {settings.enableAdminAlertOnOrder !== false ? (
+                        <span className="text-[9px] font-black text-amber-600 uppercase">● Active SMS Trigger</span>
+                      ) : (
+                        <span className="text-[9px] text-zinc-400 uppercase">● Disabled</span>
+                      )}
+                    </div>
+                    <textarea
+                      value={settings.adminTemplate || ""}
+                      onChange={(e) => handleSaveAllSettings({ ...settings, adminTemplate: e.target.value })}
+                      rows={2}
+                      placeholder="Enter admin alert text..."
+                      className="w-full border border-zinc-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-brand text-zinc-800 bg-white"
                     />
                   </div>
                 </div>
 
-                {/* Admin sms template body */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] uppercase font-black tracking-wider text-zinc-400 block">
-                      {language === 'bn' ? "এডমিন নোটিফিকেশন বার্তা টেমপ্লেট" : "Admin Instant Dispatch Template"}
-                    </span>
-                    {settings.enableAdminAlertOnOrder !== false ? (
-                      <span className="text-[9px] font-black text-amber-600 uppercase">● Active Merchant Alert Trigger</span>
-                    ) : (
-                      <span className="text-[9px] text-zinc-400 uppercase">● Merchant Alert Disabled</span>
-                    )}
+                {/* 2. WHATSAPP ADMIN ALERT SUBSECTION (ECO-FRIENDLY & FREE SIMULATION) */}
+                <div className="bg-emerald-50/10 p-4 rounded-2xl border border-emerald-150/70 space-y-4">
+                  <h4 className="text-[10.5px] font-black text-emerald-850 uppercase tracking-wider flex items-center space-x-1.5">
+                    <span className="text-emerald-500 font-extrabold text-base">💬</span>
+                    <span>{language === 'bn' ? "২. হোয়াটসঅ্যাপ ইনস্ট্যান্ট অ্যালার্ট (ফ্রি এপিআই)" : "2. Instant WhatsApp Alerts (No Carrier Fees)"}</span>
+                  </h4>
+                  
+                  <div className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-[10.5px] text-emerald-950 flex items-start gap-2">
+                    <span className="text-emerald-605 block shrink-0 font-bold">💡 {language === 'bn' ? "কেন হোয়াটসঅ্যাপ?" : "Why WhatsApp?"}</span>
+                    <p className="leading-relaxed">
+                      {language === 'bn' 
+                        ? "বাস্তব প্রোডাকশনে মোবাইল এসএমএস পাঠাতে প্রতিবার টাকা কাটে, কিন্তু হোয়াটসঅ্যাপ মেসেজে চার্জ অনেক সাশ্রয়ী বা ফ্রি ওয়াইফাই সリューションের মাধ্যমে প্রসেস করা যায়। আমাদের ডেমো সিস্টেমে হোয়াটসঅ্যাপ মেসেজ সম্পূর্ণ ফ্রি এবং আপনি এটি সরাসরি লাইভ ডেলিভারি লগ-এ ট্র্যাকিং দেখতে পারবেন।" 
+                        : "While custom SMS gateways charge per dispatch, automated WhatsApp broadcasts reduce communication costs to zero for internet-active receivers. Instantly simulated and logged in green branding below!"}
+                    </p>
                   </div>
-                  <textarea
-                    value={settings.adminTemplate || ""}
-                    onChange={(e) => handleSaveAllSettings({ ...settings, adminTemplate: e.target.value })}
-                    rows={2}
-                    placeholder="Enter admin alert text..."
-                    className="w-full border border-zinc-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-brand text-zinc-800"
-                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Alert toggle checkbox */}
+                    <div className="border border-emerald-200 border-l-4 border-l-emerald-500 bg-emerald-50/20 p-3 rounded-xl flex items-center justify-between select-none">
+                      <div className="text-left">
+                        <span className="text-xs font-extrabold text-emerald-950 block">
+                          {language === 'bn' ? "এডমিন হোয়াটসঅ্যাপ চালু" : "Enable WhatsApp Alerts"}
+                        </span>
+                        <span className="text-[9px] text-emerald-600">
+                          {language === 'bn' ? "কোনো চার্জ লাগবে না (ফ্রি)" : "Zero carrier transaction fees"}
+                        </span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={settings.enableAdminWhatsappAlertOnOrder !== false}
+                        onChange={(e) => handleSaveAllSettings({ ...settings, enableAdminWhatsappAlertOnOrder: e.target.checked })}
+                        className="h-4 w-4 rounded text-emerald-600 border-zinc-300 accent-emerald-500 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Admin target phone number input */}
+                    <div className="md:col-span-2 space-y-1 text-xs">
+                      <label className="text-[10px] uppercase font-black text-zinc-400 block">
+                        {language === 'bn' ? "এডমিন হোয়াটসঅ্যাপ নম্বর" : "Admin WhatsApp Mobile Number"}
+                      </label>
+                      <input
+                        type="tel"
+                        value={settings.adminWhatsappNumber || ""}
+                        onChange={(e) => handleSaveAllSettings({ ...settings, adminWhatsappNumber: e.target.value.replace(/\D/g, '') })}
+                        placeholder="e.g. 01784905075"
+                        maxLength={11}
+                        className="w-full border border-emerald-200 bg-white px-3 py-2 rounded-xl text-xs font-mono font-bold text-zinc-800"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Admin Whatsapp template body */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[10px] uppercase font-black tracking-wider text-zinc-400 block">
+                        {language === 'bn' ? "হোয়াটসঅ্যাপ টেমপ্লেট বার্তা" : "WhatsApp Alert Body Template"}
+                      </span>
+                      {settings.enableAdminWhatsappAlertOnOrder !== false ? (
+                        <span className="text-[9px] font-black text-emerald-600 uppercase">● Active WhatsApp Trigger</span>
+                      ) : (
+                        <span className="text-[9px] text-zinc-400 uppercase">● Disabled</span>
+                      )}
+                    </div>
+                    <textarea
+                      value={settings.adminWhatsappTemplate || ""}
+                      onChange={(e) => handleSaveAllSettings({ ...settings, adminWhatsappTemplate: e.target.value })}
+                      rows={2}
+                      placeholder="Enter WhatsApp alert text..."
+                      className="w-full border border-emerald-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-emerald-500 text-zinc-800 bg-white"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -456,7 +536,7 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
         {activeTab === 'logs' && (
           <div className="space-y-4 animate-fadeIn">
             <div className="flex justify-between items-center text-xs">
-              <span className="font-extrabold text-zinc-400 uppercase tracking-wider">{logs.length} SMS DISPATCH LOGS EXECUTED</span>
+              <span className="font-extrabold text-zinc-400 uppercase tracking-wider">{logs.length} {language === 'bn' ? 'বার্তা বিতরণ লগ সম্পন্ন হয়েছে' : 'TRANSACTION DISPATCH LOGS EXECUTED'}</span>
               <button
                 onClick={() => setLogs(getSmsLogs())}
                 className="text-[10px] font-black uppercase tracking-wider text-[#052b52] bg-zinc-100 hover:bg-zinc-200 rounded px-2.5 py-1.5 border-0 flex items-center space-x-1 cursor-pointer"
@@ -469,13 +549,13 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
             <div className="overflow-x-auto border rounded-xl shadow-3xs max-h-[380px] overflow-y-auto">
               {logs.length === 0 ? (
                 <div className="text-center py-12 text-zinc-400 font-bold bg-zinc-50 border border-dashed rounded-xl">
-                  No SMS logs available. Try sending a manual text to populate.
+                  No notification logs available. Try placing an order to populate.
                 </div>
               ) : (
                 <table className="w-full text-xs text-left text-zinc-550 border-collapse">
                   <thead className="bg-zinc-50 border-b text-[10px] uppercase font-black tracking-wider text-zinc-500 sticky top-0 bg-white z-10">
                     <tr>
-                      <th className="p-3">ID / Time</th>
+                      <th className="p-3">ID / Time / Channel</th>
                       <th className="p-3">Recipient Name/Phone</th>
                       <th className="p-3">Message</th>
                       <th className="p-3">Gateway / Cost</th>
@@ -483,49 +563,66 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
                     </tr>
                   </thead>
                   <tbody className="divide-y text-zinc-800">
-                    {logs.map((log) => (
-                      <tr key={log.id} className="hover:bg-zinc-50/50">
-                        <td className="p-3 whitespace-nowrap">
-                          <strong className="block text-zinc-950 font-mono">{log.id}</strong>
-                          <span className="text-[9.5px] text-zinc-400 font-mono block">{log.timestamp}</span>
-                          {log.orderId && (
-                            <span className="inline-block bg-zinc-100 text-[8.5px] font-black uppercase px-1 py-0.5 rounded text-zinc-650 mt-1 font-sans">
-                              OrderId: {log.orderId}
+                    {logs.map((log) => {
+                      const isWhatsapp = log.channel === 'WHATSAPP';
+                      return (
+                        <tr key={log.id} className={`hover:bg-zinc-50/50 ${isWhatsapp ? 'bg-emerald-500/2' : ''}`}>
+                          <td className="p-3 whitespace-nowrap">
+                            <strong className="block text-zinc-950 font-mono">{log.id}</strong>
+                            <span className="text-[9.5px] text-zinc-400 font-mono block">{log.timestamp}</span>
+                            
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              {log.orderId && (
+                                <span className="inline-block bg-zinc-100 text-[8.5px] font-black uppercase px-1 py-0.5 rounded text-zinc-650 font-sans">
+                                  OrderId: {log.orderId}
+                                </span>
+                              )}
+                              {isWhatsapp ? (
+                                <span className="inline-flex items-center gap-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[8.5px] font-black uppercase px-1.5 py-0.5 rounded-full">
+                                  <span>🟢 WhatsApp</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 border border-blue-200 text-[8.5px] font-black uppercase px-1.5 py-0.5 rounded-full">
+                                  <span>📱 SMS</span>
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3 whitespace-nowrap">
+                            <strong className="block text-[#052b52]">{log.recipientName}</strong>
+                            <span className="text-zinc-500 font-mono">{log.recipientPhone}</span>
+                          </td>
+                          <td className="p-3 max-w-[200px] truncate-with-tooltip">
+                            <p className="line-clamp-2 leading-relaxed text-zinc-700 font-sans font-semibold" title={log.message}>
+                              {log.message}
+                            </p>
+                            <span className="text-[9.5px] text-zinc-400 block font-mono">
+                              {log.charCount} characters
                             </span>
-                          )}
-                        </td>
-                        <td className="p-3 whitespace-nowrap">
-                          <strong className="block text-[#052b52]">{log.recipientName}</strong>
-                          <span className="text-zinc-500 font-mono">{log.recipientPhone}</span>
-                        </td>
-                        <td className="p-3 max-w-[200px] truncate-with-tooltip">
-                          <p className="line-clamp-2 leading-relaxed text-zinc-700 font-sans" title={log.message}>
-                            {log.message}
-                          </p>
-                          <span className="text-[9.5px] text-zinc-400 block font-mono">
-                            {log.charCount} characters • {log.segments} {log.segments === 1 ? 'part' : 'parts'}
-                          </span>
-                        </td>
-                        <td className="p-3 whitespace-nowrap">
-                          <span className="block text-zinc-900 font-semibold">{log.gatewayName}</span>
-                          <strong className="block text-emerald-700 font-mono">৳{log.costBDT.toFixed(2)}</strong>
-                        </td>
-                        <td className="p-3 text-center whitespace-nowrap">
-                          <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 text-[9px] font-black uppercase rounded-full ${
-                            log.status === 'SUCCESS' 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                              : 'bg-red-50 text-red-700 border border-red-200'
-                          }`}>
-                            <span>{log.status}</span>
-                          </span>
-                          {log.errorMessage && (
-                            <span className="block text-[8px] text-red-500 font-sans italic mt-1 max-w-[110px] truncate" title={log.errorMessage}>
-                              {log.errorMessage}
+                          </td>
+                          <td className="p-3 whitespace-nowrap">
+                            <span className="block text-zinc-900 font-semibold">{log.gatewayName}</span>
+                            <strong className="block text-emerald-700 font-mono">
+                              {log.costBDT === 0 ? "FREE" : `৳${log.costBDT.toFixed(2)}`}
+                            </strong>
+                          </td>
+                          <td className="p-3 text-center whitespace-nowrap">
+                            <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 text-[9px] font-black uppercase rounded-full ${
+                              log.status === 'SUCCESS' 
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                              <span>{log.status}</span>
                             </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                            {log.errorMessage && (
+                              <span className="block text-[8px] text-red-500 font-sans italic mt-1 max-w-[110px] truncate" title={log.errorMessage}>
+                                {log.errorMessage}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
