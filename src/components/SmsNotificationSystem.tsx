@@ -317,8 +317,8 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
                         <span className="text-xs font-extrabold text-zinc-700 block">
                           {language === 'bn' ? "এডমিন এসএমএস অ্যালার্ট চালু" : "Enable SMS Alert"}
                         </span>
-                        <span className="text-[9px] text-zinc-400">
-                          {language === 'bn' ? "নিয়মিত এসএমএস রেটে চার্জ হবে" : "Charges simulated SMS balance"}
+                        <span className="text-[9px] text-zinc-400 block leading-tight mt-0.5">
+                          {language === 'bn' ? "মোবাইল এসএমএস খরচ বাঁচাতে এটি এখন ফাঁকা (Uncheck) রাখতে পারেন।" : "Uncheck to save carrier routing costs"}
                         </span>
                       </div>
                       <input
