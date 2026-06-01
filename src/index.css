@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --brand-color: #f58220;
+  --brand-hover: #e06c09;
+  --brand-light: #fff7ed;
+  --brand-shadow: rgba(245, 130, 32, 0.2);
+}
+
+@theme {
+  --color-brand: var(--brand-color);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-light: var(--brand-light);
+  --color-brand-shadow: var(--brand-shadow);
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cinzel", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Luxury custom ambient styling attributes */
+body {
+  font-family: var(--font-sans);
+  background-color: #f0f2f5; /* Light blue-gray background matching Nabik Bazar */
+  color: #1f2937; /* zinc-800 */
+}
+
+/* Premium radial gradient overlay classes */
+.luxury-gradient {
+  background: radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), rgba(9, 9, 11, 0.98));
+}
+
+/* Luxury card gold glows */
+.gold-border-glow:hover {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.serif-display {
+  font-family: var(--font-serif);
+}
+
+/* Custom premium ambient glowing transitions */
+.glow-accent {
+  position: relative;
+}
+.glow-accent::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(to right, #d97706, #f59e0b, #fbbf24);
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.glow-accent:hover::after {
+  opacity: 0.15;
+}
+
+/* Hide scrollbars but keep functionality */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Sleek custom scrollbars specifically for dynamic sidebar */
+.custom-sidebar-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #042d54;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(245, 130, 32, 0.45);
+  border-radius: 4px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 130, 32, 0.85);
+}

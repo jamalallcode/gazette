@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Remix: Remix: Remix: Remix: Modern E-Commerce Portal",
+  "description": "A highly premium, fully-interactive bilingual E-Commerce platform with dynamic catalog filtering, shopping cart, custom checkout, and an intelligent Gemini-powered AI shopping assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
