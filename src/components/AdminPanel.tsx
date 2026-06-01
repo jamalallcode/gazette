@@ -28,6 +28,8 @@ interface AdminPanelProps {
   currency: 'BDT' | 'USD';
   activeTenant: TenantConfig;
   setActiveTenant: (tenant: TenantConfig) => void;
+  unreadNotifications?: any[];
+  setUnreadNotifications?: (orders: any[]) => void;
 }
 
 // Prepopulated static statistics from screenshots
@@ -59,10 +61,13 @@ export default function AdminPanel({
   language,
   currency,
   activeTenant,
-  setActiveTenant
+  setActiveTenant,
+  unreadNotifications = [],
+  setUnreadNotifications
 }: AdminPanelProps) {
   // Navigation inside panel
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [adminBellDropdownOpen, setAdminBellDropdownOpen] = useState(false);
 
   // Modern Invoice System states
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
@@ -1996,6 +2001,105 @@ export default function AdminPanel({
             <div className="relative">
               <ShoppingCart className="text-zinc-600 hover:text-zinc-900 cursor-pointer h-5 w-5" />
               <span className="absolute -top-1.5 -right-1.5 bg-cyan-600 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">52</span>
+            </div>
+
+            {/* Real-time Order Notification Bell on Admin Panel */}
+            <div 
+              onMouseEnter={() => setAdminBellDropdownOpen(true)}
+              onMouseLeave={() => setAdminBellDropdownOpen(false)}
+              onClick={() => setAdminBellDropdownOpen(!adminBellDropdownOpen)}
+              className="flex items-center cursor-pointer select-none group relative py-2"
+              id="admin-realtime-notifications-bell"
+            >
+              <div className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150">
+                <Bell size={20} className={`${unreadNotifications.length > 0 ? "text-[#f58220] animate-bounce" : "text-[#f58220]"} stroke-[2.2px] group-hover:scale-110 transition-transform`} />
+                {unreadNotifications.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white font-extrabold text-[9px] h-4 w-4 rounded-full flex items-center justify-center shadow animate-pulse">
+                    {unreadNotifications.length}
+                  </span>
+                )}
+              </div>
+
+              {/* Admin Notification dropdown panel */}
+              {adminBellDropdownOpen && (
+                <div 
+                  className="absolute top-full right-0 pt-2 w-80 h-auto z-[9990]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-white text-zinc-850 rounded-2xl shadow-2xl border border-zinc-200 py-3.5 px-4 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200 space-y-3">
+                    <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+                      <span className="text-xs font-black text-zinc-800 tracking-tight flex items-center gap-1.5">
+                        <Bell size={13} className="text-[#f58220]" />
+                        <span>{language === 'bn' ? `রিয়েল-টাইম নোটিফিকেশন (${unreadNotifications.length})` : `Live Alerts (${unreadNotifications.length})`}</span>
+                      </span>
+                      {unreadNotifications.length > 0 && (
+                        <button 
+                          onClick={() => setUnreadNotifications && setUnreadNotifications([])}
+                          className="bg-transparent border-0 text-[10px] text-zinc-500 hover:text-[#f58220] font-black uppercase cursor-pointer"
+                        >
+                          {language === 'bn' ? "সব পঠিত" : "Clear All"}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1">
+                      {unreadNotifications.length === 0 ? (
+                        <div className="py-6 text-center space-y-1.5 text-zinc-400">
+                          <span className="text-xl font-bold">🔔</span>
+                          <p className="text-[11px] font-bold">
+                            {language === 'bn' ? "নতুন কোনো অনলাইন অর্ডার নেই" : "No new online orders right now"}
+                          </p>
+                          <p className="text-[9px] text-zinc-400 max-w-[200px] mx-auto leading-relaxed">
+                            {language === 'bn' ? "গ্রাহকেরা অর্ডার করলে এইখানে সাথে সাথে অ্যালার্ট বাজবে।" : "New client orders will trigger live auditory alert bells here."}
+                          </p>
+                        </div>
+                      ) : (
+                        unreadNotifications.map((order: any) => {
+                          const orderAmt = currency === 'BDT' ? `৳${order.totalBDT.toLocaleString()}` : `$${order.totalUSD}`;
+                          return (
+                            <div key={order.id} className="bg-amber-50/40 hover:bg-amber-50 border border-amber-100/55 rounded-xl p-3 space-y-2.5 transition">
+                              <div className="flex justify-between items-start gap-1">
+                                <div className="text-left space-y-0.5">
+                                  <strong className="text-xs text-zinc-900 block font-sans truncate max-w-[140px]">{order.customerInfo.name}</strong>
+                                  <span className="text-[9.5px] text-zinc-400 font-mono block">{order.id} | {order.date}</span>
+                                </div>
+                                <span className="text-xs font-black font-mono text-[#f58220] shrink-0">{orderAmt}</span>
+                              </div>
+
+                              {/* Customer contact shortcut info layout */}
+                              <div className="flex justify-between items-center text-[10.5px]">
+                                <span className="text-zinc-500 truncate max-w-[120px] font-mono font-semibold">{order.customerInfo.phone}</span>
+                                <div className="flex items-center gap-1.5 font-bold">
+                                  {/* Direct WhatsApp trigger button */}
+                                  <a 
+                                    href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu Alaikum, I am the admin. I received your order ${order.id} and am checking to confirm it!`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-emerald-500 hover:bg-emerald-600 text-white rounded px-2 py-1 text-[9px] font-black uppercase whitespace-nowrap no-underline flex items-center justify-center cursor-pointer border-0"
+                                    title="Contact on WhatsApp"
+                                  >
+                                    💬 WhatsApp
+                                  </a>
+
+                                  <button
+                                    onClick={() => {
+                                      setSelectedInvoiceOrder(order);
+                                      setIsInvoiceModalOpen(true);
+                                    }}
+                                    className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded px-2 py-1 text-[9px] cursor-pointer font-black uppercase border-0 flex items-center justify-center"
+                                  >
+                                    Invoice 🖨️
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Profile badge */}
