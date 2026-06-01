@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -15,6 +16,106 @@ async function startServer() {
   // API routes FIRST
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Simple JSON-file and In-memory Order Database
+  const ORDERS_FILE = path.join(process.cwd(), "orders_database.json");
+  
+  function readOrdersFromDisk() {
+    try {
+      if (fs.existsSync(ORDERS_FILE)) {
+        return JSON.parse(fs.readFileSync(ORDERS_FILE, "utf-8"));
+      }
+    } catch (e) {
+      console.error("Error reading orders file:", e);
+    }
+    return [];
+  }
+
+  function writeOrdersToDisk(ordersList: any[]) {
+    try {
+      fs.writeFileSync(ORDERS_FILE, JSON.stringify(ordersList, null, 2), "utf-8");
+    } catch (e) {
+      console.error("Error writing orders file:", e);
+    }
+  }
+
+  // Pre-seed if file doesn't exist
+  if (!fs.existsSync(ORDERS_FILE)) {
+    writeOrdersToDisk([]);
+  }
+
+  app.get("/api/orders", (req, res) => {
+    const orders = readOrdersFromDisk();
+    res.json(orders);
+  });
+
+  app.post("/api/orders", (req, res) => {
+    const newOrder = req.body;
+    if (!newOrder || !newOrder.id) {
+      return res.status(400).json({ error: "Invalid order object" });
+    }
+    const currentOrders = readOrdersFromDisk();
+    if (!currentOrders.some((o: any) => o.id === newOrder.id)) {
+      currentOrders.unshift(newOrder); // Add to beginning
+      writeOrdersToDisk(currentOrders);
+    }
+    res.json({ success: true, order: newOrder });
+  });
+
+  // Bidirectional Synchronization Endpoint
+  app.post("/api/orders/sync", (req, res) => {
+    const { orders: clientOrders } = req.body;
+    if (!Array.isArray(clientOrders)) {
+      return res.status(400).json({ error: "orders must be an array" });
+    }
+
+    const serverOrders = readOrdersFromDisk();
+    const orderMap: Record<string, any> = {};
+
+    // 1. Load server-side orders
+    serverOrders.forEach((o: any) => {
+      orderMap[o.id] = o;
+    });
+
+    // 2. Merge with client orders (update if status/courier changed)
+    clientOrders.forEach((co: any) => {
+      if (!co || !co.id) return;
+      const existing = orderMap[co.id];
+      if (!existing) {
+        orderMap[co.id] = co;
+      } else {
+        // If client order has status updates or courier updates, merge them onto server
+        if (co.status !== existing.status || co.courierTrackingId !== existing.courierTrackingId) {
+          orderMap[co.id] = { ...existing, ...co };
+        }
+      }
+    });
+
+    // Convert map back to list
+    const mergedOrders = Object.values(orderMap);
+    
+    // Sort by date (newest first) or keep deterministic list
+    mergedOrders.sort((a: any, b: any) => {
+      return new Date(b.date || "").getTime() - new Date(a.date || "").getTime();
+    });
+
+    writeOrdersToDisk(mergedOrders);
+    res.json(mergedOrders);
+  });
+
+  app.put("/api/orders/:id/status", (req, res) => {
+    const orderId = req.params.id;
+    const { status } = req.body;
+    const currentOrders = readOrdersFromDisk();
+    const orderIndex = currentOrders.findIndex((o: any) => o.id === orderId);
+    if (orderIndex > -1) {
+      currentOrders[orderIndex].status = status;
+      writeOrdersToDisk(currentOrders);
+      res.json({ success: true, order: currentOrders[orderIndex] });
+    } else {
+      res.status(404).json({ error: "Order not found" });
+    }
   });
 
   // Server-side Gemini API route proxy

@@ -506,6 +506,10 @@ const sidebarExtraData: Record<string, {
 };
 
 export default function App() {
+  // Settings States
+  const [currency, setCurrency] = useState<'BDT' | 'USD'>('BDT');
+  const [language, setLanguage] = useState<'en' | 'bn'>('bn'); // default to Bangla
+
   // Global App States
   const [activeTenant, setActiveTenant] = useState<TenantConfig>(getSavedTenant());
   const activeSlides = activeTenant.slides || slides;
@@ -534,6 +538,93 @@ export default function App() {
     localStorage.setItem("nabik_orders", JSON.stringify(orders));
   }, [orders]);
 
+  const [unreadNotificationOrders, setUnreadNotificationOrders] = useState<Order[]>([]);
+
+  // Bidirectional order synchronization (Poll server every 8 seconds)
+  useEffect(() => {
+    let active = true;
+
+    const syncWithServer = async () => {
+      try {
+        const localSavedStr = localStorage.getItem("nabik_orders") || "[]";
+        let currentLocalOrders: Order[] = [];
+        try {
+          currentLocalOrders = JSON.parse(localSavedStr);
+        } catch (_) {}
+
+        const response = await fetch("/api/orders/sync", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ orders: currentLocalOrders })
+        });
+
+        if (!response.ok || !active) return;
+        const mergedFromBackend: Order[] = await response.json();
+
+        if (Array.isArray(mergedFromBackend)) {
+          // Identify any orders that are completely new to this browser session
+          const newlyDiscovered: Order[] = [];
+          mergedFromBackend.forEach((bo) => {
+            if (!currentLocalOrders.some((lo) => lo.id === bo.id)) {
+              newlyDiscovered.push(bo);
+            }
+          });
+
+          setOrders((prev) => {
+            const hasChange = prev.length !== mergedFromBackend.length || 
+              JSON.stringify(prev) !== JSON.stringify(mergedFromBackend);
+
+            if (hasChange) {
+              return mergedFromBackend;
+            }
+            return prev;
+          });
+
+          if (newlyDiscovered.length > 0) {
+            const latest = newlyDiscovered[0];
+            
+            // 1. Dispatch custom event toast
+            window.dispatchEvent(
+              new CustomEvent("app-toast", { 
+                detail: language === 'bn' 
+                  ? `🔔 [নতুন অনলাইন অর্ডার] ${latest.customerInfo.name} একটি অর্ডার করেছেন! মোট মূল্য: ৳${latest.totalBDT.toLocaleString()}`
+                  : `🔔 [New Online Order] ${latest.customerInfo.name} placed a new order! Total BDT: ${latest.totalBDT.toLocaleString()}` 
+              })
+            );
+
+            // 2. Play the beautiful auditory customer alert chime!
+            try {
+              playNotificationChime();
+            } catch (err) {
+              console.warn("Chime alert blocked:", err);
+            }
+
+            // 3. Save to unread orders notifications dropdown
+            setUnreadNotificationOrders((prev) => {
+              const uniques = newlyDiscovered.filter(no => !prev.some(po => po.id === no.id));
+              return [...uniques, ...prev];
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("Backend order sync failed, continuing offline mode:", e);
+      }
+    };
+
+    // Run immediately on page load
+    syncWithServer();
+
+    // Set up polling interval (every 8 seconds to be lightweight)
+    const interval = setInterval(syncWithServer, 8000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [language]);
+
   useEffect(() => {
     injectPixelAndGtmScripts(getPixelSettings());
   }, []);
@@ -560,10 +651,6 @@ export default function App() {
       setLanguage(activeTenant.defaultLanguage);
     }
   }, [activeTenant]);
-  
-  // Settings States
-  const [currency, setCurrency] = useState<'BDT' | 'USD'>('BDT');
-  const [language, setLanguage] = useState<'en' | 'bn'>('bn'); // default to Bangla
   
   // Custom Nabik States
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -765,6 +852,13 @@ export default function App() {
   };
 
   const handleOrderSuccess = (newOrder: Order) => {
+    // Save to server database immediately!
+    fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newOrder),
+    }).catch(e => console.error("Error saving order to backend:", e));
+
     setOrders((prev) => [newOrder, ...prev]);
 
     // Play an auditory chime notification for the admin
@@ -942,6 +1036,8 @@ export default function App() {
             document.getElementById('home-videos-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 150);
         }}
+        unreadNotifications={unreadNotificationOrders}
+        setUnreadNotifications={setUnreadNotificationOrders}
       />
 
       {/* Main Container Layout */}
