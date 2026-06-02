@@ -9,43 +9,44 @@ dotenv.config();
 
 const app = express();
 
-async function startServer() {
-  const PORT = 3000;
+app.use(express.json());
 
-  app.use(express.json());
-
-  // Set up file-based request logger for runtime diagnostics
-  const LOG_FILE = path.join(process.cwd(), "server_logs.txt");
+// Set up file-based request logger for runtime diagnostics
+const LOG_FILE = path.join(process.cwd(), "server_logs.txt");
+try {
   fs.writeFileSync(LOG_FILE, `=== SERVER LOG STARTED AT ${new Date().toISOString()} ===\n`, "utf-8");
+} catch (e) {
+  console.warn("[WARNING] Read-only filesystem detected. Logs will stream to stderr/stdout only.", e);
+}
 
-  function logDiagnostic(msg: string) {
-    try {
-      const timestamp = new Date().toISOString();
-      fs.appendFileSync(LOG_FILE, `[${timestamp}] ${msg}\n`, "utf-8");
-      console.log(`[DIAGNOSTIC] ${msg}`);
-    } catch (err) {
-      // ignore writing failures
-    }
+function logDiagnostic(msg: string) {
+  try {
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(LOG_FILE, `[${timestamp}] ${msg}\n`, "utf-8");
+  } catch (err) {
+    // Ignore writing failures on read-only environments
   }
+  console.log(`[DIAGNOSTIC] ${msg}`);
+}
 
-  logDiagnostic("Express master instance initialized. Registering API pathways...");
+logDiagnostic("Express master instance initialized. Registering API pathways...");
 
-  app.use((req, res, next) => {
-    logDiagnostic(`[INCOMING REQUEST] ${req.method} ${req.url}`);
-    
-    // Intercept finish event to log the final status code
-    res.on("finish", () => {
-      logDiagnostic(`[RESPONSE SENT] ${req.method} ${req.url} -> Status: ${res.statusCode}`);
-    });
-    
-    next();
+app.use((req, res, next) => {
+  logDiagnostic(`[INCOMING REQUEST] ${req.method} ${req.url}`);
+  
+  // Intercept finish event to log the final status code
+  res.on("finish", () => {
+    logDiagnostic(`[RESPONSE SENT] ${req.method} ${req.url} -> Status: ${res.statusCode}`);
   });
+  
+  next();
+});
 
-  // API routes FIRST
-  app.get("/api/health", (req, res) => {
-    logDiagnostic("Health check requested.");
-    res.json({ status: "ok" });
-  });
+// API routes FIRST
+app.get("/api/health", (req, res) => {
+  logDiagnostic("Health check requested.");
+  res.json({ status: "ok" });
+});
 
   // Simple JSON-file and In-memory Order Database
   const ORDERS_FILE = path.join(process.cwd(), "orders_database.json");
@@ -399,31 +400,34 @@ Only include IDs inside suggestedProductIds that literally exist in the database
     }
   });
 
-  if (process.env.VERCEL) {
-    logDiagnostic("Vercel deployment environment detected. Skipping local server configuration.");
-    return;
+  async function startStandaloneServer() {
+    if (process.env.VERCEL) {
+      logDiagnostic("Vercel deployment environment detected. Skipping local server listener and Vite configuration.");
+      return;
+    }
+
+    const PORT = 3000;
+
+    // Vite Integration for Dev / Prod
+    if (process.env.NODE_ENV !== "production") {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), "dist");
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Port 3000 container reverse proxy ready! Fullstack server online.`);
+    });
   }
 
-  // Vite Integration for Dev / Prod
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
+  startStandaloneServer();
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Port 3000 container reverse proxy ready! Fullstack server online.`);
-  });
-}
-
-startServer();
-
-export default app;
+  export default app;
