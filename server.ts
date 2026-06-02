@@ -13,8 +13,36 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Set up file-based request logger for runtime diagnostics
+  const LOG_FILE = path.join(process.cwd(), "server_logs.txt");
+  fs.writeFileSync(LOG_FILE, `=== SERVER LOG STARTED AT ${new Date().toISOString()} ===\n`, "utf-8");
+
+  function logDiagnostic(msg: string) {
+    try {
+      const timestamp = new Date().toISOString();
+      fs.appendFileSync(LOG_FILE, `[${timestamp}] ${msg}\n`, "utf-8");
+      console.log(`[DIAGNOSTIC] ${msg}`);
+    } catch (err) {
+      // ignore writing failures
+    }
+  }
+
+  logDiagnostic("Express master instance initialized. Registering API pathways...");
+
+  app.use((req, res, next) => {
+    logDiagnostic(`[INCOMING REQUEST] ${req.method} ${req.url}`);
+    
+    // Intercept finish event to log the final status code
+    res.on("finish", () => {
+      logDiagnostic(`[RESPONSE SENT] ${req.method} ${req.url} -> Status: ${res.statusCode}`);
+    });
+    
+    next();
+  });
+
   // API routes FIRST
   app.get("/api/health", (req, res) => {
+    logDiagnostic("Health check requested.");
     res.json({ status: "ok" });
   });
 
@@ -49,10 +77,10 @@ async function startServer() {
   app.post("/api/admin/login", (req, res) => {
     try {
       const { email, password } = req.body;
-      console.log(`[ADMIN AUTH SHIELD] Incoming login attempt for:`, email);
+      logDiagnostic(`[ADMIN LOGIN ATTEMPT] Incoming request payload email: "${email}"`);
       
       if (!email || !password) {
-        console.warn(`[ADMIN AUTH SHIELD] Rejecting attempt: missing email or password`);
+        logDiagnostic(`[ADMIN LOGIN FAILURE] Missing email or password`);
         return res.status(400).json({ error: "Email and password are required" });
       }
 
@@ -60,7 +88,7 @@ async function startServer() {
       
       // Explicit authorization check for specified Admin accounts
       if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && password === "admin123") {
-        console.log(`[ADMIN AUTH SHIELD] Direct administrator login successful for: ${cleanEmail}`);
+        logDiagnostic(`[ADMIN LOGIN SUCCESS] Direct administrator login matched for: ${cleanEmail}`);
         return res.json({ 
           success: true, 
           user: { 
@@ -72,13 +100,13 @@ async function startServer() {
           } 
         });
       } else {
-        console.warn(`[ADMIN AUTH SHIELD] Unauthorized login attempt for: ${cleanEmail}`);
+        logDiagnostic(`[ADMIN LOGIN FAILURE] Invalid credentials for: ${cleanEmail}`);
         return res.status(401).json({ 
           error: "Incorrect Gmail or password! Only designated Admin addresses can log in." 
         });
       }
     } catch (routeErr: any) {
-      console.error(`[ADMIN AUTH SHIELD CRITICAL ERROR]:`, routeErr);
+      logDiagnostic(`[ADMIN LOGIN EXCEPTION]: ${routeErr?.message || routeErr}`);
       return res.status(500).json({ error: "Authentication system issue occurred: " + routeErr?.message });
     }
   });

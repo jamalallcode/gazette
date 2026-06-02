@@ -1,0 +1,122 @@
+=== SERVER LOG STARTED AT 2026-06-02T07:17:35.009Z ===
+[2026-06-02T07:17:35.010Z] Express master instance initialized. Registering API pathways...
+[2026-06-02T07:17:36.028Z] [INCOMING REQUEST] GET /
+[2026-06-02T07:17:36.074Z] [RESPONSE SENT] GET /index.html -> Status: 200
+[2026-06-02T07:17:38.985Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:17:38.988Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:17:46.979Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:17:46.980Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:17:47.296Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:17:47.297Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:17:50.709Z] [INCOMING REQUEST] GET /
+[2026-06-02T07:17:50.716Z] [RESPONSE SENT] GET /index.html -> Status: 200
+[2026-06-02T07:17:50.794Z] [INCOMING REQUEST] GET /@vite/client
+[2026-06-02T07:17:50.796Z] [INCOMING REQUEST] GET /src/main.tsx
+[2026-06-02T07:17:50.797Z] [RESPONSE SENT] GET /src/main.tsx -> Status: 304
+[2026-06-02T07:17:50.822Z] [RESPONSE SENT] GET /@vite/client -> Status: 200
+[2026-06-02T07:17:50.866Z] [INCOMING REQUEST] GET /src/App.tsx
+[2026-06-02T07:17:50.867Z] [RESPONSE SENT] GET /src/App.tsx -> Status: 304
+[2026-06-02T07:17:50.870Z] [INCOMING REQUEST] GET /src/index.css
+[2026-06-02T07:17:50.871Z] [RESPONSE SENT] GET /src/index.css -> Status: 304
+[2026-06-02T07:17:50.931Z] [INCOMING REQUEST] GET /node_modules/vite/dist/client/env.mjs
+[2026-06-02T07:17:50.931Z] [RESPONSE SENT] GET /node_modules/vite/dist/client/env.mjs -> Status: 304
+[2026-06-02T07:17:50.959Z] [INCOMING REQUEST] GET /src/data/products.ts
+[2026-06-02T07:17:50.960Z] [RESPONSE SENT] GET /src/data/products.ts -> Status: 304
+[2026-06-02T07:17:50.964Z] [INCOMING REQUEST] GET /src/utils/pixelHelper.ts
+[2026-06-02T07:17:50.965Z] [RESPONSE SENT] GET /src/utils/pixelHelper.ts -> Status: 304
+[2026-06-02T07:17:50.979Z] [INCOMING REQUEST] GET /src/components/Navbar.tsx
+[2026-06-02T07:17:50.980Z] [RESPONSE SENT] GET /src/components/Navbar.tsx -> Status: 304
+[2026-06-02T07:17:50.985Z] [INCOMING REQUEST] GET /src/components/ProductCard.tsx
+[2026-06-02T07:17:50.985Z] [RESPONSE SENT] GET /src/components/ProductCard.tsx -> Status: 304
+[2026-06-02T07:17:50.992Z] [INCOMING REQUEST] GET /src/components/AiAdvisorTab.tsx
+[2026-06-02T07:17:50.993Z] [RESPONSE SENT] GET /src/components/AiAdvisorTab.tsx -> Status: 304
+[2026-06-02T07:17:50.993Z] [INCOMING REQUEST] GET /src/components/ProductShelf.tsx
+[2026-06-02T07:17:50.993Z] [RESPONSE SENT] GET /src/components/ProductShelf.tsx -> Status: 304
+[2026-06-02T07:17:50.994Z] [INCOMING REQUEST] GET /src/components/CartDrawer.tsx
+[2026-06-02T07:17:50.994Z] [RESPONSE SENT] GET /src/components/CartDrawer.tsx -> Status: 304
+[2026-06-02T07:17:50.995Z] [INCOMING REQUEST] GET /src/components/ProductDetailModal.tsx
+[2026-06-02T07:17:50.995Z] [RESPONSE SENT] GET /src/components/ProductDetailModal.tsx -> Status: 304
+[2026-06-02T07:17:51.007Z] [INCOMING REQUEST] GET /src/components/PromoLandingTab.tsx
+[2026-06-02T07:17:51.007Z] [RESPONSE SENT] GET /src/components/PromoLandingTab.tsx -> Status: 304
+[2026-06-02T07:17:51.008Z] [INCOMING REQUEST] GET /src/components/AdminPanel.tsx
+[2026-06-02T07:17:51.009Z] [RESPONSE SENT] GET /src/components/AdminPanel.tsx -> Status: 304
+[2026-06-02T07:17:51.010Z] [INCOMING REQUEST] GET /src/components/CheckoutModal.tsx
+[2026-06-02T07:17:51.010Z] [RESPONSE SENT] GET /src/components/CheckoutModal.tsx -> Status: 304
+[2026-06-02T07:17:51.012Z] [INCOMING REQUEST] GET /src/components/AuthTab.tsx
+[2026-06-02T07:17:51.012Z] [RESPONSE SENT] GET /src/components/AuthTab.tsx -> Status: 304
+[2026-06-02T07:17:51.013Z] [INCOMING REQUEST] GET /src/components/LiveTrackingSystem.tsx
+[2026-06-02T07:17:51.013Z] [RESPONSE SENT] GET /src/components/LiveTrackingSystem.tsx -> Status: 304
+[2026-06-02T07:17:51.014Z] [INCOMING REQUEST] GET /src/utils/audioHelper.ts
+[2026-06-02T07:17:51.014Z] [RESPONSE SENT] GET /src/utils/audioHelper.ts -> Status: 304
+[2026-06-02T07:17:51.015Z] [INCOMING REQUEST] GET /src/components/OrderSuccessModal.tsx
+[2026-06-02T07:17:51.016Z] [RESPONSE SENT] GET /src/components/OrderSuccessModal.tsx -> Status: 304
+[2026-06-02T07:17:51.016Z] [INCOMING REQUEST] GET /src/components/AdminLogin.tsx
+[2026-06-02T07:17:51.017Z] [RESPONSE SENT] GET /src/components/AdminLogin.tsx -> Status: 304
+[2026-06-02T07:17:51.018Z] [INCOMING REQUEST] GET /src/components/ResellerConfigPanel.tsx
+[2026-06-02T07:17:51.018Z] [RESPONSE SENT] GET /src/components/ResellerConfigPanel.tsx -> Status: 304
+[2026-06-02T07:17:51.019Z] [INCOMING REQUEST] GET /src/data/tenantConfig.ts
+[2026-06-02T07:17:51.020Z] [RESPONSE SENT] GET /src/data/tenantConfig.ts -> Status: 304
+[2026-06-02T07:17:51.020Z] [INCOMING REQUEST] GET /src/components/UserProfilePanel.tsx
+[2026-06-02T07:17:51.021Z] [RESPONSE SENT] GET /src/components/UserProfilePanel.tsx -> Status: 304
+[2026-06-02T07:17:51.022Z] [INCOMING REQUEST] GET /src/utils/smsHelper.ts
+[2026-06-02T07:17:51.022Z] [RESPONSE SENT] GET /src/utils/smsHelper.ts -> Status: 304
+[2026-06-02T07:17:51.342Z] [INCOMING REQUEST] GET /src/components/PaymentGatewayModal.tsx
+[2026-06-02T07:17:51.343Z] [RESPONSE SENT] GET /src/components/PaymentGatewayModal.tsx -> Status: 304
+[2026-06-02T07:17:51.344Z] [INCOMING REQUEST] GET /src/data/premiumThemes.ts
+[2026-06-02T07:17:51.345Z] [RESPONSE SENT] GET /src/data/premiumThemes.ts -> Status: 304
+[2026-06-02T07:17:51.347Z] [INCOMING REQUEST] GET /src/components/POSManager.tsx
+[2026-06-02T07:17:51.348Z] [RESPONSE SENT] GET /src/components/POSManager.tsx -> Status: 304
+[2026-06-02T07:17:51.362Z] [INCOMING REQUEST] GET /src/components/FraudProtectionSystem.tsx
+[2026-06-02T07:17:51.363Z] [RESPONSE SENT] GET /src/components/FraudProtectionSystem.tsx -> Status: 304
+[2026-06-02T07:17:51.368Z] [INCOMING REQUEST] GET /src/components/BanglaCourierSystem.tsx
+[2026-06-02T07:17:51.369Z] [RESPONSE SENT] GET /src/components/BanglaCourierSystem.tsx -> Status: 304
+[2026-06-02T07:17:51.371Z] [INCOMING REQUEST] GET /src/components/PixelGtmManager.tsx
+[2026-06-02T07:17:51.371Z] [RESPONSE SENT] GET /src/components/PixelGtmManager.tsx -> Status: 304
+[2026-06-02T07:17:51.372Z] [INCOMING REQUEST] GET /src/components/ModernInvoiceModal.tsx
+[2026-06-02T07:17:51.372Z] [RESPONSE SENT] GET /src/components/ModernInvoiceModal.tsx -> Status: 304
+[2026-06-02T07:17:51.373Z] [INCOMING REQUEST] GET /src/utils/fraudHelper.ts
+[2026-06-02T07:17:51.374Z] [RESPONSE SENT] GET /src/utils/fraudHelper.ts -> Status: 304
+[2026-06-02T07:17:51.549Z] [INCOMING REQUEST] GET /src/components/SmsNotificationSystem.tsx
+[2026-06-02T07:17:51.550Z] [RESPONSE SENT] GET /src/components/SmsNotificationSystem.tsx -> Status: 304
+[2026-06-02T07:17:52.396Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:17:52.398Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:17:52.399Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:17:52.400Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:02.522Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:02.524Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:08.985Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:08.986Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:16.972Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:16.973Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:24.976Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:24.977Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:33.000Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:33.001Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:40.994Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:40.995Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:48.974Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:48.975Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:18:56.974Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:18:56.974Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:04.978Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:04.978Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:12.978Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:12.979Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:20.971Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:20.971Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:28.983Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:28.984Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:36.973Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:36.974Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:44.978Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:44.979Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:19:52.984Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:19:52.985Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:20:01.059Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:20:01.060Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:20:08.971Z] [INCOMING REQUEST] POST /api/orders/sync
+[2026-06-02T07:20:08.971Z] [RESPONSE SENT] POST /api/orders/sync -> Status: 200
+[2026-06-02T07:20:11.595Z] [INCOMING REQUEST] POST /api/admin/login
+[2026-06-02T07:20:11.595Z] [ADMIN LOGIN ATTEMPT] Incoming request payload email: "jamaluddinkh3424@gmail.com"
+[2026-06-02T07:20:11.595Z] [ADMIN LOGIN SUCCESS] Direct administrator login matched for: jamaluddinkh3424@gmail.com
+[2026-06-02T07:20:11.596Z] [RESPONSE SENT] POST /api/admin/login -> Status: 200
