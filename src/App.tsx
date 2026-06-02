@@ -15,6 +15,7 @@ import OrderSuccessModal from "./components/OrderSuccessModal";
 import AuthTab from "./components/AuthTab";
 import UserProfilePanel from "./components/UserProfilePanel";
 import LiveTrackingSystem from "./components/LiveTrackingSystem";
+import AdminLogin from "./components/AdminLogin";
 import { TenantConfig, getSavedTenant, IS_RESELLER_ACTIVE, isResellerFeatureUnlocked } from "./data/tenantConfig";
 import ResellerConfigPanel from "./components/ResellerConfigPanel";
 import { triggerOrderSmsNotification } from "./utils/smsHelper";
@@ -634,12 +635,22 @@ export default function App() {
     // Run immediately on page load
     syncWithServer();
 
+    // Active tab visible handler to trigger immediate sync when returning from other tabs
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("[SYNC] Browser tab focused - executing immediate live order sync.");
+        syncWithServer();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     // Set up polling interval (every 8 seconds to be lightweight)
     const interval = setInterval(syncWithServer, 8000);
 
     return () => {
       active = false;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [language]);
 
@@ -709,6 +720,7 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
   const [placedOrderReceipt, setPlacedOrderReceipt] = useState<Order | null>(null);
 
   // Countdown timer clock engine ticker
@@ -860,6 +872,7 @@ export default function App() {
 
   const handleOpenCheckout = (immediateCartOverride?: CartItem[]) => {
     const activeCart = immediateCartOverride || cart;
+    setCheckoutItems(activeCart);
     const totalVal = activeCart.reduce((sum, item) => sum + item.product.priceBDT * item.quantity, 0);
     triggerPixelEvent("InitiateCheckout", {
       value: totalVal,
@@ -2403,18 +2416,34 @@ export default function App() {
         )}
 
         {currentTab === 'admin' && (
-          <AdminPanel
-            products={products}
-            setProducts={setProducts}
-            orders={orders}
-            setOrders={setOrders}
-            language={language}
-            currency={currency}
-            activeTenant={activeTenant}
-            setActiveTenant={setActiveTenant}
-            unreadNotifications={unreadNotificationOrders}
-            setUnreadNotifications={setUnreadNotificationOrders}
-          />
+          currentUser?.role === 'admin' ? (
+            <AdminPanel
+              products={products}
+              setProducts={setProducts}
+              orders={orders}
+              setOrders={setOrders}
+              language={language}
+              currency={currency}
+              activeTenant={activeTenant}
+              setActiveTenant={setActiveTenant}
+              unreadNotifications={unreadNotificationOrders}
+              setUnreadNotifications={setUnreadNotificationOrders}
+            />
+          ) : (
+            <AdminLogin
+              language={language}
+              onLoginSuccess={(user) => {
+                setCurrentUser(user);
+                // Persist admin session locally for smooth reload
+                localStorage.setItem("nabik_current_user", JSON.stringify(user));
+              }}
+              onCancel={() => setCurrentTab('shop')}
+              triggerToast={(msg) => {
+                const event = new CustomEvent("app-toast", { detail: msg });
+                window.dispatchEvent(event);
+              }}
+            />
+          )
         )}
 
         {(currentTab === 'signup' || currentTab === 'signin') && (
@@ -2817,7 +2846,7 @@ export default function App() {
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
-        cartItems={cart}
+        cartItems={checkoutItems}
         currency={currency}
         language={language}
         onOrderSuccess={handleOrderSuccess}

@@ -577,6 +577,96 @@ export default function Navbar({
               )}
             </div>
 
+            {/* Admin Real-time Order Notification Bell (ONLY shown for admins) */}
+            {currentUser && currentUser.role === 'admin' && (
+              <div 
+                className="flex items-center space-x-2 cursor-pointer select-none group relative py-2"
+                id="admin-notification-bell"
+              >
+                <div 
+                  onClick={() => setBellDropdownOpen(!bellDropdownOpen)}
+                  className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150"
+                >
+                  <Bell size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-110 transition-transform" />
+                  {unreadNotifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white font-black text-[9px] h-4 w-4 rounded-full flex items-center justify-center shadow animate-pulse">
+                      {unreadNotifications.length}
+                    </span>
+                  )}
+                </div>
+                <div 
+                  onClick={() => setBellDropdownOpen(!bellDropdownOpen)}
+                  className="text-left hidden xs:block leading-none"
+                >
+                  <span className="block text-xs font-black text-zinc-900 font-sans group-hover:text-[#f58220] transition">
+                    {language === 'bn' ? 'বিজ্ঞপ্তি' : 'Alerts'}
+                  </span>
+                </div>
+
+                {/* Dropdown with live orders */}
+                {bellDropdownOpen && (
+                  <div 
+                    className="absolute top-full right-0 pt-2 w-72 h-auto z-[9990]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="bg-white text-zinc-850 rounded-xl shadow-2xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                      <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
+                        <span className="text-xs font-black text-zinc-800 tracking-tight">
+                          {language === 'bn' ? `নতুন অর্ডার (${unreadNotifications.length})` : `New Orders (${unreadNotifications.length})`}
+                        </span>
+                        {unreadNotifications.length > 0 && (
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (setUnreadNotifications) setUnreadNotifications([]);
+                              setBellDropdownOpen(false);
+                            }}
+                            className="text-[10px] text-[#f58220] font-bold bg-transparent border-0 cursor-pointer hover:underline"
+                          >
+                            {language === 'bn' ? 'সব মুছুন' : 'Clear All'}
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-60 overflow-y-auto space-y-2.5 pr-1">
+                        {unreadNotifications.length === 0 ? (
+                          <p className="text-[11px] text-zinc-405 text-center py-4 font-semibold text-zinc-500">
+                            {language === 'bn' ? 'কোনো নতুন বিজ্ঞপ্তি নেই' : 'No new unread orders.'}
+                          </p>
+                        ) : (
+                          unreadNotifications.map((order: any, idx: number) => (
+                            <div 
+                              key={order.id || idx} 
+                              onClick={() => {
+                                setCurrentTab('admin');
+                                setBellDropdownOpen(false);
+                                if (setUnreadNotifications) {
+                                  setUnreadNotifications(unreadNotifications.filter((n: any) => n.id !== order.id));
+                                }
+                              }}
+                              className="p-2 hover:bg-orange-50 rounded-lg transition cursor-pointer border border-zinc-50 hover:border-orange-200"
+                            >
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-extrabold text-[11px] text-[#f58220]">#{order.id?.slice(-6) || order.id}</span>
+                                <span className="text-[9.5px] text-zinc-400 font-mono font-bold">
+                                  {order.customerPhone ? "+88..." : "Just now"}
+                                </span>
+                              </div>
+                              <p className="text-[11px] font-bold text-zinc-800 truncate">
+                                {language === 'bn' ? 'ক্রেতা: ' : 'Client: '} {order.customerName || order.shippingAddress?.fullName || 'Guest Client'}
+                              </p>
+                              <p className="text-[10px] text-zinc-500 font-semibold truncate leading-normal">
+                                Amount: ৳{(order.totalPrice || order.totalAmount || 0).toLocaleString()}
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Account registration / Hello Dashboard dropdown badge */}
             <div 
               onMouseEnter={handleMouseEnterProfile}
