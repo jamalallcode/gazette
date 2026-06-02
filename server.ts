@@ -45,11 +45,8 @@ async function startServer() {
     writeOrdersToDisk([]);
   }
 
-  // Admin Authentication and OTP memory store
-  let latestAdminOTP: string | null = null;
-  let latestAdminOTPEmail: string | null = null;
-
-  app.post("/api/admin/request-otp", (req, res) => {
+  // Admin Authentication (Direct Login without OTP as requested)
+  app.post("/api/admin/login", (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
@@ -59,39 +56,7 @@ async function startServer() {
     
     // Explicit authorization check for specified Admin accounts
     if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && password === "admin123") {
-      // Generate a highly secure dynamic 6-digit numeric OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      latestAdminOTP = otpCode;
-      latestAdminOTPEmail = cleanEmail;
-      
-      console.log(`[ADMIN AUTH SHIELD] OTP generated dynamically: ${otpCode} for ${cleanEmail}`);
-      
-      return res.json({ 
-        success: true, 
-        otpSent: true, 
-        email: cleanEmail,
-        message: "Dynamic OTP generated and sent (Simulated Inbox alert activated in UI)" 
-      });
-    } else {
-      return res.status(401).json({ 
-        error: "Incorrect Gmail or password! Only designated Admin addresses can log in." 
-      });
-    }
-  });
-
-  app.post("/api/admin/verify-otp", (req, res) => {
-    const { email, otp } = req.body;
-    if (!email || !otp) {
-      return res.status(400).json({ error: "OTP has not been supplied." });
-    }
-
-    const cleanEmail = email.trim().toLowerCase();
-    
-    // Validate matching OTP or standard backup bypass 123456 for robustness
-    if (otp === latestAdminOTP || otp === "123456") {
-      latestAdminOTP = null; // Flush single-use token
-      latestAdminOTPEmail = null;
-      
+      console.log(`[ADMIN AUTH SHIELD] Direct administrator login successful for: ${cleanEmail}`);
       return res.json({ 
         success: true, 
         user: { 
@@ -103,18 +68,10 @@ async function startServer() {
         } 
       });
     } else {
-      return res.status(400).json({ 
-        error: "Incorrect or invalid One-Time Password (OTP). Please try again." 
+      return res.status(401).json({ 
+        error: "Incorrect Gmail or password! Only designated Admin addresses can log in." 
       });
     }
-  });
-
-  // Simulator helper to query latest dispatched code directly so UI can show simulated email alert automatically
-  app.get("/api/admin/latest-otp", (req, res) => {
-    res.json({ 
-      otp: latestAdminOTP, 
-      email: latestAdminOTPEmail 
-    });
   });
 
   app.get("/api/orders", (req, res) => {
