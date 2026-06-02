@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
@@ -410,7 +409,8 @@ Only include IDs inside suggestedProductIds that literally exist in the database
 
     // Vite Integration for Dev / Prod
     if (process.env.NODE_ENV !== "production") {
-      const vite = await createViteServer({
+      const { createServer } = await import("vite");
+      const vite = await createServer({
         server: { middlewareMode: true },
         appType: "spa",
       });
