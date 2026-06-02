@@ -27,22 +27,36 @@ export default function AdminLogin({
 
     setLoading(true);
     try {
+      console.log("[ADMIN LOGIN] Initiating authentication request for:", email);
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      console.log("[ADMIN LOGIN] Received raw response text:", responseText);
+
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch (jsonErr) {
+        console.error("[ADMIN LOGIN] Failed to parse response as JSON. Raw text was:", responseText);
+        throw new Error(language === 'bn' 
+          ? `সার্ভার থেকে ত্রুটিপূর্ণ উত্তর পাওয়া গেছে! (Status: ${response.status})` 
+          : `Invalid server response format! (Status: ${response.status})`
+        );
+      }
+
       if (response.ok && data.success) {
         triggerToast(language === 'bn' ? "এডমিন লগইন সফল হয়েছে!" : "Successfully verified! Welcome Administrator.");
         onLoginSuccess(data.user);
       } else {
         triggerToast(data.error || (language === 'bn' ? "লগইন ব্যর্থ হয়েছে! সঠিক ইমেল এবং পাসওয়ার্ড ব্যবহার করুন।" : "Login failed! Please check your credentials."));
       }
-    } catch (err) {
-      console.error("Admin login error:", err);
-      triggerToast(language === 'bn' ? "সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে!" : "Could not connect to the authentication gateway.");
+    } catch (err: any) {
+      console.error("Admin login error context:", err);
+      triggerToast(err.message || (language === 'bn' ? "সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে!" : "Could not connect to the authentication gateway."));
     } finally {
       setLoading(false);
     }

@@ -47,30 +47,39 @@ async function startServer() {
 
   // Admin Authentication (Direct Login without OTP as requested)
   app.post("/api/admin/login", (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
+    try {
+      const { email, password } = req.body;
+      console.log(`[ADMIN AUTH SHIELD] Incoming login attempt for:`, email);
+      
+      if (!email || !password) {
+        console.warn(`[ADMIN AUTH SHIELD] Rejecting attempt: missing email or password`);
+        return res.status(400).json({ error: "Email and password are required" });
+      }
 
-    const cleanEmail = email.trim().toLowerCase();
-    
-    // Explicit authorization check for specified Admin accounts
-    if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && password === "admin123") {
-      console.log(`[ADMIN AUTH SHIELD] Direct administrator login successful for: ${cleanEmail}`);
-      return res.json({ 
-        success: true, 
-        user: { 
-          firstName: "Admin", 
-          lastName: "Owner", 
-          email: cleanEmail, 
-          role: "admin",
-          phone: "+8801784905075"
-        } 
-      });
-    } else {
-      return res.status(401).json({ 
-        error: "Incorrect Gmail or password! Only designated Admin addresses can log in." 
-      });
+      const cleanEmail = email.trim().toLowerCase();
+      
+      // Explicit authorization check for specified Admin accounts
+      if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && password === "admin123") {
+        console.log(`[ADMIN AUTH SHIELD] Direct administrator login successful for: ${cleanEmail}`);
+        return res.json({ 
+          success: true, 
+          user: { 
+            firstName: "Admin", 
+            lastName: "Owner", 
+            email: cleanEmail, 
+            role: "admin",
+            phone: "+8801784905075"
+          } 
+        });
+      } else {
+        console.warn(`[ADMIN AUTH SHIELD] Unauthorized login attempt for: ${cleanEmail}`);
+        return res.status(401).json({ 
+          error: "Incorrect Gmail or password! Only designated Admin addresses can log in." 
+        });
+      }
+    } catch (routeErr: any) {
+      console.error(`[ADMIN AUTH SHIELD CRITICAL ERROR]:`, routeErr);
+      return res.status(500).json({ error: "Authentication system issue occurred: " + routeErr?.message });
     }
   });
 
