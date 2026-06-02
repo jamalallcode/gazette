@@ -7,8 +7,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const app = express();
+
 async function startServer() {
-  const app = express();
   const PORT = 3000;
 
   app.use(express.json());
@@ -398,6 +399,11 @@ Only include IDs inside suggestedProductIds that literally exist in the database
     }
   });
 
+  if (process.env.VERCEL) {
+    logDiagnostic("Vercel deployment environment detected. Skipping local server configuration.");
+    return;
+  }
+
   // Vite Integration for Dev / Prod
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -419,3 +425,5 @@ Only include IDs inside suggestedProductIds that literally exist in the database
 }
 
 startServer();
+
+export default app;
