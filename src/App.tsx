@@ -638,7 +638,7 @@ export default function App() {
     // Active tab visible handler to trigger immediate sync when returning from other tabs
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        console.log("[SYNC] Browser tab focused - executing immediate live order sync.");
+        // Quiet sync on focus without spamming the console
         syncWithServer();
       }
     };
