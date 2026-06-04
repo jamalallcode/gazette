@@ -1,6 +1,2 @@
-=== SERVER LOG STARTED AT 2026-06-02T07:30:34.741Z ===
-[2026-06-02T07:30:34.742Z] Express master instance initialized. Registering API pathways...
-[2026-06-02T07:30:45.157Z] [INCOMING REQUEST] POST /api/admin/login
-[2026-06-02T07:30:45.158Z] [ADMIN LOGIN ATTEMPT] Incoming request payload email: "jamaluddinkh3424@gmail.com"
-[2026-06-02T07:30:45.158Z] [ADMIN LOGIN SUCCESS] Direct administrator login matched for: jamaluddinkh3424@gmail.com
-[2026-06-02T07:30:45.163Z] [RESPONSE SENT] POST /api/admin/login -> Status: 200
+=== SERVER LOG STARTED AT 2026-06-02T10:01:23.342Z ===
+[2026-06-02T10:01:23.343Z] Express master instance initialized. Registering API pathways...

@@ -18,12 +18,19 @@ try {
   console.warn("[WARNING] Read-only filesystem detected. Logs will stream to stderr/stdout only.", e);
 }
 
+// In-memory diagnostics queue for read-only serverless platforms
+const inMemoryLogs: string[] = [];
+
 function logDiagnostic(msg: string) {
+  const timestamp = new Date().toISOString();
   try {
-    const timestamp = new Date().toISOString();
     fs.appendFileSync(LOG_FILE, `[${timestamp}] ${msg}\n`, "utf-8");
   } catch (err) {
     // Ignore writing failures on read-only environments
+  }
+  inMemoryLogs.push(`[${timestamp}] ${msg}`);
+  if (inMemoryLogs.length > 500) {
+    inMemoryLogs.shift();
   }
   console.log(`[DIAGNOSTIC] ${msg}`);
 }
@@ -45,6 +52,21 @@ app.use((req, res, next) => {
 app.get("/api/health", (req, res) => {
   logDiagnostic("Health check requested.");
   res.json({ status: "ok" });
+});
+
+// In-memory debug logs pathway
+app.get("/api/debug-server-logs", (req, res) => {
+  res.json({
+    currentTime: new Date().toISOString(),
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL: process.env.VERCEL,
+      PORT: process.env.PORT,
+      AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME || false
+    },
+    totalLogs: inMemoryLogs.length,
+    logs: inMemoryLogs
+  });
 });
 
   // Simple JSON-file and In-memory Order Database
@@ -397,6 +419,17 @@ Only include IDs inside suggestedProductIds that literally exist in the database
         suggestedProductIds: []
       });
     }
+  });
+
+  // Global Express Error-handling Middleware to log to console and return JSON
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("[EXPRESS UNHANDLED ERROR]:", err);
+    logDiagnostic(`[UNHANDLED ERROR] ${err?.message || err}. Stack: ${err?.stack || ""}`);
+    res.status(500).json({
+      error: "An unexpected backend error occurred",
+      message: err?.message || String(err),
+      stack: err?.stack || ""
+    });
   });
 
   async function startStandaloneServer() {
