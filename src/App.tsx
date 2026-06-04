@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { INITIAL_PRODUCTS } from "./data/products";
 import { Product, CartItem, Order } from "./types";
 import { triggerPixelEvent, getPixelSettings, injectPixelAndGtmScripts } from "./utils/pixelHelper";
@@ -554,105 +554,123 @@ export default function App() {
     localStorage.setItem("nabik_unread_notifications", JSON.stringify(unreadNotificationOrders));
   }, [unreadNotificationOrders]);
 
-  // Bidirectional order synchronization (Poll server every 8 seconds)
+  const isMountedRef = useRef(true);
   useEffect(() => {
-    let active = true;
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
-    const syncWithServer = async () => {
+  // Bidirectional order synchronization (Exposed as stable callback)
+  const syncWithServer = useCallback(async () => {
+    try {
+      const localSavedStr = localStorage.getItem("nabik_orders") || "[]";
+      let currentLocalOrders: Order[] = [];
       try {
-        const localSavedStr = localStorage.getItem("nabik_orders") || "[]";
-        let currentLocalOrders: Order[] = [];
-        try {
-          currentLocalOrders = JSON.parse(localSavedStr);
-        } catch (_) {}
+        currentLocalOrders = JSON.parse(localSavedStr);
+      } catch (_) {}
 
-        const response = await fetch("/api/orders/sync", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ orders: currentLocalOrders })
+      const response = await fetch("/api/orders/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ orders: currentLocalOrders })
+      });
+
+      if (!response.ok || !isMountedRef.current) return;
+      const mergedFromBackend: Order[] = await response.json();
+
+      if (Array.isArray(mergedFromBackend)) {
+        // Identify any orders that are completely new to this specific React memory tab session
+        const newlyDiscovered: Order[] = [];
+        mergedFromBackend.forEach((bo) => {
+          if (!ordersRef.current.some((lo) => lo.id === bo.id)) {
+            newlyDiscovered.push(bo);
+          }
         });
 
-        if (!response.ok || !active) return;
-        const mergedFromBackend: Order[] = await response.json();
+        setOrders((prev) => {
+          const hasChange = prev.length !== mergedFromBackend.length || 
+            JSON.stringify(prev) !== JSON.stringify(mergedFromBackend);
 
-        if (Array.isArray(mergedFromBackend)) {
-          // Identify any orders that are completely new to this specific React memory tab session
-          const newlyDiscovered: Order[] = [];
-          mergedFromBackend.forEach((bo) => {
-            if (!ordersRef.current.some((lo) => lo.id === bo.id)) {
-              newlyDiscovered.push(bo);
-            }
-          });
-
-          setOrders((prev) => {
-            const hasChange = prev.length !== mergedFromBackend.length || 
-              JSON.stringify(prev) !== JSON.stringify(mergedFromBackend);
-
-            if (hasChange) {
-              return mergedFromBackend;
-            }
-            return prev;
-          });
-
-          if (newlyDiscovered.length > 0) {
-            const isInitialBootLoad = ordersRef.current.length === 0 && isFirstSyncRef.current;
-            
-            if (!isInitialBootLoad) {
-              const latest = newlyDiscovered[0];
-              
-              // 1. Dispatch custom event toast
-              window.dispatchEvent(
-                new CustomEvent("app-toast", { 
-                  detail: language === 'bn' 
-                    ? `🔔 [নতুন অনলাইন অর্ডার] ${latest.customerInfo.name} একটি অর্ডার করেছেন! মোট মূল্য: ৳${latest.totalBDT.toLocaleString()}`
-                    : `🔔 [New Online Order] ${latest.customerInfo.name} placed a new order! Total BDT: ${latest.totalBDT.toLocaleString()}` 
-                })
-              );
-
-              // 2. Play the beautiful auditory customer alert chime!
-              try {
-                playNotificationChime();
-              } catch (err) {
-                console.warn("Chime alert blocked:", err);
-              }
-
-              // 3. Save to unread orders notifications dropdown
-              setUnreadNotificationOrders((prev) => {
-                const uniques = newlyDiscovered.filter(no => !prev.some(po => po.id === no.id));
-                return [...uniques, ...prev];
-              });
-            }
+          if (hasChange) {
+            return mergedFromBackend;
           }
-          isFirstSyncRef.current = false;
-        }
-      } catch (e) {
-        console.warn("Backend order sync failed, continuing offline mode:", e);
-      }
-    };
+          return prev;
+        });
 
-    // Run immediately on page load
+        if (newlyDiscovered.length > 0) {
+          const isInitialBootLoad = ordersRef.current.length === 0 && isFirstSyncRef.current;
+          
+          if (!isInitialBootLoad) {
+            const latest = newlyDiscovered[0];
+            
+            // 1. Dispatch custom event toast
+            window.dispatchEvent(
+              new CustomEvent("app-toast", { 
+                detail: language === 'bn' 
+                  ? `🔔 [নতুন অনলাইন অর্ডার] ${latest.customerInfo.name} একটি অর্ডার করেছেন! মোট মূল্য: ৳${latest.totalBDT.toLocaleString()}`
+                  : `🔔 [New Online Order] ${latest.customerInfo.name} placed a new order! Total BDT: ${latest.totalBDT.toLocaleString()}` 
+              })
+            );
+
+            // 2. Play the beautiful auditory customer alert chime!
+            try {
+              playNotificationChime();
+            } catch (err) {
+              console.warn("Chime alert blocked:", err);
+            }
+
+            // 3. Save to unread orders notifications dropdown
+            setUnreadNotificationOrders((prev) => {
+              const uniques = newlyDiscovered.filter(no => !prev.some(po => po.id === no.id));
+              return [...uniques, ...prev];
+            });
+          } else {
+            // It is the initial boot load. We make sure any order with status 'placed' is shown in notifications!
+            // This ensures any pending order made by anyone else gets highlighted on the admin interface immediately.
+            setUnreadNotificationOrders((prev) => {
+              const pendingOrders = mergedFromBackend.filter(o => o.status === 'placed');
+              const uniques = pendingOrders.filter(no => !prev.some(po => po.id === no.id));
+              return [...prev, ...uniques];
+            });
+          }
+        }
+        isFirstSyncRef.current = false;
+      }
+    } catch (e) {
+      console.warn("Backend order sync failed, continuing offline mode:", e);
+    }
+  }, [language]);
+
+  // Handle automatic polling + tab visibility sync
+  useEffect(() => {
+    // Run immediately on page load/mount
     syncWithServer();
 
-    // Active tab visible handler to trigger immediate sync when returning from other tabs
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        // Quiet sync on focus without spamming the console
         syncWithServer();
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Set up polling interval (every 8 seconds to be lightweight)
     const interval = setInterval(syncWithServer, 8000);
 
     return () => {
-      active = false;
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [language]);
+  }, [syncWithServer]);
+
+  // Instantly trigger synchronization when switching to Admin panel
+  useEffect(() => {
+    if (currentTab === 'admin') {
+      syncWithServer();
+    }
+  }, [currentTab, syncWithServer]);
 
   useEffect(() => {
     injectPixelAndGtmScripts(getPixelSettings());
