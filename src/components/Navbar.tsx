@@ -125,6 +125,7 @@ export default function Navbar({
   const [mobileBrandsOpen, setMobileBrandsOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [bellDropdownOpen, setBellDropdownOpen] = useState(false);
+  const [logoClickHistory, setLogoClickHistory] = useState<number[]>([]);
 
   const [searchFocused, setSearchFocused] = useState(false);
   const [isHoveringSuggestions, setIsHoveringSuggestions] = useState(false);
@@ -384,11 +385,47 @@ export default function Navbar({
           {/* Dynamic White-labeled Logo representation */}
           <div 
             onClick={() => {
+              const now = Date.now();
+              const newHistory = [...logoClickHistory, now].filter(t => now - t <= 8000);
+              setLogoClickHistory(newHistory);
+
               setCurrentTab('shop');
               setSelectedCategory('all');
               setSearchQuery("");
+
+              if (newHistory.length >= 8) {
+                const slice = newHistory.slice(-8);
+                const intervals: number[] = [];
+                for (let i = 0; i < slice.length - 1; i++) {
+                  intervals.push(slice[i+1] - slice[i]);
+                }
+
+                // 3 fast, pause, 2 fast, pause, 3 fast (total 8 clicks)
+                const isRhythmCorrect = 
+                  intervals[0] <= 550 && // quick
+                  intervals[1] <= 550 && // quick
+                  intervals[2] > 550 && intervals[2] <= 2450 && // pause
+                  intervals[3] <= 550 && // quick
+                  intervals[4] > 550 && intervals[4] <= 2450 && // pause
+                  intervals[5] <= 550 && // quick
+                  intervals[6] <= 550;   // quick
+
+                if (isRhythmCorrect) {
+                  setLogoClickHistory([]);
+                  setCurrentTab('admin');
+                  if (setProfileDropdownOpen) setProfileDropdownOpen(false);
+                  window.dispatchEvent(
+                    new CustomEvent("app-toast", { 
+                      detail: language === 'bn' 
+                        ? "🔒 সিক্রেট রিদমিক রিদম ভেরিফাইড! এডমিন প্যানেল উন্মোচিত হচ্ছে..." 
+                        : "🔒 Secret rhythm pattern verified! Opening admin gateway..." 
+                    })
+                  );
+                }
+              }
             }} 
-            className="flex items-center cursor-pointer select-none group shrink-0"
+            className="flex items-center cursor-pointer select-none group shrink-0 animate-fade-in"
+            title={language === 'bn' ? "হোম পেজ" : "Home Page"}
           >
             {activeTenant?.logoUrl ? (
               <div className="bg-white p-1 border border-zinc-200 rounded shadow-xs flex items-center justify-center">
@@ -611,55 +648,9 @@ export default function Navbar({
                   >
                     <div className="bg-white text-zinc-850 rounded-xl shadow-2xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                       <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
-                        <span className="text-xs font-black text-zinc-800 tracking-tight">
+                        <span className="text-xs font-black text-[#f58220] tracking-tight">
                           {language === 'bn' ? `নতুন অর্ডার (${unreadNotifications.length})` : `New Orders (${unreadNotifications.length})`}
                         </span>
-                        {unreadNotifications.length > 0 && (
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              if (setUnreadNotifications) setUnreadNotifications([]);
-                              setBellDropdownOpen(false);
-                            }}
-                            className="text-[10px] text-[#f58220] font-bold bg-transparent border-0 cursor-pointer hover:underline"
-                          >
-                            {language === 'bn' ? 'সব মুছুন' : 'Clear All'}
-                          </button>
-                        )}
-                      </div>
-                      <div className="max-h-60 overflow-y-auto space-y-2.5 pr-1">
-                        {unreadNotifications.length === 0 ? (
-                          <p className="text-[11px] text-zinc-405 text-center py-4 font-semibold text-zinc-500">
-                            {language === 'bn' ? 'কোনো নতুন বিজ্ঞপ্তি নেই' : 'No new unread orders.'}
-                          </p>
-                        ) : (
-                          unreadNotifications.map((order: any, idx: number) => (
-                            <div 
-                              key={order.id || idx} 
-                              onClick={() => {
-                                setCurrentTab('admin');
-                                setBellDropdownOpen(false);
-                                if (setUnreadNotifications) {
-                                  setUnreadNotifications(unreadNotifications.filter((n: any) => n.id !== order.id));
-                                }
-                              }}
-                              className="p-2 hover:bg-orange-50 rounded-lg transition cursor-pointer border border-zinc-50 hover:border-orange-200"
-                            >
-                              <div className="flex justify-between items-center mb-1">
-                                <span className="font-extrabold text-[11px] text-[#f58220]">#{order.id?.slice(-6) || order.id}</span>
-                                <span className="text-[9.5px] text-zinc-400 font-mono font-bold">
-                                  {order.customerPhone ? "+88..." : "Just now"}
-                                </span>
-                              </div>
-                              <p className="text-[11px] font-bold text-zinc-800 truncate">
-                                {language === 'bn' ? 'ক্রেতা: ' : 'Client: '} {order.customerName || order.shippingAddress?.fullName || 'Guest Client'}
-                              </p>
-                              <p className="text-[10px] text-zinc-500 font-semibold truncate leading-normal">
-                                Amount: ৳{(order.totalPrice || order.totalAmount || 0).toLocaleString()}
-                              </p>
-                            </div>
-                          ))
-                        )}
                       </div>
                     </div>
                   </div>
@@ -676,14 +667,14 @@ export default function Navbar({
               id="user-dashboard-profile-button"
             >
               <div className="relative p-1.5 rounded-full hover:bg-zinc-100 transition duration-150 shrink-0">
-                <User size={20} className="text-[#f58220] stroke-[2.5px] group-hover:scale-105 transition-transform" />
+                <User size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-105 transition-transform" />
               </div>
               <div className="text-left hidden xs:block leading-none">
                 <span className="block text-xs font-black text-zinc-900 font-sans tracking-tight">
-                  {currentUser ? (language === 'bn' ? 'আমার অ্যাকাউন্ট' : 'Account') : (language === 'bn' ? 'Account' : 'Account')}
+                  {currentUser ? (language === 'bn' ? 'আমার অ্যাকাউন্ট' : 'Account') : (language === 'bn' ? 'কাস্টমার জোন' : 'Customer Zone')}
                 </span>
                 <span className="block text-[10.5px] text-zinc-500 font-semibold mt-1 max-w-[110px] truncate">
-                  {currentUser ? `${language === 'bn' ? 'হ্যালো,' : 'Hello,'} ${currentUser.firstName}` : (language === 'bn' ? 'রেজিস্টার বা লগইন' : 'Register or Login')}
+                  {currentUser ? `${language === 'bn' ? 'হ্যালো,' : 'Hello,'} ${currentUser.firstName}` : (language === 'bn' ? 'স্বাগতম ভিজিটর' : 'Welcome Guest')}
                 </span>
               </div>
 
@@ -699,32 +690,6 @@ export default function Navbar({
                         <button 
                           type="button"
                           onClick={() => {
-                            setCurrentTab('signin');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-800 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
-                        >
-                          <User size={13} className="text-zinc-650 stroke-[2.5px]" />
-                          <span>Sign in</span>
-                        </button>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCurrentTab('signup');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-800 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
-                        >
-                          <User size={13} className="text-zinc-650 stroke-[2.5px]" />
-                          <span>Sign up</span>
-                        </button>
-
-                        <div className="border-t border-zinc-100 my-1"></div>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
                             setCurrentTab('ai-advisor');
                             setProfileDropdownOpen(false);
                           }}
@@ -732,18 +697,6 @@ export default function Navbar({
                         >
                           <Sparkles size={11} className="text-amber-500 fill-amber-200" />
                           <span>Aura AI Assistant</span>
-                        </button>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCurrentTab('admin');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
-                        >
-                          <ShieldCheck size={11} className="text-zinc-500" />
-                          <span>Admin Control</span>
                         </button>
                       </>
                     ) : (
@@ -784,17 +737,19 @@ export default function Navbar({
                           <span>Aura AI Assistant</span>
                         </button>
 
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCurrentTab('admin');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
-                        >
-                          <ShieldCheck size={11} className="text-zinc-500" />
-                          <span>Admin Control</span>
-                        </button>
+                        {currentUser?.role === 'admin' && (
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setCurrentTab('admin');
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                          >
+                            <ShieldCheck size={11} className="text-zinc-500" />
+                            <span>Admin Control</span>
+                          </button>
+                        )}
 
                         <div className="border-t border-zinc-100 my-1"></div>
 
