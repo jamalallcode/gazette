@@ -511,11 +511,26 @@ export default function Navbar({
                               {language === 'bn' ? "নতুন কোনো নোটিফিকেশন নেই" : "No new order alerts."}
                             </div>
                           ) : (
-                            unreadNotifications.map((notif, index) => (
-                              <div key={index} className="p-2 hover:bg-zinc-50 rounded border-b border-zinc-100 last:border-0 font-semibold text-zinc-700">
-                                {notif}
-                              </div>
-                            ))
+                            unreadNotifications.map((notif: any, index) => {
+                              const notifAmt = currency === 'BDT' ? `৳${(notif.totalBDT || 0).toLocaleString()}` : `$${notif.totalUSD || 0}`;
+                              const customerName = notif.customerInfo?.name || "Customer";
+                              const orderId = notif.id || "";
+                              return (
+                                <div key={orderId || index} className="p-2 hover:bg-zinc-50 rounded border-b border-zinc-100 last:border-0 text-zinc-700 space-y-0.5">
+                                  <div className="flex justify-between items-center gap-1">
+                                    <span className="font-extrabold text-[11px] text-zinc-900 truncate max-w-[130px]">
+                                      {customerName}
+                                    </span>
+                                    <span className="text-[11px] font-black text-[#f58220] shrink-0">
+                                      {notifAmt}
+                                    </span>
+                                  </div>
+                                  <div className="text-[9.5px] text-zinc-400 font-mono">
+                                    ID: {orderId}
+                                  </div>
+                                </div>
+                              );
+                            })
                           )}
                         </div>
                       </div>
@@ -965,11 +980,26 @@ export default function Navbar({
                                 {language === 'bn' ? "নতুন কোনো নোটিফিকেশন নেই" : "No new order alerts."}
                               </div>
                             ) : (
-                              unreadNotifications.map((notif, index) => (
-                                <div key={index} className="p-2 hover:bg-zinc-50 rounded border-b border-zinc-100 last:border-0 font-semibold text-zinc-700">
-                                  {notif}
-                                </div>
-                              ))
+                              unreadNotifications.map((notif: any, index) => {
+                                const notifAmt = currency === 'BDT' ? `৳${(notif.totalBDT || 0).toLocaleString()}` : `$${notif.totalUSD || 0}`;
+                                const customerName = notif.customerInfo?.name || "Customer";
+                                const orderId = notif.id || "";
+                                return (
+                                  <div key={orderId || index} className="p-2 hover:bg-zinc-50 rounded border-b border-zinc-100 last:border-0 text-zinc-700 space-y-0.5">
+                                    <div className="flex justify-between items-center gap-1">
+                                      <span className="font-extrabold text-[11px] text-zinc-900 truncate max-w-[130px]">
+                                        {customerName}
+                                      </span>
+                                      <span className="text-[11px] font-black text-[#f58220] shrink-0">
+                                        {notifAmt}
+                                      </span>
+                                    </div>
+                                    <div className="text-[9.5px] text-zinc-400 font-mono">
+                                      ID: {orderId}
+                                    </div>
+                                  </div>
+                                );
+                              })
                             )}
                           </div>
                         </div>
