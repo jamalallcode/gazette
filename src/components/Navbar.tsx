@@ -17,6 +17,39 @@ import {
 } from "lucide-react";
 import { TenantConfig, MenuItemConfig, MenuItemDropdownItem, DEFAULT_MENU_ITEMS } from "../data/tenantConfig";
 
+const GazzetteLogo = ({ isMobile = false, isDarkBg = false }: { isMobile?: boolean; isDarkBg?: boolean }) => {
+  return (
+    <div className="flex items-center space-x-2 select-none group">
+      {/* Premium Emblem with double layering & glowing elements */}
+      <div className={`relative ${isMobile ? 'h-[36px] w-[36px]' : 'h-[38px] w-[38px]'} rounded-xl bg-gradient-to-br from-zinc-900 via-neutral-900 to-black p-[2px] shadow-sm flex items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300`}>
+        {/* Glow backdrop */}
+        <div className="absolute inset-0 bg-[#f58220] opacity-15 rounded-xl blur-xs group-hover:opacity-25 transition-all" />
+        
+        {/* Inner Core */}
+        <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center relative overflow-hidden">
+          {/* Subtle line accent */}
+          <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#f58220]/75 to-transparent" />
+          
+          <svg className="h-5 w-5 text-[#f58220]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12H12V14.5H17.2C16.5 16.5 14.5 17.5 12 17.5C8.96243 17.5 6.5 15.0376 6.5 12C6.5 8.96243 8.96243 6.5 12 6.5C14 6.5 15.8 7.5 16.8 9.2L18.9 7.1C17.3 4.8 14.8 4 12 4Z" fill="currentColor" className="drop-shadow-[0_0_2px_rgba(245,130,32,0.5)]" />
+            <circle cx="12" cy="12" r="1.5" fill="#ffffff" />
+          </svg>
+        </div>
+      </div>
+      
+      {/* Brand Text Styling */}
+      <div className="flex flex-col text-left justify-center">
+        <span className={`font-sans font-black tracking-tight uppercase leading-none ${isDarkBg ? 'text-white' : 'text-zinc-900'} ${isMobile ? 'text-[16px]' : 'text-[18px]'} tracking-[0.03em]`}>
+          Gazzette
+        </span>
+        <span className={`${isDarkBg ? 'text-black/80 font-black' : 'text-[#f58220] font-black'} tracking-[0.14em] leading-none ${isMobile ? 'text-[7.5px] mt-1' : 'text-[8px] mt-1.5'} font-sans uppercase`}>
+          PREMIUM STORE
+        </span>
+      </div>
+    </div>
+  );
+};
+
 interface NavbarProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
@@ -288,6 +321,35 @@ export default function Navbar({
     };
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (!target) return;
+
+      // Bell Dropdown handling
+      if (
+        !target.closest('#bell-dropdown-container-1') && 
+        !target.closest('#bell-dropdown-container-2')
+      ) {
+        setBellDropdownOpen(false);
+      }
+
+      // Profile Dropdown handling
+      if (
+        !target.closest('#profile-dropdown-container-1') && 
+        !target.closest('#profile-dropdown-container-2') &&
+        !target.closest('#profile-sidebar-container')
+      ) {
+        setProfileDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const categoriesList = [
     { id: "all", name: "All Categories", nameBn: "সব ক্যাটালগ" },
     { id: "tshirt", name: "T-Shirt", nameBn: "টি-শার্ট" },
@@ -450,25 +512,7 @@ export default function Navbar({
               }}
               className="flex items-center space-x-2 cursor-pointer select-none group"
             >
-              {activeTenant?.logoUrl ? (
-                <div className="bg-white p-1 border border-zinc-150 rounded-xl shadow-xs flex items-center justify-center h-[38px] w-auto transition-transform active:scale-95 duration-200">
-                  <img 
-                    src={activeTenant.logoUrl} 
-                    alt={activeTenant.shopName || "Nabik Bazar"} 
-                    className="h-6.5 w-auto object-contain rounded" 
-                    referrerPolicy="no-referrer" 
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col text-left">
-                  <span className="text-[17px] font-black tracking-tight text-neutral-900 uppercase leading-none font-sans drop-shadow-3xs">
-                    {language === 'bn' ? (activeTenant?.shopNameBn || "নাবিক") : (activeTenant?.shopName || "Nabik Bazar")}
-                  </span>
-                  <span className="text-[8.5px] text-[#f58220] font-black tracking-widest mt-1.5 font-sans uppercase">
-                    {language === 'bn' ? "অনলাইন স্টোর" : "Premium Store"}
-                  </span>
-                </div>
-              )}
+              <GazzetteLogo isMobile={true} isDarkBg={false} />
             </div>
 
             {/* Right side: Clean action controls and Mobile menu toggle */}
@@ -476,7 +520,7 @@ export default function Navbar({
 
               {/* Admin Notification Bell */}
               {currentUser && currentUser.role === 'admin' && (
-                <div className="relative">
+                <div className="relative" id="bell-dropdown-container-1">
                   <button 
                     type="button"
                     onClick={() => {
@@ -541,7 +585,7 @@ export default function Navbar({
 
               {/* User Profile / Dashboard Menu Wrapper - Only shown for logged-in admin/seller */}
               {currentUser?.role === 'admin' && (
-                <div className="relative">
+                <div className="relative" id="profile-dropdown-container-1">
                   <button 
                     type="button"
                     onClick={() => {
@@ -775,23 +819,7 @@ export default function Navbar({
                 className="flex items-center cursor-pointer select-none group shrink-0 animate-fade-in"
                 title={language === 'bn' ? "হোম পেজ" : "Home Page"}
               >
-                {activeTenant?.logoUrl ? (
-                  <div className="bg-white p-1 border border-zinc-200 rounded-lg shadow-sm flex items-center justify-center h-[38px] w-auto">
-                    <img 
-                      src={activeTenant.logoUrl} 
-                      alt={activeTenant.shopName || "Nabik Bazar"} 
-                      className="h-7 w-auto object-contain rounded" 
-                      referrerPolicy="no-referrer" 
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-1.5 bg-black/10 py-1.5 px-3 rounded-lg text-white">
-                    <ShoppingBag size={15} className="stroke-[2.5px]" />
-                    <span className="text-[13px] font-black uppercase tracking-tight leading-none">
-                      {(language === 'bn' ? (activeTenant?.shopNameBn || "নাবিক") : (activeTenant?.shopName || "Nabik")).split(" ")[0]}
-                    </span>
-                  </div>
-                )}
+                <GazzetteLogo isMobile={false} isDarkBg={true} />
               </div>
 
               {/* Horizontal menu bar - solid black/dark text on vibrant orange canvas strip */}
@@ -944,7 +972,7 @@ export default function Navbar({
                 
                 {/* 3. Direct Admin Alert Bell (only shown for passcode-logged-in admins) */}
                 {currentUser && currentUser.role === 'admin' && (
-                  <div className="relative">
+                  <div className="relative" id="bell-dropdown-container-2">
                     <button 
                       type="button"
                       onClick={() => {
@@ -1010,7 +1038,7 @@ export default function Navbar({
 
                 {/* 4. Direct User Profile (only shown for passcode-logged-in admins) */}
                 {currentUser && currentUser.role === 'admin' && (
-                  <div className="relative">
+                  <div className="relative" id="profile-dropdown-container-2">
                     <button 
                       type="button"
                       onClick={() => {
@@ -1247,7 +1275,7 @@ export default function Navbar({
 
                       {/* 3. Account / Profile block - Only shown for active admin session */}
                       {currentUser?.role === 'admin' && (
-                        <div className="p-2 rounded-xl bg-zinc-50/50 border border-zinc-100 hover:border-orange-100 hover:bg-orange-50/10 transition space-y-2 animate-fade-in animate-duration-300">
+                        <div id="profile-sidebar-container" className="p-2 rounded-xl bg-zinc-50/50 border border-zinc-100 hover:border-orange-100 hover:bg-orange-50/10 transition space-y-2 animate-fade-in animate-duration-300">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2.5">
                               <div className="p-2 bg-blue-50 rounded-lg text-blue-600 shrink-0">
