@@ -556,7 +556,8 @@ export default function AdminPanel({
         paymentStatus: "paid"
       },
       status: 'placed',
-      estimatedDelivery: "24-48 Business Hours"
+      estimatedDelivery: "24-48 Business Hours",
+      timestamp: Date.now()
     };
 
     setOrders(prev => [mockInjected, ...prev]);

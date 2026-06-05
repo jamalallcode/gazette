@@ -100,7 +100,8 @@ export default function CheckoutModal({
           paymentStatus: finalPaymentStatus
         },
         status: 'placed',
-        estimatedDelivery: estimatedDeliveryDate.toDateString()
+        estimatedDelivery: estimatedDeliveryDate.toDateString(),
+        timestamp: Date.now()
       };
 
       onOrderSuccess(newOrder);

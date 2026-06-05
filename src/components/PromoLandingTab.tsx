@@ -134,6 +134,7 @@ export default function PromoLandingTab({
         totalUSD: currency === 'USD' ? grandTotal : grandTotal / 120,
         status: 'placed',
         estimatedDelivery: language === 'en' ? "2 to 3 days maximum" : "২ থেকে ৩ কর্মদিবস",
+        timestamp: Date.now(),
         customerInfo: {
           name,
           phone,

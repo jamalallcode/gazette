@@ -12,7 +12,8 @@ import {
   Sparkles,
   ShieldCheck,
   LayoutGrid,
-  Bell
+  Bell,
+  Languages
 } from "lucide-react";
 import { TenantConfig } from "../data/tenantConfig";
 
@@ -329,7 +330,7 @@ export default function Navbar({
       
       {/* 1. Maroon/Red Top Offer Banner */}
       {showEidBanner && activeTenant?.enableDiscountedProducts && (
-        <div className="bg-[#511111] text-white text-xs py-1 px-4 select-none relative transition-all duration-300">
+        <div className="order-1 bg-[#511111] text-white text-xs py-1 px-4 select-none relative transition-all duration-300">
           <div className="max-w-7xl mx-auto flex justify-center items-center font-bold text-sm">
             <span>Eid Offer Discount Price Coming Soon</span>
           </div>
@@ -344,44 +345,8 @@ export default function Navbar({
         </div>
       )}
 
-      {/* 2. Orange Top Ribbon Row */}
-      <div className="bg-brand text-black text-sm py-1 px-4 shadow-sm font-semibold" style={{ backgroundColor: 'var(--brand-color)' }}>
-        <div className="max-w-7xl mx-auto flex flex-row justify-between items-center sm:px-6 lg:px-8">
-          {/* Left phone number layout */}
-          <div className="flex items-center space-x-2">
-            <Phone size={14} className="text-black fill-black stroke-[3px]" />
-            <span className="font-mono text-black font-extrabold text-[13px] sm:text-[14px]">
-              {activeTenant?.phone || "+8801784905075"}
-            </span>
-          </div>
-          
-          {/* Right country flag currency / language picker */}
-          <div className="flex items-center space-x-4">
-            {/* Currency selector toggle with ৳ */}
-            <button 
-              onClick={() => setCurrency(currency === 'BDT' ? 'USD' : 'BDT')}
-              className="hover:opacity-80 transition cursor-pointer flex items-center space-x-1.5 focus:outline-none bg-transparent border-none"
-            >
-              <span className="font-bold text-[12px] sm:text-[13px]">BDT ৳</span>
-              <ChevronDown size={14} className="stroke-[3.5px] mt-0.5" />
-            </button>
-
-            <span className="text-black/30">|</span>
-
-            {/* Language dropdown switcher with USA flag */}
-            <button 
-              onClick={() => setLanguage(language === 'en' ? 'bn' : 'en')}
-              className="hover:opacity-80 transition cursor-pointer flex items-center space-x-1.5 focus:outline-none bg-transparent border-none"
-            >
-              {/* USA Flag Emoji as standard elegant rendering */}
-              <span className="text-[14px] leading-none">🇺🇸</span>
-              <span className="font-bold text-[12px] sm:text-[13px]">English</span>
-              <ChevronDown size={14} className="stroke-[3.5px] mt-0.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="bg-white py-[6px] px-4 border-b border-zinc-200 shadow-sm">
+      {/* 2. Orange Top Ribbon Row Removed */}
+      <div className="order-4 bg-white py-[6px] px-4 border-b border-zinc-200 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 sm:px-6 lg:px-8">
           
           {/* Dynamic White-labeled Logo representation */}
@@ -531,6 +496,30 @@ export default function Navbar({
 
           {/* Custom Action Badges (Wishlists, Account, My Cart) with exact colors & placements */}
           <div className="flex items-center space-x-6">
+            
+            {/* Elegant Language Switcher Badge */}
+            <button 
+              type="button"
+              onClick={() => {
+                const targetLang = language === 'en' ? 'bn' : 'en';
+                setLanguage(targetLang);
+                triggerToast(targetLang === 'bn' ? 'ভাষা পরিবর্তন সফল হয়েছে!' : 'Language changed successfully!');
+              }}
+              className="flex items-center space-x-2 cursor-pointer select-none group py-2 focus:outline-none border-0 bg-transparent text-left font-semibold"
+              title={language === 'bn' ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
+            >
+              <div className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150 flex items-center justify-center">
+                <Languages size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-left hidden xs:block leading-none select-none">
+                <span className="block text-xs font-black text-zinc-900 font-sans group-hover:text-[#f58220] transition">
+                  {language === 'bn' ? 'বাংলা' : 'English'}
+                </span>
+                <span className="block text-[10px] text-zinc-500 font-bold mt-1 font-sans">
+                  {language === 'bn' ? 'ভাষা' : 'Language'}
+                </span>
+              </div>
+            </button>
             
 
 
@@ -804,10 +793,10 @@ export default function Navbar({
 
       {/* 4. Navigation Menu Bar: White code categories trigger + Orange Navigation strip */}
       {isSticky && (
-        <div className="h-[44px] hidden md:block" />
+        <div className="order-3 h-[44px] hidden md:block" />
       )}
       <div 
-        className={`bg-[#f58220] text-black hidden md:block transition-all duration-300 ease-in-out ${
+        className={`order-3 bg-[#f58220] text-black hidden md:block transition-all duration-300 ease-in-out ${
           isSticky 
             ? "fixed top-0 left-0 right-0 z-50 shadow-xl bg-[#f58220]/95 backdrop-blur-md border-b border-orange-600/20 py-1" 
             : "relative shadow-md py-0"
@@ -1038,7 +1027,28 @@ export default function Navbar({
 
       {/* Mobile Menu list item drawers */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white text-zinc-900 border-b border-zinc-200 py-3 px-4 space-y-2 z-40 relative">
+        <div className="order-5 md:hidden bg-white text-zinc-900 border-b border-zinc-200 py-3 px-4 space-y-2 z-40 relative">
+          
+          {/* Beautiful and convenient mobile language toggle button */}
+          <button 
+            type="button"
+            onClick={() => {
+              const targetLang = language === 'en' ? 'bn' : 'en';
+              setLanguage(targetLang);
+              setMobileMenuOpen(false);
+              triggerToast(targetLang === 'bn' ? 'ভাষা পরিবর্তন সফল হয়েছে!' : 'Language changed successfully!');
+            }}
+            className="w-full text-left py-2.5 px-3 bg-orange-50 text-[#f58220] rounded-xl flex items-center justify-between font-extrabold text-[12.5px] border border-orange-100 transition-all active:scale-95"
+          >
+            <div className="flex items-center space-x-2">
+              <Languages size={15} className="text-[#f58220] stroke-[2.5px]" />
+              <span>{language === 'bn' ? 'English এ পরিবর্তন করুন' : 'Change Language (বাংলা)'}</span>
+            </div>
+            <span className="text-[10px] uppercase font-mono tracking-wider bg-white border border-orange-200 text-orange-600 px-1.5 py-0.5 rounded-md leading-none">
+              {language === 'bn' ? 'EN' : 'বাংলা'}
+            </span>
+          </button>
+
           <div className="flex flex-col space-y-1 text-sm font-bold">
             <button 
               onClick={() => {

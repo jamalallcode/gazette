@@ -511,6 +511,8 @@ export default function App() {
   const [currency, setCurrency] = useState<'BDT' | 'USD'>('BDT');
   const [language, setLanguage] = useState<'en' | 'bn'>('bn'); // default to Bangla
   const isFirstSyncRef = useRef(true);
+  const sessionStartTimeRef = useRef<number>(Date.now());
+  const notifiedOrdersSetRef = useRef<Set<string>>(new Set());
 
   // Global App States
   const [activeTenant, setActiveTenant] = useState<TenantConfig>(getSavedTenant());
@@ -583,11 +585,25 @@ export default function App() {
       const mergedFromBackend: Order[] = await response.json();
 
       if (Array.isArray(mergedFromBackend)) {
-        // Identify any orders that are completely new to this specific React memory tab session
-        const newlyDiscovered: Order[] = [];
+        // Collect orders that are completely new to our notified record in this session
+        const trulyNewOrdersToNotify: Order[] = [];
+        const isInitialBoot = isFirstSyncRef.current;
+        
         mergedFromBackend.forEach((bo) => {
-          if (!ordersRef.current.some((lo) => lo.id === bo.id)) {
-            newlyDiscovered.push(bo);
+          const isNotified = notifiedOrdersSetRef.current.has(bo.id);
+          if (!isNotified) {
+            const orderTimestamp = bo.timestamp || (bo.date ? new Date(bo.date).getTime() : 0) || 0;
+            // Recognize as a recent/live order if placed within the last 15 minutes
+            const isRecent = Date.now() - orderTimestamp < 15 * 60 * 1050;
+            const notInLocalOrders = !ordersRef.current.some((lo) => lo.id === bo.id);
+
+            // If it's a freshly placed order, we want to flag it as unread and trigger the notification chime/toast
+            if (bo.status === "placed") {
+              if (notInLocalOrders && (isRecent || !isInitialBoot)) {
+                trulyNewOrdersToNotify.push(bo);
+              }
+              notifiedOrdersSetRef.current.add(bo.id);
+            }
           }
         });
 
@@ -601,12 +617,9 @@ export default function App() {
           return prev;
         });
 
-        if (newlyDiscovered.length > 0) {
-          const isInitialBootLoad = ordersRef.current.length === 0 && isFirstSyncRef.current;
-          
-          if (!isInitialBootLoad) {
-            const latest = newlyDiscovered[0];
-            
+        if (trulyNewOrdersToNotify.length > 0) {
+          // Toast and chime for every truly new online order detected
+          trulyNewOrdersToNotify.forEach((latest) => {
             // 1. Dispatch custom event toast
             window.dispatchEvent(
               new CustomEvent("app-toast", { 
@@ -622,22 +635,27 @@ export default function App() {
             } catch (err) {
               console.warn("Chime alert blocked:", err);
             }
+          });
 
-            // 3. Save to unread orders notifications dropdown
-            setUnreadNotificationOrders((prev) => {
-              const uniques = newlyDiscovered.filter(no => !prev.some(po => po.id === no.id));
-              return [...uniques, ...prev];
-            });
-          } else {
-            // It is the initial boot load. We make sure any order with status 'placed' is shown in notifications!
-            // This ensures any pending order made by anyone else gets highlighted on the admin interface immediately.
-            setUnreadNotificationOrders((prev) => {
-              const pendingOrders = mergedFromBackend.filter(o => o.status === 'placed');
-              const uniques = pendingOrders.filter(no => !prev.some(po => po.id === no.id));
-              return [...prev, ...uniques];
-            });
-          }
+          // 3. Save to unread orders notifications dropdown
+          setUnreadNotificationOrders((prev) => {
+            const uniques = trulyNewOrdersToNotify.filter(no => !prev.some(po => po.id === no.id));
+            return [...uniques, ...prev];
+          });
+        } else if (isInitialBoot) {
+          // On first boot, quietly load historical pending (placed) orders into unread notifications without chime spam
+          setUnreadNotificationOrders((prev) => {
+            const pendingOrders = mergedFromBackend.filter(o => o.status === 'placed');
+            const uniques = pendingOrders.filter(no => !prev.some(po => po.id === no.id));
+            return [...prev, ...uniques];
+          });
         }
+
+        // Add all fetched orders to the seen/notified set so we don't alert again
+        mergedFromBackend.forEach(bo => {
+          notifiedOrdersSetRef.current.add(bo.id);
+        });
+
         isFirstSyncRef.current = false;
       }
     } catch (e) {

@@ -43,6 +43,7 @@ export interface Order {
   };
   status: 'placed' | 'processing' | 'shipped' | 'delivered';
   estimatedDelivery: string;
+  timestamp?: number;
 }
 
 export interface ChatMessage {
