@@ -414,7 +414,7 @@ export default function Navbar({
   const activeCategoryLabel = categoriesList.find(c => c.id === selectedCategory)?.[language === 'bn' ? 'nameBn' : 'name'] || "Categories";
 
   return (
-    <header className="w-full flex flex-col font-sans text-zinc-800" id="nabik-bazar-header">
+    <header className="w-full flex flex-col font-sans text-zinc-805" id="nabik-bazar-header">
       
       {/* 1. Maroon/Red Top Offer Banner */}
       {showEidBanner && activeTenant?.enableDiscountedProducts && (
@@ -433,302 +433,271 @@ export default function Navbar({
         </div>
       )}
 
-      {/* 2. White Ribbon Row (Badges) with Logo and search bar removed - hidden on desktop, only on mobile */}
-      <div className="order-4 bg-white py-[6px] px-4 border-b border-zinc-200 shadow-sm animate-fade-in md:hidden">
-        <div className="max-w-7xl mx-auto flex items-center justify-end gap-4 sm:px-6 lg:px-8">
+      {/* 2. Mobile Ribbon Header - Optimized with borderless aesthetics and clean branding */}
+      <div className="order-4 bg-zinc-50/80 backdrop-blur-md py-3.5 px-4.5 border-b border-zinc-200 shadow-xs animate-fade-in md:hidden relative z-50">
+        <div className="max-w-7xl mx-auto flex flex-col space-y-3.5">
           
-          {/* Custom Action Badges (Wishlists, Account, My Cart) with exact colors & placements */}
-          <div className="flex items-center space-x-6">
+          {/* Top Brand Bar Row */}
+          <div className="flex items-center justify-between w-full">
             
-            {/* Elegant Language Switcher Badge */}
-            <button 
-              type="button"
-              onClick={() => {
-                const targetLang = language === 'en' ? 'bn' : 'en';
-                setLanguage(targetLang);
-                triggerToast(targetLang === 'bn' ? 'ভাষা পরিবর্তন সফল হয়েছে!' : 'Language changed successfully!');
-              }}
-              className="flex items-center space-x-2 cursor-pointer select-none group py-2 focus:outline-none border-0 bg-transparent text-left font-semibold"
-              title={language === 'bn' ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-            >
-              <div className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150 flex items-center justify-center">
-                <Languages size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="text-left hidden xs:block leading-none select-none">
-                <span className="block text-xs font-black text-zinc-900 font-sans group-hover:text-[#f58220] transition">
-                  {language === 'bn' ? 'বাংলা' : 'English'}
-                </span>
-                <span className="block text-[10px] text-zinc-500 font-bold mt-1 font-sans">
-                  {language === 'bn' ? 'ভাষা' : 'Language'}
-                </span>
-              </div>
-            </button>
-            
-
-
-            {/* Wishlists badge */}
+            {/* Left side: branding logo or font signature */}
             <div 
-              onMouseEnter={() => setWishlistDropdownOpen(true)}
-              onMouseLeave={() => setWishlistDropdownOpen(false)}
-              onClick={() => setWishlistDropdownOpen(!wishlistDropdownOpen)}
-              className="flex items-center space-x-2 cursor-pointer select-none group relative py-2"
+              onClick={() => {
+                setCurrentTab('shop');
+                setSelectedCategory('all');
+                setSearchQuery("");
+                setMobileMenuOpen(false);
+              }}
+              className="flex items-center space-x-2 cursor-pointer select-none group"
             >
-              <div className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150">
-                <Heart size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-110 transition-transform" />
-                <span className="absolute -top-1 -right-1 bg-[#f58220] text-white font-black text-[9px] h-4 w-4 rounded-full flex items-center justify-center shadow">
-                  {wishlistItems.length}
-                </span>
-              </div>
-              <div className="text-left hidden xs:block leading-none">
-                <span className="block text-xs font-black text-zinc-900 font-sans group-hover:text-[#f58220] transition">Wishlists</span>
-              </div>
-
-              {/* Wishlist list dropdown block */}
-              {wishlistDropdownOpen && (
-                <div 
-                   className="absolute top-full right-0 pt-2 w-72 h-auto z-[999]"
-                   onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="bg-white text-zinc-850 rounded-xl shadow-2xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
-                    <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
-                      <span className="text-xs font-black text-zinc-800 tracking-tight">Your Wishlist ({wishlistItems.length})</span>
-                      <span className="text-[10px] text-[#f58220] font-bold">Quick Add</span>
-                    </div>
-                    <div className="max-h-60 overflow-y-auto space-y-2.5 pr-1">
-                      {wishlistItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between gap-1 text-xs py-1 hover:bg-zinc-50 rounded-lg p-1 transition">
-                          <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-md border" />
-                          <div className="flex-1 min-w-0 pl-2">
-                            <p className="font-bold text-zinc-800 truncate text-[11px] leading-tight max-w-[130px]">{language === 'bn' ? item.nameBn : item.name}</p>
-                            <p className="font-mono text-[10px] text-zinc-500 font-bold mt-0.5">৳{item.priceBDT.toLocaleString()}</p>
-                          </div>
-                          <button 
-                            type="button" 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (onAddToCart) {
-                                const productToBuy = {
-                                  id: item.id,
-                                  name: item.name,
-                                  nameBn: item.nameBn,
-                                  priceBDT: item.priceBDT,
-                                  priceUSD: item.priceUSD,
-                                  image: item.image,
-                                  description: "",
-                                  descriptionBn: "",
-                                  category: "all",
-                                  rating: 4.8,
-                                  reviewsCount: 30,
-                                  stock: 10,
-                                  features: [],
-                                  featuresBn: []
-                                };
-                                onAddToCart(productToBuy, 1);
-                                triggerToast(`"${language === 'bn' ? item.nameBn : item.name}" added to cart!`);
-                              } else {
-                                triggerToast("Add to Cart simulator activated.");
-                              }
-                            }}
-                            className="bg-[#f58220] hover:bg-orange-600 text-white font-extrabold text-[9px] px-2 py-1 rounded shadow-2xs border-0 cursor-pointer uppercase transition-all whitespace-nowrap"
-                          >
-                            + Cart
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              {activeTenant?.logoUrl ? (
+                <div className="bg-white p-1 border border-zinc-150 rounded-xl shadow-xs flex items-center justify-center h-[38px] w-auto transition-transform active:scale-95 duration-200">
+                  <img 
+                    src={activeTenant.logoUrl} 
+                    alt={activeTenant.shopName || "Nabik Bazar"} 
+                    className="h-6.5 w-auto object-contain rounded" 
+                    referrerPolicy="no-referrer" 
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col text-left">
+                  <span className="text-[17px] font-black tracking-tight text-neutral-900 uppercase leading-none font-sans drop-shadow-3xs">
+                    {language === 'bn' ? (activeTenant?.shopNameBn || "নাবিক") : (activeTenant?.shopName || "Nabik Bazar")}
+                  </span>
+                  <span className="text-[8.5px] text-[#f58220] font-black tracking-widest mt-1.5 font-sans uppercase">
+                    {language === 'bn' ? "অনলাইন স্টোর" : "Premium Store"}
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Admin Real-time Order Notification Bell (ONLY shown for admins) */}
-            {currentUser && currentUser.role === 'admin' && (
-              <div 
-                className="flex items-center space-x-2 cursor-pointer select-none group relative py-2"
-                id="admin-notification-bell"
-              >
-                <div 
-                  onClick={() => setBellDropdownOpen(!bellDropdownOpen)}
-                  className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150"
-                >
-                  <Bell size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-110 transition-transform" />
-                  {unreadNotifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white font-black text-[9px] h-4 w-4 rounded-full flex items-center justify-center shadow animate-pulse">
-                      {unreadNotifications.length}
-                    </span>
-                  )}
-                </div>
-                <div 
-                  onClick={() => setBellDropdownOpen(!bellDropdownOpen)}
-                  className="text-left hidden xs:block leading-none"
-                >
-                  <span className="block text-xs font-black text-zinc-900 font-sans group-hover:text-[#f58220] transition">
-                    {language === 'bn' ? 'বিজ্ঞপ্তি' : 'Alerts'}
-                  </span>
-                </div>
+            {/* Right side: Clean action controls and Mobile menu toggle */}
+            <div className="flex items-center space-x-1.5">
 
-                {/* Dropdown with live orders */}
-                {bellDropdownOpen && (
-                  <div 
-                    className="absolute top-full right-0 pt-2 w-72 h-auto z-[9990]"
-                    onClick={(e) => e.stopPropagation()}
+              {/* Admin Notification Bell */}
+              {currentUser && currentUser.role === 'admin' && (
+                <div className="relative">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setBellDropdownOpen(!bellDropdownOpen);
+                      setWishlistDropdownOpen(false);
+                      setProfileDropdownOpen(false);
+                    }}
+                    className="p-2.5 rounded-full hover:bg-black/5 active:bg-black/10 text-neutral-800 hover:text-[#f58220] transition-colors duration-200 cursor-pointer flex items-center justify-center shrink-0 relative"
                   >
-                    <div className="bg-white text-zinc-850 rounded-xl shadow-2xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
-                      <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
-                        <span className="text-xs font-black text-[#f58220] tracking-tight">
-                          {language === 'bn' ? `নতুন অর্ডার (${unreadNotifications.length})` : `New Orders (${unreadNotifications.length})`}
-                        </span>
+                    <Bell size={18} className="stroke-[2.5px]" />
+                    {unreadNotifications.length > 0 && (
+                      <span className="absolute top-1 right-1 bg-red-655 text-white font-black text-[8px] h-4 w-4 rounded-full flex items-center justify-center shadow animate-pulse">
+                        {unreadNotifications.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {bellDropdownOpen && (
+                    <div 
+                      className="absolute top-full right-[-40px] pt-2 w-72 h-auto z-[9999]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="bg-white text-zinc-855 rounded-2xl shadow-xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200 font-sans">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
+                          <span className="text-xs font-black text-[#f58220] tracking-tight">
+                            {language === 'bn' ? `নতুন অর্ডার (${unreadNotifications.length})` : `New Orders (${unreadNotifications.length})`}
+                          </span>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto text-xs py-2 text-zinc-500 space-y-1">
+                          {unreadNotifications.length === 0 ? (
+                            <div className="text-center py-4 text-zinc-400 font-bold">
+                              {language === 'bn' ? "নতুন কোনো নোটিফিকেশন নেই" : "No new order alerts."}
+                            </div>
+                          ) : (
+                            unreadNotifications.map((notif, index) => (
+                              <div key={index} className="p-2 hover:bg-zinc-50 rounded border-b border-zinc-100 last:border-0 font-semibold text-zinc-700">
+                                {notif}
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
-            {/* Account registration / Hello Dashboard dropdown badge */}
-            <div 
-              onMouseEnter={handleMouseEnterProfile}
-              onMouseLeave={handleMouseLeaveProfile}
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="flex items-center space-x-2 py-2 cursor-pointer select-none group relative"
-              id="user-dashboard-profile-button"
-            >
-              <div className="relative p-1.5 rounded-full hover:bg-zinc-100 transition duration-150 shrink-0">
-                <User size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-105 transition-transform" />
-              </div>
-              <div className="text-left hidden xs:block leading-none">
-                <span className="block text-xs font-black text-zinc-900 font-sans tracking-tight">
-                  {currentUser ? (language === 'bn' ? 'আমার অ্যাকাউন্ট' : 'Account') : (language === 'bn' ? 'কাস্টমার জোন' : 'Customer Zone')}
-                </span>
-                <span className="block text-[10.5px] text-zinc-500 font-semibold mt-1 max-w-[110px] truncate">
-                  {currentUser ? `${language === 'bn' ? 'হ্যালো,' : 'Hello,'} ${currentUser.firstName}` : (language === 'bn' ? 'স্বাগতম ভিজিটর' : 'Welcome Guest')}
-                </span>
-              </div>
+              {/* User Profile / Dashboard Menu Wrapper - Only shown for logged-in admin/seller */}
+              {currentUser?.role === 'admin' && (
+                <div className="relative">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(!profileDropdownOpen);
+                      setWishlistDropdownOpen(false);
+                      setBellDropdownOpen(false);
+                    }}
+                    className="p-2.5 rounded-full hover:bg-black/5 active:bg-black/10 text-[#f58220] transition-colors duration-200 cursor-pointer flex items-center justify-center shrink-0"
+                  >
+                    <User size={18} className="stroke-[2.5px]" />
+                  </button>
 
-              {/* Account Dropdown Options Panel matched exactly with screenshot layout */}
-              {profileDropdownOpen && (
-                <div 
-                  className="absolute top-full right-0 pt-2 w-44 h-auto z-[999]"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-150 py-1.5 text-left font-sans overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
-                    {!currentUser ? (
-                      <>
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCurrentTab('ai-advisor');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
-                        >
-                          <Sparkles size={11} className="text-amber-500 fill-amber-200" />
-                          <span>Aura AI Assistant</span>
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCurrentTab('orders');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-800 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
-                        >
-                          My Order
-                        </button>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setProfileModalOpen(true);
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-800 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
-                        >
-                          My Profile
-                        </button>
-
-                        <div className="border-t border-zinc-100 my-1"></div>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCurrentTab('ai-advisor');
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
-                        >
-                          <Sparkles size={11} className="text-amber-500 fill-amber-200" />
-                          <span>Aura AI Assistant</span>
-                        </button>
-
-                        {currentUser?.role === 'admin' && (
+                  {profileDropdownOpen && (
+                    <div 
+                      className="absolute top-full right-[-40px] pt-2 w-48 h-auto z-[9999]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="bg-white text-zinc-805 rounded-2xl shadow-xl border border-zinc-150 py-2 px-1 text-left font-sans overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                        <div className="space-y-1">
+                          <div className="px-3 pb-2 border-b border-zinc-100 mb-1">
+                            <p className="text-[10px] text-zinc-400 font-bold">{language === 'bn' ? 'স্বাগতম,' : 'Welcome,'}</p>
+                            <p className="text-xs font-black text-zinc-900 truncate leading-tight mt-0.5">{currentUser.firstName}</p>
+                          </div>
                           <button 
                             type="button"
                             onClick={() => {
-                              setCurrentTab('admin');
+                              setCurrentTab('orders');
                               setProfileDropdownOpen(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
                           >
-                            <ShieldCheck size={11} className="text-zinc-500" />
-                            <span>Admin Control</span>
+                            My Order
                           </button>
-                        )}
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setProfileModalOpen(true);
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                          >
+                            My Profile
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setCurrentTab('ai-advisor');
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-black text-[#f58220] hover:bg-orange-50 hover:text-orange-700 transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                          >
+                            <Sparkles size={11} className="text-amber-500 fill-amber-200" />
+                            <span>Aura AI Assistant</span>
+                          </button>
+                          {currentUser?.role === 'admin' && (
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab('admin');
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-705 hover:bg-[#f58220]/5 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                            >
+                              <ShieldCheck size={11} className="text-zinc-550" />
+                              <span>Admin Control</span>
+                            </button>
+                          )}
+                          <div className="border-t border-zinc-100 my-1"></div>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setCurrentUser?.(null);
+                              setCurrentTab('shop');
+                              triggerToast("Successfully cleared active session.");
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer"
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
-                        <div className="border-t border-zinc-100 my-1"></div>
+              {/* Mobile Menu hamburger icon with modern borderless tactile styling */}
+              <button 
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2.5 rounded-full hover:bg-black/5 active:bg-black/10 text-neutral-800 hover:text-[#f58220] transition-all duration-200 cursor-pointer flex items-center justify-center shrink-0"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? <X size={20} className="stroke-[2.5px] text-zinc-800" /> : <Menu size={20} className="stroke-[2.5px] text-zinc-800" />}
+              </button>
 
-                        <button 
+            </div>
+          </div>
+
+          {/* Row 2: Search Input Tray - Upgraded to ultra high-contrast pure white pill container */}
+          <div className="w-full pt-1.5">
+            <div className="relative">
+              <div className="flex items-center overflow-hidden bg-white rounded-xl border border-zinc-250 focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
+                <Search size={15} className="text-zinc-400 stroke-[2.5px] mr-2 shrink-0 animate-pulse" />
+                <input
+                  type="text"
+                  placeholder={language === 'bn' ? "আপনি এখানে কী খুঁজছেন?" : "What are you looking for?"}
+                  value={searchQuery}
+                  aria-label="Mobile Search items"
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 250)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (currentTab !== 'shop') setCurrentTab('shop');
+                  }}
+                  className="w-full text-xs font-semibold text-zinc-800 bg-transparent placeholder-zinc-400 focus:outline-none border-0 outline-none p-0 font-sans"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="text-zinc-400 hover:text-zinc-700 bg-transparent border-0 p-1 font-bold text-xs cursor-pointer flex items-center justify-center h-full"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Suggestions autocomplete list for mobile */}
+              {(searchFocused || isHoveringSuggestions) && (
+                <div 
+                  onMouseEnter={() => setIsHoveringSuggestions(true)}
+                  onMouseLeave={() => setIsHoveringSuggestions(false)}
+                  className="absolute top-full left-0 right-0 mt-1 bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-1.5 z-[9999] max-h-[220px] overflow-y-auto divide-y divide-zinc-105 font-sans"
+                >
+                  {brandList
+                    .filter((b) => {
+                      if (!searchQuery) return true;
+                      return b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             b.nameBn.toLowerCase().includes(searchQuery.toLowerCase());
+                    })
+                    .map((brand) => {
+                      const isMokarram = brand.name === "Mokarram";
+                      return (
+                        <button
+                          key={brand.name}
                           type="button"
                           onClick={() => {
-                            setCurrentUser?.(null);
                             setCurrentTab('shop');
-                            triggerToast("Successfully cleared active session.");
-                            setProfileDropdownOpen(false);
+                            setSelectedCategory('all');
+                            setSearchQuery(brand.name);
+                            setSearchFocused(false);
+                            setIsHoveringSuggestions(false);
+                            triggerToast(`Showing products for brand: ${language === 'bn' ? brand.nameBn : brand.name}`);
+                            if (onBrandSelect) onBrandSelect();
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer"
+                          className={`w-full text-left px-4 py-2.5 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex justify-between items-center text-xs font-semibold ${
+                            isMokarram ? "bg-orange-50/20" : ""
+                          }`}
                         >
-                          Logout
+                          <span className={`text-zinc-800 ${isMokarram ? 'text-orange-600 font-extrabold' : ''}`}>
+                            {language === 'bn' ? brand.nameBn : brand.name}
+                          </span>
+                          <span className="text-zinc-400 font-bold text-[10px] font-mono">({brand.count})</span>
                         </button>
-                      </>
-                    )}
-                  </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
-
-            {/* My Cart trigger badge matches BDT layout perfectly */}
-            <div 
-              onClick={onOpenCart}
-              className="flex items-center space-x-2.5 cursor-pointer select-none group"
-              id="header-bar-cart"
-            >
-              <div className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150">
-                <ShoppingCart size={20} className="text-[#f58220] stroke-[2.2px] group-hover:scale-110 transition-transform" />
-                <span className="absolute -top-1 -right-1 bg-[#f58220] text-white font-extrabold text-[9px] h-4 w-4 rounded-full flex items-center justify-center shadow">
-                  {cartCount}
-                </span>
-              </div>
-              <div className="text-left hidden xs:block leading-none select-none">
-                <span className="block text-[11px] font-semibold text-zinc-500 font-sans">My cart</span>
-                <div className="flex items-center space-x-0.5 text-xs font-black text-zinc-900 mt-1 font-mono">
-                  <span>৳{typeof cartTotalValue === 'number' ? cartTotalValue.toLocaleString() : cartTotalValue}</span>
-                  <ChevronDown size={11} className="stroke-[2.5px] text-zinc-400 inline mt-0.5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Menu hamburger icon */}
-            <button 
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-850 rounded-lg shrink-0"
-              aria-label="Toggle mobile menu"
-            >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
           </div>
 
         </div>
@@ -955,25 +924,153 @@ export default function Navbar({
                 )}
               </div>
 
-              {/* Single Trigger: Quick Actions Menu Hub */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setQuickHubOpen(!quickHubOpen)}
-                  className="bg-black/90 text-white hover:bg-black border border-black/25 font-black text-[12px] h-[36px] px-3.5 rounded-lg shadow-md flex items-center space-x-1.5 cursor-pointer transition-all duration-300"
-                  title={language === 'bn' ? "কুইক হাব খুলুন" : "Open Quick Hub"}
-                >
-                  <LayoutGrid size={15} className="text-[#f58220] stroke-[3px]" />
-                  <span className="hidden leading-none xs:inline font-sans">{language === 'bn' ? 'কুইক অ্যাকশন' : 'Quick Actions'}</span>
-                  {/* Glowing active indicator dot */}
-                  {(wishlistItems.length > 0 || cartCount > 0) && (
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f58220]"></span>
-                    </span>
-                  )}
-                  <ChevronDown size={11} className={`stroke-[3.5px] text-zinc-400 transition-transform duration-200 ${quickHubOpen ? 'rotate-180' : ''}`} />
-                </button>
+              {/* Direct Inline Controls for Languages, Wishlists, Notifications, Profiles & Checkout Cart */}
+              <div className="flex items-center space-x-2 shrink-0 animate-fade-in">
+                
+                {/* 3. Direct Admin Alert Bell (only shown for passcode-logged-in admins) */}
+                {currentUser && currentUser.role === 'admin' && (
+                  <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setBellDropdownOpen(!bellDropdownOpen);
+                        setWishlistDropdownOpen(false);
+                        setProfileDropdownOpen(false);
+                      }}
+                      className="p-2 rounded-full hover:bg-black/10 text-black hover:text-white transition duration-200 cursor-pointer flex items-center justify-center shrink-0 relative animate-pulse"
+                      title={language === 'bn' ? "বিজ্ঞপ্তি অ্যালার্ট" : "Notifications"}
+                    >
+                      <Bell size={18} className="stroke-[2.5px]" />
+                      {unreadNotifications.length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-655 text-white font-black text-[8px] h-4 w-4 rounded-full flex items-center justify-center shadow animate-pulse">
+                          {unreadNotifications.length}
+                        </span>
+                      )}
+                    </button>
+
+                    {bellDropdownOpen && (
+                      <div 
+                        className="absolute top-full right-0 pt-2 w-72 h-auto z-[9999]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="bg-white text-zinc-850 rounded-2xl shadow-xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-250">
+                          <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
+                            <span className="text-xs font-black text-[#f58220] tracking-tight">
+                              {language === 'bn' ? `নতুন অর্ডার (${unreadNotifications.length})` : `New Orders (${unreadNotifications.length})`}
+                            </span>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto text-xs py-2 text-zinc-500 space-y-1 font-sans">
+                            {unreadNotifications.length === 0 ? (
+                              <div className="text-center py-4 text-zinc-400 font-bold">
+                                {language === 'bn' ? "নতুন কোনো নোটিফিকেশন নেই" : "No new order alerts."}
+                              </div>
+                            ) : (
+                              unreadNotifications.map((notif, index) => (
+                                <div key={index} className="p-2 hover:bg-zinc-50 rounded border-b border-zinc-100 last:border-0 font-semibold text-zinc-700">
+                                  {notif}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 4. Direct User Profile (only shown for passcode-logged-in admins) */}
+                {currentUser && currentUser.role === 'admin' && (
+                  <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdownOpen(!profileDropdownOpen);
+                        setWishlistDropdownOpen(false);
+                        setBellDropdownOpen(false);
+                      }}
+                      className="p-2 rounded-full hover:bg-black/10 text-black hover:text-white transition duration-200 cursor-pointer flex items-center justify-center shrink-0 relative"
+                      title={language === 'bn' ? "প্রোফাইল মেনু" : "Admin Profile"}
+                    >
+                      <User size={18} className="stroke-[2.5px]" />
+                    </button>
+
+                    {profileDropdownOpen && (
+                      <div 
+                        className="absolute top-full right-0 pt-2 w-48 h-auto z-[9999]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="bg-white text-zinc-805 rounded-2xl shadow-xl border border-zinc-150 py-2 px-1 text-left font-sans overflow-hidden animate-in fade-in slide-in-from-top-3 duration-250 font-sans">
+                          <div className="space-y-1">
+                            <div className="px-3 pb-2 border-b border-zinc-100 mb-1">
+                              <p className="text-[10px] text-zinc-400 font-bold">{language === 'bn' ? 'স্বাগতম,' : 'Welcome,'}</p>
+                              <p className="text-xs font-black text-zinc-900 truncate leading-tight mt-0.5">{currentUser.firstName}</p>
+                            </div>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab('orders');
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-800 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                            >
+                              {language === 'bn' ? 'আমার অর্ডারসমূহ' : 'My Orders'}
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setProfileModalOpen(true);
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                            >
+                              {language === 'bn' ? 'প্রোফাইল সম্পাদন' : 'My Profile'}
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab('ai-advisor');
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-black text-[#f58220] hover:bg-orange-50 hover:text-orange-700 transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                            >
+                              <Sparkles size={11} className="text-amber-500 fill-amber-200" />
+                              <span>Aura AI Assistant</span>
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab('admin');
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-100 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                            >
+                              <ShieldCheck size={11} className="text-zinc-550" />
+                              <span>Admin Control</span>
+                            </button>
+                            <div className="border-t border-zinc-100 my-1"></div>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentUser?.(null);
+                                setCurrentTab('shop');
+                                triggerToast("Successfully cleared active session.");
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer"
+                            >
+                              Logout
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </div>
+
+              {/* The Original Floating Quick Hub wrapper (Now safely hidden) */}
+              <div className="hidden">
 
                 {/* The Floating Quick Hub Panel */}
                 {quickHubOpen && (
@@ -1118,106 +1215,89 @@ export default function Navbar({
                         )}
                       </div>
 
-                      {/* 3. Account / Profile block */}
-                      <div className="p-2 rounded-xl bg-zinc-50/50 border border-zinc-100 hover:border-orange-100 hover:bg-orange-50/10 transition space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2.5">
-                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600 shrink-0">
-                              <User size={16} className="stroke-[2.5px]" />
+                      {/* 3. Account / Profile block - Only shown for active admin session */}
+                      {currentUser?.role === 'admin' && (
+                        <div className="p-2 rounded-xl bg-zinc-50/50 border border-zinc-100 hover:border-orange-100 hover:bg-orange-50/10 transition space-y-2 animate-fade-in animate-duration-300">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2.5">
+                              <div className="p-2 bg-blue-50 rounded-lg text-blue-600 shrink-0">
+                                <User size={16} className="stroke-[2.5px]" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[12px] font-black text-zinc-900 leading-tight">
+                                  {language === 'bn' ? 'আমার অ্যাকাউন্ট' : 'My Account'}
+                                </p>
+                                <p className="text-[9px] text-zinc-500 font-bold mt-0.5 truncate max-w-[130px]">
+                                  {language === 'bn' ? `হ্যালো, ${currentUser?.firstName}` : `Hello, ${currentUser?.firstName}`}
+                                </p>
+                              </div>
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[12px] font-black text-zinc-900 leading-tight">
-                                {currentUser ? (language === 'bn' ? 'আমার অ্যাকাউন্ট' : 'My Account') : (language === 'bn' ? 'মেম্বার জোন' : 'Member Portal')}
-                              </p>
-                              <p className="text-[9px] text-zinc-500 font-bold mt-0.5 truncate max-w-[130px]">
-                                {currentUser ? `${language === 'bn' ? 'হ্যালো,' : 'Hello,'} ${currentUser.firstName}` : (language === 'bn' ? 'লগইন বা রেজিস্টার করুন' : 'Guest mode active')}
-                              </p>
-                            </div>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setProfileDropdownOpen(!profileDropdownOpen);
+                              }}
+                              className="bg-white hover:bg-neutral-100 text-zinc-700 border border-zinc-200 font-black text-[9.5px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-3xs shrink-0 flex items-center space-x-1"
+                            >
+                              <span>{language === 'bn' ? 'পোর্টাল' : 'Portal'}</span>
+                              <ChevronDown size={10} className={`stroke-[3px] transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
                           </div>
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setProfileDropdownOpen(!profileDropdownOpen);
-                            }}
-                            className="bg-white hover:bg-neutral-100 text-zinc-700 border border-zinc-200 font-black text-[9.5px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-3xs shrink-0 flex items-center space-x-1"
-                          >
-                            <span>{language === 'bn' ? 'পোর্টাল' : 'Portal'}</span>
-                            <ChevronDown size={10} className={`stroke-[3px] transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
-                          </button>
-                        </div>
 
-                        {profileDropdownOpen && (
-                          <div className="p-2 bg-white rounded-lg border border-zinc-150 space-y-1.5 mt-1 animate-fade-in text-xs">
-                            {!currentUser ? (
+                          {profileDropdownOpen && (
+                            <div className="p-2 bg-white rounded-lg border border-zinc-150 space-y-1.5 mt-1 animate-fade-in text-xs">
                               <button 
                                 type="button"
                                 onClick={() => {
-                                  setCurrentTab('ai-advisor');
+                                  setCurrentTab('orders');
                                   setProfileDropdownOpen(false);
                                   setQuickHubOpen(false);
                                 }}
-                                className="w-full text-left px-3 py-1.5 text-[11px] font-black text-amber-600 hover:bg-amber-50 rounded-lg transition border-0 bg-transparent cursor-pointer flex items-center space-x-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-zinc-800 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition border-0 bg-transparent cursor-pointer"
                               >
-                                <Sparkles size={11} className="text-amber-500 fill-amber-200" />
-                                <span>Aura AI Assistant</span>
+                                {language === 'bn' ? 'আমার অর্ডারসমূহ' : 'My Orders'}
                               </button>
-                            ) : (
-                              <>
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    setCurrentTab('orders');
-                                    setProfileDropdownOpen(false);
-                                    setQuickHubOpen(false);
-                                  }}
-                                  className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-zinc-800 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition border-0 bg-transparent cursor-pointer"
-                                >
-                                  My Orders
-                                </button>
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    setProfileModalOpen(true);
-                                    setProfileDropdownOpen(false);
-                                    setQuickHubOpen(false);
-                                  }}
-                                  className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-zinc-800 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition border-0 bg-transparent cursor-pointer"
-                                >
-                                  Edit Profile
-                                </button>
-                                {currentUser?.role === 'admin' && (
-                                  <button 
-                                    type="button"
-                                    onClick={() => {
-                                      setCurrentTab('admin');
-                                      setProfileDropdownOpen(false);
-                                      setQuickHubOpen(false);
-                                    }}
-                                    className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-zinc-705 hover:bg-zinc-50 rounded-lg transition border-0 bg-transparent cursor-pointer flex items-center space-x-1.5"
-                                  >
-                                    <ShieldCheck size={11} className="text-zinc-500" />
-                                    <span>Admin Panel</span>
-                                  </button>
-                                )}
-                                <div className="border-t border-zinc-100 my-1"></div>
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    setCurrentUser?.(null);
-                                    setCurrentTab('shop');
-                                    triggerToast("Session logged out.");
-                                    setProfileDropdownOpen(false);
-                                    setQuickHubOpen(false);
-                                  }}
-                                  className="w-full text-left px-3 py-1.5 text-[11px] font-extrabold text-rose-500 hover:bg-rose-50 rounded-lg transition border-0 bg-transparent cursor-pointer"
-                                >
-                                  Logout Session
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setProfileModalOpen(true);
+                                  setProfileDropdownOpen(false);
+                                  setQuickHubOpen(false);
+                                }}
+                                className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-zinc-800 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition border-0 bg-transparent cursor-pointer"
+                              >
+                                {language === 'bn' ? 'প্রোফাইল সম্পাদন' : 'Edit Profile'}
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setCurrentTab('admin');
+                                  setProfileDropdownOpen(false);
+                                  setQuickHubOpen(false);
+                                }}
+                                className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-zinc-705 hover:bg-zinc-50 rounded-lg transition border-0 bg-transparent cursor-pointer flex items-center space-x-1.5"
+                              >
+                                <ShieldCheck size={11} className="text-zinc-500" />
+                                <span>{language === 'bn' ? 'এডমিন প্যানেল' : 'Admin Panel'}</span>
+                              </button>
+                              <div className="border-t border-zinc-100 my-1"></div>
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setCurrentUser?.(null);
+                                  setCurrentTab('shop');
+                                  triggerToast("Session logged out.");
+                                  setProfileDropdownOpen(false);
+                                  setQuickHubOpen(false);
+                                }}
+                                className="w-full text-left px-3 py-1.5 text-[11px] font-extrabold text-rose-500 hover:bg-rose-50 rounded-lg transition border-0 bg-transparent cursor-pointer"
+                              >
+                                {language === 'bn' ? 'লগআউট সেশন' : 'Logout Session'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* 4. Real-time notifications bell for admins */}
                       {currentUser && currentUser.role === 'admin' && (

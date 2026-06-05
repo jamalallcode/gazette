@@ -1119,15 +1119,15 @@ export default function App() {
           <div className="mb-8 bg-white border-2 border-orange-500 rounded-2xl p-6 sm:p-8 shadow-xl relative" id="receipt-success-screen">
             <button 
               onClick={() => setPlacedOrderReceipt(null)}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-zinc-105 text-zinc-400 hover:text-zinc-700 transition cursor-pointer font-bold font-sans"
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-zinc-150 text-zinc-400 hover:text-zinc-700 transition cursor-pointer font-bold font-sans"
             >
               X
             </button>
             <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-6">
-              <div className="h-14 w-14 bg-green-100 text-green-655 rounded-full flex items-center justify-center mb-3">
+              <div className="h-14 w-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3">
                 <CheckCircle2 size={32} className="animate-pulse text-green-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-orange-550 text-zinc-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-orange-500 text-zinc-900 tracking-tight">
                 {langText.orderSuccessTitle}
               </h2>
               <p className="text-xs text-zinc-500 mt-1 max-w-lg leading-relaxed">
@@ -1141,7 +1141,7 @@ export default function App() {
                 <div className="space-y-1.5 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                   <p><span className="text-zinc-550 font-bold">Name:</span> <strong className="text-zinc-800">{placedOrderReceipt.customerInfo.name}</strong></p>
                   <p><span className="text-zinc-550 font-bold">Phone:</span> <strong className="text-zinc-850 font-mono">{placedOrderReceipt.customerInfo.phone}</strong></p>
-                  <p><span className="text-zinc-550 font-bold">Email:</span> <strong className="text-zinc-800 font-mono">{placedOrderReceipt.customerInfo.email}</strong></p>
+                  <p><span className="text-zinc-550 font-bold">Email:</span> <strong className="text-zinc-850 font-mono">{placedOrderReceipt.customerInfo.email}</strong></p>
                   <p><span className="text-zinc-550 font-bold">{langText.address}:</span> <span className="text-zinc-700">{placedOrderReceipt.customerInfo.address}</span></p>
                 </div>
               </div>
@@ -1181,7 +1181,7 @@ export default function App() {
                 <span>{langText.estimatedDelivery}: <strong>{placedOrderReceipt.estimatedDelivery}</strong></span>
               </div>
               <div className="flex items-center space-x-3.5 text-[11px] text-zinc-550 font-bold uppercase">
-                <span>{langText.paymentMethod}: <strong className="text-orange-655">{placedOrderReceipt.customerInfo.paymentMethod}</strong></span>
+                <span>{langText.paymentMethod}: <strong className="text-orange-600">{placedOrderReceipt.customerInfo.paymentMethod}</strong></span>
                 <span>{langText.orderStatus}: <span className="bg-orange-500 text-white rounded px-2 py-0.5 text-[9px] uppercase font-mono">{placedOrderReceipt.status}</span></span>
               </div>
             </div>
@@ -1196,7 +1196,7 @@ export default function App() {
               
               {/* Category list sidebar navigation */}
               <div 
-                className="hidden lg:block lg:col-span-1 bg-white rounded-xl border border-zinc-200 shadow-sm w-full relative lg:h-[350px]" 
+                className="hidden lg:block lg:col-span-1 bg-white rounded-xl border border-zinc-205 border-zinc-200 shadow-sm w-full relative lg:h-[350px]" 
                 onMouseLeave={() => { 
                   setHoveredCategory(null); 
                   setHoveredSubcategory(null); 
@@ -1223,7 +1223,7 @@ export default function App() {
                     const isHovered = hoveredCategory === cat.id;
                     return (
                       <button
-                        key={cat.name}
+                        key={cat.id}
                         onMouseEnter={() => {
                           setHoveredCategory(cat.id);
                           const customData = sidebarExtraData[cat.id];
@@ -1247,7 +1247,7 @@ export default function App() {
                         className={`w-full text-left px-5 py-[9px] lg:py-0 lg:flex-1 text-[12.5px] font-bold transition duration-150 flex items-center justify-between cursor-pointer border-0 group/cat ${
                           isSelected || isHovered
                             ? "bg-orange-50 text-orange-600 font-extrabold" 
-                             : "text-zinc-700 bg-white hover:bg-zinc-50 hover:text-[#f58220]"
+                            : "text-zinc-700 bg-white hover:bg-zinc-50 hover:text-[#f58220]"
                         }`}
                         id={`sidebar-cat-${cat.id}`}
                       >
@@ -1303,7 +1303,7 @@ export default function App() {
                               }}
                               className={`w-full text-left px-5 py-2.5 text-[12.5px] font-bold hover:text-[#f58220] transition duration-150 flex items-center justify-between border-0 group/sub cursor-pointer ${
                                 isSubActive 
-                                  ? "bg-orange-50 text-orange-600 font-extrabold" 
+                                  ? "bg-orange-55 bg-orange-50 text-orange-600 font-extrabold" 
                                   : "text-zinc-700 bg-white hover:bg-zinc-50"
                               }`}
                             >
@@ -1364,7 +1364,7 @@ export default function App() {
               </div>
 
               {/* Slider image component header with custom 100% replica of slide 1 */}
-              <div className="lg:col-span-3 bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm relative aspect-[21/9] sm:aspect-[16/7] md:aspect-[16/6] lg:aspect-auto lg:h-[350px] group">
+              <div className="lg:col-span-3 bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm relative h-[210px] xs:h-[240px] sm:h-[280px] md:h-[310px] lg:h-[350px] w-full group">
                 {activeSlides.map((slide, idx) => (
                   <div
                     key={idx}
@@ -1450,20 +1450,20 @@ export default function App() {
                         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
                         
                         {/* Slide content details overlay */}
-                        <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-12 text-left z-10">
-                          <div className="max-w-md space-y-2 sm:space-y-4">
-                            <span className="inline-block px-2.5 py-1 text-[10px] font-extrabold bg-orange-500 text-white tracking-widest uppercase rounded">
+                        <div className="absolute inset-0 flex flex-col justify-center p-4 xs:p-6 sm:p-12 text-left z-10">
+                          <div className="max-w-md space-y-1.5 sm:space-y-4">
+                            <span className="inline-block px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-extrabold bg-orange-500 text-white tracking-widest uppercase rounded">
                               {language === 'bn' ? 'বিশেষ অফার' : 'SPECIAL OFFER'}
                             </span>
-                            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+                            <h2 className="text-sm xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
                               {language === 'bn' ? slide.titleBn : slide.title}
                             </h2>
-                            <p className="text-xs sm:text-sm md:text-base text-zinc-200">
+                            <p className="text-[10px] xs:text-xs sm:text-sm md:text-base text-zinc-200 line-clamp-2 md:line-clamp-none">
                               {language === 'bn' ? slide.subtitleBn : slide.subtitle}
                             </p>
                             <button 
                               onClick={handleScrollToCatalog}
-                              className="inline-block self-start mt-2 px-5 py-2 bg-[#f58220] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm rounded-lg transition border-0 cursor-pointer"
+                              className="inline-block self-start mt-1 sm:mt-2 px-4 py-1.5 sm:px-5 sm:py-2 bg-[#f58220] hover:bg-orange-600 text-white font-extrabold text-[10px] xs:text-xs sm:text-sm rounded-lg transition border-0 cursor-pointer"
                             >
                               {language === 'bn' ? 'এখনই কিনুন' : 'Shop Now'}
                             </button>
@@ -1506,24 +1506,6 @@ export default function App() {
 
             {/* 3. Flash Deals countdown tickers section block */}
             <div className="space-y-5" id="flash-deals-banner">
-              <div className="flex items-end justify-between border-b border-zinc-200 pb-3" id="hurry-up-header">
-                <div className="text-left">
-                  <h3 className="text-[22px] font-black tracking-tight text-[#f58220] uppercase font-sans">
-                    {language === 'bn' ? 'তাড়াতাড়ি করুন!' : 'HURRY UP!'}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-zinc-500 font-semibold mt-1">
-                    {language === 'bn' ? 'অফারটি সীমিত সময়ের জন্য। শেষ হওয়ার আগেই লুফে নিন!' : 'Hurry Up ! The offer is limited. Grab while it lasts'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleScrollToCatalog}
-                  className="text-xs font-bold text-[#f58220] hover:text-orange-600 transition flex items-center bg-transparent border-0 cursor-pointer group"
-                >
-                  <span className="mr-1">{language === 'bn' ? 'সব দেখুন' : 'View All'}</span>
-                  <ChevronRight size={12} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-0.5" />
-                </button>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch" id="hurry-up-grid">
                 {/* Left side column: Countdown vertical grid container */}

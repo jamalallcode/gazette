@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Gift,
   HelpCircle,
-  Phone
+  Phone,
+  ChevronDown
 } from "lucide-react";
 
 interface PromoLandingTabProps {
@@ -34,6 +35,7 @@ export default function PromoLandingTab({
 }: PromoLandingTabProps) {
   // Choose initially featured item - prod-1 (Headphones) or let user switch to preview how landing pages look for different products!
   const [selectedProductId, setSelectedProductId] = useState<string>("prod-1");
+  const [isProductListOpen, setIsProductListOpen] = useState(false);
   const selectedProduct = products.find(p => p.id === selectedProductId) || products[0];
 
   // Form Fields State
@@ -174,21 +176,80 @@ export default function PromoLandingTab({
               : "আপনার শপের যেকোনো পণ্য সিলেক্ট করে তাৎক্ষণিকভাবে ফেসবুক বিজ্ঞাপনের ল্যান্ডিং পেজ প্রিভিউ দেখুন:"}
           </p>
         </div>
-        <select
-          value={selectedProductId}
-          onChange={(e) => {
-            setSelectedProductId(e.target.value);
-            setValidationError("");
-          }}
-          className="bg-zinc-950 border border-zinc-800 text-amber-400 font-bold px-4 py-2 rounded-xl focus:outline-none focus:border-amber-500 cursor-pointer"
-          id="landing-product-preview-select"
-        >
-          {products.map(p => (
-            <option key={p.id} value={p.id}>
-              {language === 'bn' ? p.nameBn : p.name} (৳{p.priceBDT.toLocaleString()})
-            </option>
-          ))}
-        </select>
+        <div className="relative w-full sm:w-auto" id="landing-product-preview-select-container">
+          <button
+            type="button"
+            onClick={() => setIsProductListOpen(!isProductListOpen)}
+            className="w-full sm:w-80 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-amber-500 text-amber-400 font-bold px-4 py-3 rounded-xl flex items-center justify-between text-xs transition duration-200 cursor-pointer shadow-md select-none"
+            id="landing-product-preview-trigger"
+          >
+            <div className="flex items-center space-x-2.5 text-left truncate min-w-0 flex-1">
+              {selectedProduct.image && (
+                <img 
+                  src={selectedProduct.image} 
+                  alt="" 
+                  className="w-8 h-8 object-cover rounded border border-zinc-800 flex-shrink-0 bg-zinc-900"
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <div className="truncate flex-1 min-w-0">
+                <span className="block truncate text-zinc-100 font-extrabold max-w-[200px] sm:max-w-[220px]">
+                  {language === 'bn' ? selectedProduct.nameBn : selectedProduct.name}
+                </span>
+                <span className="block text-[10px] text-amber-500 font-bold font-mono mt-0.5">
+                  ৳{selectedProduct.priceBDT.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <ChevronDown size={14} className="text-zinc-400 ml-2.5 flex-shrink-0" />
+          </button>
+
+          {isProductListOpen && (
+            <>
+              {/* Overlay backdrop to dismiss on click */}
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setIsProductListOpen(false)}
+              />
+              <div 
+                className="absolute right-0 mt-2 w-full sm:w-96 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden py-1.5 z-50 divide-y divide-zinc-900 max-h-72 overflow-y-auto animate-fade-in animate-duration-150"
+                id="landing-product-preview-list"
+              >
+                {products.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedProductId(p.id);
+                      setValidationError("");
+                      setIsProductListOpen(false);
+                    }}
+                    className={`w-full flex items-center space-x-3.5 px-3.5 py-3 text-left hover:bg-zinc-900 cursor-pointer transition text-xs border-r-0 border-y-0 ${
+                      selectedProductId === p.id 
+                        ? 'bg-amber-500/10 border-l-4 border-amber-500' 
+                        : 'border-l-4 border-transparent'
+                    }`}
+                  >
+                    <img 
+                      src={p.image} 
+                      alt="" 
+                      className="w-9 h-9 object-cover rounded border border-zinc-800 flex-shrink-0 bg-zinc-900"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-extrabold truncate text-zinc-200 ${selectedProductId === p.id ? 'text-amber-400' : ''}`}>
+                        {language === 'bn' ? p.nameBn : p.name}
+                      </p>
+                      <p className="text-[10px] text-zinc-500 font-bold font-mono mt-0.5">
+                        ৳{p.priceBDT.toLocaleString()}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* TOP EMERGENCY HURRY BANNER */}
@@ -262,52 +323,52 @@ export default function PromoLandingTab({
 
           {/* THREE CORE TRUST CARDS IN BANGLADESH */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-zinc-900/60 border border-zinc-850 p-5 rounded-2xl flex flex-col items-center text-center space-y-2">
+            <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl flex flex-col items-center text-center space-y-2">
               <div className="h-10 w-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <Truck size={20} />
               </div>
-              <h4 className="text-xs font-bold text-zinc-200">
+              <h4 className="text-xs font-bold text-zinc-100">
                 {language === 'en' ? 'Home Delivery' : 'সারা বাংলাদেশে হোম ডেলিভারি'}
               </h4>
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-[11px] text-zinc-400">
                 {language === 'en' ? 'Dhaka within 24hr, outside 48-72hr' : 'ঢাকার ভেতরে ২৪ ঘণ্টা এবং বাইরে ৭২ ঘণ্টার মধ্যে ডেলিভারি'}
               </p>
             </div>
 
-            <div className="bg-zinc-900/60 border border-zinc-850 p-5 rounded-2xl flex flex-col items-center text-center space-y-2">
+            <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl flex flex-col items-center text-center space-y-2">
               <div className="h-10 w-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <ShieldCheck size={20} />
               </div>
-              <h4 className="text-xs font-bold text-zinc-200">
+              <h4 className="text-xs font-bold text-zinc-100">
                 {language === 'en' ? 'Cash on Delivery' : 'হাতে পেয়ে মূল্য পরিশোধ'}
               </h4>
-              <p className="text-[11px] text-zinc-500">
-                {language === 'en' ? '100% risk-free. Open & verify then pay' : 'কোনো অগ্রিম পেমেন্ট নেই, পার্সেল দেখে পেমেন্ট করবেন'}
+              <p className="text-[11px] text-zinc-400">
+                {language === 'en' ? '100% risk-free. Open & verify then pay' : 'কোনോ অগ্রিম পেমেন্ট নেই, পার্সেল দেখে পেমেন্ট করবেন'}
               </p>
             </div>
 
-            <div className="bg-zinc-900/60 border border-zinc-850 p-5 rounded-2xl flex flex-col items-center text-center space-y-2">
+            <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl flex flex-col items-center text-center space-y-2">
               <div className="h-10 w-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <RotateCcw size={20} />
               </div>
-              <h4 className="text-xs font-bold text-zinc-200">
+              <h4 className="text-xs font-bold text-zinc-100">
                 {language === 'en' ? '7 Days Easy Return' : '৭ দিনের সহজ রিটার্ন'}
               </h4>
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-[11px] text-zinc-400">
                 {language === 'en' ? 'Instant refunds or product replacement' : 'যেকোনো সমস্যায় নিশ্চিত রিটার্ন এবং এক্সচেঞ্জ গ্যারান্টি'}
               </p>
             </div>
           </div>
 
           {/* SOCIAL PROOF / REAL REVIEWS ACCORDING TO FB STANDARDS */}
-          <div className="bg-zinc-900/30 border border-zinc-900 p-6 rounded-2xl space-y-5">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 flex items-center space-x-2">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl space-y-5">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-200 flex items-center space-x-2">
               <MessageSquare size={16} className="text-amber-500" />
               <span>{language === 'en' ? 'Recent Facebook Feedback' : 'ক্রেতাদের সাম্প্রতিক ফেসবুক রিভিউ'}</span>
             </h3>
 
             <div className="space-y-4">
-              <div className="p-4 bg-zinc-950/40 rounded-xl border border-zinc-850 space-y-2.5">
+              <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
                   <div className="flex items-center space-x-2.5">
                     <div className="h-6.5 w-6.5 rounded-full bg-amber-600 flex items-center justify-center text-zinc-950 font-bold select-none text-[10px]">
@@ -320,14 +381,14 @@ export default function PromoLandingTab({
                 <div className="flex text-amber-500">
                   <Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" />
                 </div>
-                <p className="text-[11.5px] text-zinc-400 font-light leading-relaxed">
+                <p className="text-[11.5px] text-zinc-300 font-light leading-relaxed">
                   {language === 'en' 
                     ? "Sublime quality! Checked the package right in front of the pathao rider and paid on cash. Outstanding premium feel." 
                     : "সত্যিই অসাধারণ কোয়ালিটি! ডেলিভারি ম্যানের সামনে প্যাকেট খুলে চেক করে তারপর টাকা দিয়েছি। অরিজিনাল প্রোডাক্ট, কোনো ত্রুটি নেই। ধন্যবাদ অরা!"}
                 </p>
               </div>
 
-              <div className="p-4 bg-zinc-950/40 rounded-xl border border-zinc-850 space-y-2.5">
+              <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
                   <div className="flex items-center space-x-2.5">
                     <div className="h-6.5 w-6.5 rounded-full bg-amber-600 flex items-center justify-center text-zinc-950 font-bold select-none text-[10px]">
@@ -340,7 +401,7 @@ export default function PromoLandingTab({
                 <div className="flex text-amber-500">
                   <Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" />
                 </div>
-                <p className="text-[11.5px] text-zinc-400 font-light leading-relaxed">
+                <p className="text-[11.5px] text-zinc-300 font-light leading-relaxed">
                   {language === 'en' 
                     ? "Highly recommended. Delivery took only 2 days in CTG. Packaging was state of class and safe." 
                     : "চিটাগং-এ ২ দিনের মধ্যে ডেলিভারি পেয়েছি। প্রোডাক্টের ফিনিশিং এবং লাক্সারি লুকটা দারুণ লেগেছে। যেমন দেখেছি ঠিক তেমনটাই পেয়েছি।"}
@@ -350,29 +411,29 @@ export default function PromoLandingTab({
           </div>
 
           {/* DYNAMIC FAQ SECTION TO SOLV COLD TRAFFIC */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 flex items-center space-x-2">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl space-y-5">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-[#eeeeee] flex items-center space-x-2">
               <HelpCircle size={16} className="text-amber-500" />
               <span>{language === 'en' ? 'Frequently Asked Questions' : 'সাধারণ জিজ্ঞাসা ও উত্তর'}</span>
             </h3>
 
-            <div className="divide-y divide-zinc-900 border-y border-zinc-900">
-              <div className="py-4 space-y-1">
+            <div className="divide-y divide-zinc-800 border-y border-zinc-800">
+              <div className="py-4 space-y-1.5">
                 <h5 className="text-xs font-semibold text-zinc-100">
                   {language === 'en' ? 'How can I do return if I find any issues?' : 'প্রোডাক্ট অপছন্দ কিংবা সমস্যা হলে কীভাবে এক্সচেঞ্জ করবো?'}
                 </h5>
-                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                <p className="text-xs text-zinc-300 font-light leading-relaxed">
                   {language === 'en' 
                     ? 'Simply call us or message our Facebook page within 7 days. We will dispatch a courier rider to swap your product immediately.' 
                     : 'প্রোডাক্ট পরিবর্তন বা রিটার্ন পেতে আমাদের হেল্পলাইন নাম্বারে কল করুন অথবা ফেসবুক পেইজে মেসেজ দিন। ৭ দিনের মধ্যে কোনো চার্জ ছাড়াই পরিবর্তন পাবেন।'}
                 </p>
               </div>
 
-              <div className="py-4 space-y-1">
+              <div className="py-4 space-y-1.5">
                 <h5 className="text-xs font-semibold text-zinc-100">
                   {language === 'en' ? 'Is there any hidden fees or extra costs?' : 'অর্ডার করার সময় কোনো লুকানো ফি আছে কি?'}
                 </h5>
-                <p className="text-xs text-zinc-400 font-light leading-relaxed">
+                <p className="text-xs text-zinc-300 font-light leading-relaxed">
                   {language === 'en' 
                     ? 'Absolutely not! You only pay the listed price plus standard shipping costs (Dhaka 60 BDT, outside 120 BDT) on Cash on Delivery.' 
                     : 'জ্বি না, কোনো লুকানো চার্জ নেই। আপনি প্রোডাক্টের মূল্য এবং কুরিয়ার চার্জ বাদে অতিরিক্ত কোনো টাকা পরিশোধ করবেন না।'}
