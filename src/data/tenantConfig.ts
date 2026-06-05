@@ -2,6 +2,25 @@
 // যখন ক্লায়েন্টকে সাইটটি সেল করবেন, তখন এটিকে false করে দিবেন। তাহলে সাইটের কোথাও রিসেল বা প্রিসেট চেঞ্জ করার প্যানেল থাকবে না।
 export const IS_RESELLER_ACTIVE = true;
 
+export interface MenuItemDropdownItem {
+  id: string;
+  label: string;
+  labelBn: string;
+  actionType: 'tab' | 'scroll' | 'url' | 'none';
+  actionValue: string;
+}
+
+export interface MenuItemConfig {
+  id: string;
+  label: string;
+  labelBn: string;
+  enabled: boolean;
+  actionType: 'tab' | 'scroll' | 'url' | 'none';
+  actionValue: string;
+  dropdownType?: 'none' | 'brandList' | 'custom';
+  dropdownItems?: MenuItemDropdownItem[];
+}
+
 export interface TenantConfig {
   id: string;
   name: string; // Internal name for the reseller
@@ -38,7 +57,106 @@ export interface TenantConfig {
     subtitle: string;
     subtitleBn: string;
   }[];
+  menuItems?: MenuItemConfig[];
 }
+
+export const DEFAULT_MENU_ITEMS: MenuItemConfig[] = [
+  {
+    id: "home",
+    label: "Home",
+    labelBn: "হোম",
+    enabled: true,
+    actionType: "tab",
+    actionValue: "shop",
+    dropdownType: "none"
+  },
+  {
+    id: "brand",
+    label: "Brand",
+    labelBn: "ব্র্যান্ড",
+    enabled: true,
+    actionType: "none",
+    actionValue: "",
+    dropdownType: "brandList"
+  },
+  {
+    id: "discount",
+    label: "Discounted Products",
+    labelBn: "ডিসকাউন্ট প্রোডাক্টস",
+    enabled: true,
+    actionType: "tab",
+    actionValue: "landing",
+    dropdownType: "none"
+  },
+  {
+    id: "vendors",
+    label: "All Vendors",
+    labelBn: "সকল ভেন্ডর",
+    enabled: false,
+    actionType: "none",
+    actionValue: "",
+    dropdownType: "none"
+  },
+  {
+    id: "seller_zone",
+    label: "Seller Zone",
+    labelBn: "সেলার জোন",
+    enabled: false,
+    actionType: "none",
+    actionValue: "",
+    dropdownType: "custom",
+    dropdownItems: [
+      {
+        id: "become_seller",
+        label: "Become A Seller",
+        labelBn: "সেলার হোন",
+        actionType: "scroll",
+        actionValue: "become-seller-anchor"
+      },
+      {
+        id: "seller_login",
+        label: "Seller login",
+        labelBn: "সেলার লগইন",
+        actionType: "tab",
+        actionValue: "admin"
+      },
+      {
+        id: "affiliate",
+        label: "Affiliate",
+        labelBn: "অ্যাফিলিয়েট",
+        actionType: "tab",
+        actionValue: "admin"
+      }
+    ]
+  },
+  {
+    id: "blog",
+    label: "Blog",
+    labelBn: "ব্লগ",
+    enabled: false,
+    actionType: "scroll",
+    actionValue: "home-blogs-section",
+    dropdownType: "none"
+  },
+  {
+    id: "video",
+    label: "Video",
+    labelBn: "ভিডিও",
+    enabled: false,
+    actionType: "scroll",
+    actionValue: "home-videos-section",
+    dropdownType: "none"
+  },
+  {
+    id: "track_order",
+    label: "Track Order",
+    labelBn: "অর্ডার ট্র্যাকিং",
+    enabled: false,
+    actionType: "tab",
+    actionValue: "live-tracking",
+    dropdownType: "none"
+  }
+];
 
 export const PRESET_TENANTS: TenantConfig[] = [
   {

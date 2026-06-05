@@ -9,7 +9,7 @@ import BanglaCourierSystem from "./BanglaCourierSystem";
 import PixelGtmManager from "./PixelGtmManager";
 import { analyzeOrderRisk } from "../utils/fraudHelper";
 import { triggerOrderSmsNotification } from "../utils/smsHelper";
-import { IS_RESELLER_ACTIVE, isResellerFeatureUnlocked, TenantConfig, saveTenant, PRESET_TENANTS } from "../data/tenantConfig";
+import { IS_RESELLER_ACTIVE, isResellerFeatureUnlocked, TenantConfig, saveTenant, PRESET_TENANTS, MenuItemConfig, MenuItemDropdownItem, DEFAULT_MENU_ITEMS } from "../data/tenantConfig";
 import { 
   Search, Menu, X, Globe, Mail, ChevronDown, ChevronUp, CheckCircle, Clock, Check,
   AlertCircle, ShieldCheck, ShoppingBag, ShoppingCart, User, Users, Store, Coins, 
@@ -114,6 +114,7 @@ export default function AdminPanel({
   ];
 
   const [csSlides, setCsSlides] = useState(defaultSlides);
+  const [csMenuItems, setCsMenuItems] = useState<MenuItemConfig[]>(activeTenant.menuItems || DEFAULT_MENU_ITEMS);
 
   // Sync state when activeTenant changes (important when switching presets or resetting)
   React.useEffect(() => {
@@ -131,6 +132,7 @@ export default function AdminPanel({
     setCsBgLightColor(activeTenant.bgLightColor);
     setCsLogoUrl(activeTenant.logoUrl || "");
     setCsSlides(activeTenant.slides || defaultSlides);
+    setCsMenuItems(activeTenant.menuItems || DEFAULT_MENU_ITEMS);
   }, [activeTenant]);
 
   const workspaceRef = React.useRef<HTMLDivElement>(null);
@@ -6606,11 +6608,317 @@ export default function AdminPanel({
                     </div>
                   </div>
 
-                  {/* Card 3: Sliding Carousel Banners (Up to 3 editable slides) */}
+                  {/* Card 3: CMS Bar & Dropdown Manager - Interactive Nav customizer */}
+                  <div className="bg-white border rounded-xl p-6 shadow-sm space-y-5" id="cms-nav-manager-card">
+                    <div className="border-b pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <h3 className="font-extrabold text-sm text-zinc-900 flex items-center space-x-2">
+                        <span className="text-[#f58220] text-xs">■</span>
+                        <span>{language === 'bn' ? '৩. মেনুবার ও ড্রপডাউন কন্ট্রোল হাব (CMS)' : '3. Navigation Menu Control Center (CMS)'}</span>
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newItem: MenuItemConfig = {
+                            id: "menu-" + Date.now(),
+                            label: "New Link",
+                            labelBn: "নতুন লিংক",
+                            enabled: true,
+                            actionType: "tab",
+                            actionValue: "shop",
+                            dropdownType: "none",
+                            dropdownItems: []
+                          };
+                          setCsMenuItems([...csMenuItems, newItem]);
+                          window.dispatchEvent(new CustomEvent("app-toast", { detail: "New navigation link placeholder added! Click save to apply." }));
+                        }}
+                        className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#f58220] hover:text-orange-700 font-extrabold text-xs rounded-lg flex items-center space-x-1 border-0 cursor-pointer transition animate-in fade-in active:scale-95 duration-150"
+                      >
+                        <Plus size={13} />
+                        <span>{language === 'bn' ? 'নতুন মেনু আইটেম যোগ করুন' : 'Add New Link'}</span>
+                      </button>
+                    </div>
+
+                    <p className="text-[11px] text-zinc-500 leading-relaxed font-semibold">
+                      {language === 'bn' 
+                        ? '💡 যেকোনো মেনু আইটেম সুনির্দিষ্টভাবে অন/অফ করতে নিচের সুইচগুলো ব্যবহার করুন। প্রয়োজনে ড্রপডউন টাইপ পরিবর্তন করে ডাইনামিক ব্র্যান্ডলিস্ট অথবা নিজস্ব সাব-মেনু সেট করুন।' 
+                        : '💡 Easily toggle any menu item on/off, change target click behaviors, or install custom multi-level parent dropdown lists instantly.'}
+                    </p>
+
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 divide-y divide-zinc-100">
+                      {csMenuItems.map((item, idx) => {
+                        return (
+                          <div key={item.id} className="pt-4 first:pt-0 space-y-3 text-xs text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-zinc-50/75 p-3 rounded-lg border border-zinc-100">
+                              <div className="flex items-center space-x-2">
+                                <span className="h-5 w-5 bg-zinc-250 text-zinc-700 text-[10px] font-black rounded-full flex items-center justify-center font-mono">
+                                  {idx + 1}
+                                </span>
+                                <strong className="font-extrabold text-zinc-850 text-[12.5px] tracking-tight">
+                                  {language === 'bn' ? item.labelBn : item.label}
+                                </strong>
+                              </div>
+
+                              <div className="flex items-center space-x-3 shrink-0">
+                                {/* Toggle Switch */}
+                                <label className="relative inline-flex items-center cursor-pointer select-none">
+                                  <input 
+                                    type="checkbox" 
+                                    checked={item.enabled} 
+                                    onChange={(e) => {
+                                      const copy = [...csMenuItems];
+                                      copy[idx].enabled = e.target.checked;
+                                      setCsMenuItems(copy);
+                                    }}
+                                    className="sr-only peer" 
+                                  />
+                                  <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                  <span className="ml-2 text-[10px] font-extrabold text-zinc-500 uppercase">
+                                    {item.enabled ? (language === 'bn' ? 'সক্রিয়' : 'Active') : (language === 'bn' ? 'বন্ধ' : 'Inactive')}
+                                  </span>
+                                </label>
+
+                                {/* Delete Main Link */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (window.confirm(language === 'bn' ? "আপনি কি এই মেনু আইটেমটি মুছতে চান?" : "Are you sure you want to delete this menu link?")) {
+                                      const copy = csMenuItems.filter(m => m.id !== item.id);
+                                      setCsMenuItems(copy);
+                                    }
+                                  }}
+                                  className="p-1 hover:bg-rose-100 hover:text-rose-600 rounded transition text-zinc-400 border-0 bg-transparent cursor-pointer"
+                                  title="Delete item"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Label Translations Fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-1">
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-400 uppercase">Label (En)</label>
+                                <input
+                                  type="text"
+                                  value={item.label}
+                                  onChange={(e) => {
+                                    const copy = [...csMenuItems];
+                                    copy[idx].label = e.target.value;
+                                    setCsMenuItems(copy);
+                                  }}
+                                  className="w-full mt-1 px-2.5 py-1.5 border border-zinc-200 rounded text-xs bg-white font-medium text-zinc-800 focus:outline-[#f58220]"
+                                  placeholder="e.g. Brands"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-400 uppercase">Label (বাংলা)</label>
+                                <input
+                                  type="text"
+                                  value={item.labelBn}
+                                  onChange={(e) => {
+                                    const copy = [...csMenuItems];
+                                    copy[idx].labelBn = e.target.value;
+                                    setCsMenuItems(copy);
+                                  }}
+                                  className="w-full mt-1 px-2.5 py-1.5 border border-zinc-200 rounded text-xs bg-white font-medium text-zinc-800 focus:outline-[#f58220]"
+                                  placeholder="যেমন: ব্র্যান্ডসমূহ"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Routing Action types Settings */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-1">
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-400 uppercase">Click Action Behavior</label>
+                                <select
+                                  value={item.actionType}
+                                  onChange={(e) => {
+                                    const copy = [...csMenuItems];
+                                    copy[idx].actionType = e.target.value as any;
+                                    setCsMenuItems(copy);
+                                  }}
+                                  className="w-full mt-1 px-2 py-1.5 border border-zinc-205 rounded text-xs bg-white font-semibold text-zinc-800 focus:outline-[#f58220]"
+                                >
+                                  <option value="none">None (Parent link container)</option>
+                                  <option value="tab">Switch Page Active Tab</option>
+                                  <option value="scroll">Smooth Scroll to Section ID</option>
+                                  <option value="url">External Hyperlink URL</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-400 uppercase">Action Value</label>
+                                <input
+                                  type="text"
+                                  value={item.actionValue || ""}
+                                  disabled={item.actionType === "none"}
+                                  onChange={(e) => {
+                                    const copy = [...csMenuItems];
+                                    copy[idx].actionValue = e.target.value;
+                                    setCsMenuItems(copy);
+                                  }}
+                                  className="w-full mt-1 px-2.5 py-1.5 border border-zinc-200 rounded text-xs bg-white font-mono text-zinc-800 disabled:opacity-50"
+                                  placeholder={
+                                    item.actionType === "tab" ? "e.g. shop, admin, orders" :
+                                    item.actionType === "scroll" ? "e.g. footer-bar-cart, white-categories-button" :
+                                    item.actionType === "url" ? "e.g. https://google.com" : "No behavior value needed"
+                                  }
+                                />
+                              </div>
+                            </div>
+
+                            {/* SubDropdown configurations */}
+                            <div className="bg-zinc-50 border border-zinc-200/50 rounded-lg p-3 space-y-3 ml-1">
+                              <div>
+                                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wide">Dropdown Menu Style</label>
+                                <select
+                                  value={item.dropdownType || "none"}
+                                  onChange={(e) => {
+                                    const copy = [...csMenuItems];
+                                    copy[idx].dropdownType = e.target.value as any;
+                                    if (e.target.value === "custom" && !copy[idx].dropdownItems) {
+                                      copy[idx].dropdownItems = [];
+                                    }
+                                    setCsMenuItems(copy);
+                                  }}
+                                  className="w-full mt-1 px-2 py-1.5 border border-zinc-205 rounded text-xs bg-white font-bold text-zinc-800 focus:outline-[#f58220]"
+                                >
+                                  <option value="none">✖ No Dropdown menu (Single link childless)</option>
+                                  <option value="brandList">📦 Auto Brand List Dropdown (Fetch from stock inventory database)</option>
+                                  <option value="custom">🛠 Custom Sub-Menu Links Dropdown (Assign multiple custom paths)</option>
+                                </select>
+                              </div>
+
+                              {/* If Custom sub dropdown menu links is enabled */}
+                              {item.dropdownType === "custom" && (
+                                <div className="space-y-2 border-t pt-2 border-zinc-250">
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wide">Custom Dropdown Sub-Links:</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const copy = [...csMenuItems];
+                                        const subItem: MenuItemDropdownItem = {
+                                          id: "sub-" + Date.now(),
+                                          label: "Child Sublink",
+                                          labelBn: "উপ-লিংক",
+                                          actionType: "tab",
+                                          actionValue: "shop"
+                                        };
+                                        copy[idx].dropdownItems = [...(copy[idx].dropdownItems || []), subItem];
+                                        setCsMenuItems(copy);
+                                      }}
+                                      className="px-2 py-1 bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-700 text-[10px] font-extrabold rounded shadow-2xs flex items-center space-x-1 cursor-pointer transition border-solid active:scale-95"
+                                    >
+                                      <Plus size={11} />
+                                      <span>Add Sub-Link</span>
+                                    </button>
+                                  </div>
+
+                                  {(!item.dropdownItems || item.dropdownItems.length === 0) ? (
+                                    <div className="text-[10px] text-zinc-400 italic text-center py-2 bg-white rounded border border-dashed border-zinc-250">
+                                      No sub-links set yet. Click "Add Sub-Link" to create ones dynamically!
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                                      {item.dropdownItems.map((sub, sIdx) => (
+                                        <div key={sub.id} className="bg-white p-2.5 rounded-md border border-zinc-200 space-y-1.5 relative">
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const copy = [...csMenuItems];
+                                              copy[idx].dropdownItems = copy[idx].dropdownItems?.filter(s => s.id !== sub.id);
+                                              setCsMenuItems(copy);
+                                            }}
+                                            className="absolute top-1 right-1 text-zinc-405 hover:text-rose-500 p-0.5 rounded transition bg-transparent border-0 cursor-pointer"
+                                            title="Remove sub-link"
+                                          >
+                                            <X size={11} />
+                                          </button>
+
+                                          <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                                            <div>
+                                              <input
+                                                type="text"
+                                                value={sub.label}
+                                                onChange={(e) => {
+                                                  const copy = [...csMenuItems];
+                                                  if (copy[idx].dropdownItems) {
+                                                    copy[idx].dropdownItems![sIdx].label = e.target.value;
+                                                    setCsMenuItems(copy);
+                                                  }
+                                                }}
+                                                className="w-full px-1.5 py-0.5 border border-zinc-200 text-[11px] rounded bg-white text-zinc-800 font-bold"
+                                                placeholder="Sublink label"
+                                              />
+                                            </div>
+                                            <div>
+                                              <input
+                                                type="text"
+                                                value={sub.labelBn}
+                                                onChange={(e) => {
+                                                  const copy = [...csMenuItems];
+                                                  if (copy[idx].dropdownItems) {
+                                                    copy[idx].dropdownItems![sIdx].labelBn = e.target.value;
+                                                    setCsMenuItems(copy);
+                                                  }
+                                                }}
+                                                className="w-full px-1.5 py-0.5 border border-zinc-200 text-[11px] rounded bg-white text-zinc-800 font-bold"
+                                                placeholder="Sublink label Bn"
+                                              />
+                                            </div>
+                                          </div>
+
+                                          <div className="grid grid-cols-2 gap-2 text-[9.5px]">
+                                            <select
+                                              value={sub.actionType}
+                                              onChange={(e) => {
+                                                const copy = [...csMenuItems];
+                                                if (copy[idx].dropdownItems) {
+                                                  copy[idx].dropdownItems![sIdx].actionType = e.target.value as any;
+                                                  setCsMenuItems(copy);
+                                                }
+                                              }}
+                                              className="px-1 py-0.5 border border-zinc-200 text-[10px] rounded bg-white text-zinc-800 focus:outline-[#f58220]"
+                                            >
+                                              <option value="none">None</option>
+                                              <option value="tab">Active Tab</option>
+                                              <option value="scroll">Scroll ScrollID</option>
+                                              <option value="url">External Link</option>
+                                            </select>
+
+                                            <input
+                                              type="text"
+                                              value={sub.actionValue || ""}
+                                              onChange={(e) => {
+                                                const copy = [...csMenuItems];
+                                                if (copy[idx].dropdownItems) {
+                                                  copy[idx].dropdownItems![sIdx].actionValue = e.target.value;
+                                                  setCsMenuItems(copy);
+                                                }
+                                              }}
+                                              className="px-1.5 py-0.5 border border-zinc-200 text-[10px] rounded bg-white font-mono text-zinc-800"
+                                              placeholder="Action value"
+                                            />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Card 4: Sliding Carousel Banners (Up to 3 editable slides) */}
                   <div className="bg-white border rounded-xl p-5 shadow-sm space-y-5">
                     <h3 className="font-extrabold text-sm text-zinc-800 border-b pb-2 flex items-center space-x-2">
                       <span className="text-purple-500 text-xs">■</span>
-                      <span>{language === 'bn' ? '৩. হোমপেইজ স্লাইডার ব্যানার কারুকার্য' : '3. Home Banner Carousel Slides'}</span>
+                      <span>{language === 'bn' ? '৪. হোমপেইজ স্লাইডার ব্যানার কারুকার্য' : '4. Home Banner Carousel Slides'}</span>
                     </h3>
 
                     <p className="text-[10px] text-orange-600 bg-orange-50 p-2.5 rounded-lg leading-relaxed font-bold">
@@ -6825,7 +7133,8 @@ export default function AdminPanel({
                           hoverColor: csHoverColor,
                           bgLightColor: csBgLightColor,
                           logoUrl: csLogoUrl,
-                          slides: csSlides
+                          slides: csSlides,
+                          menuItems: csMenuItems
                         };
                         
                         saveTenant(updated);
