@@ -126,6 +126,8 @@ export default function Navbar({
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [bellDropdownOpen, setBellDropdownOpen] = useState(false);
   const [logoClickHistory, setLogoClickHistory] = useState<number[]>([]);
+  const [passcodeModalOpen, setPasscodeModalOpen] = useState(false);
+  const [passcodeInput, setPasscodeInput] = useState('');
 
   const [searchFocused, setSearchFocused] = useState(false);
   const [isHoveringSuggestions, setIsHoveringSuggestions] = useState(false);
@@ -386,7 +388,7 @@ export default function Navbar({
           <div 
             onClick={() => {
               const now = Date.now();
-              const newHistory = [...logoClickHistory, now].filter(t => now - t <= 8000);
+              const newHistory = [...logoClickHistory, now].filter(t => now - t <= 10000);
               setLogoClickHistory(newHistory);
 
               setCurrentTab('shop');
@@ -400,27 +402,20 @@ export default function Navbar({
                   intervals.push(slice[i+1] - slice[i]);
                 }
 
-                // 3 fast, pause, 2 fast, pause, 3 fast (total 8 clicks)
+                // 8-tap rhythm pattern: 3 fast, pause, 2 fast, pause, 3 fast
                 const isRhythmCorrect = 
-                  intervals[0] <= 550 && // quick
-                  intervals[1] <= 550 && // quick
-                  intervals[2] > 550 && intervals[2] <= 2450 && // pause
-                  intervals[3] <= 550 && // quick
-                  intervals[4] > 550 && intervals[4] <= 2450 && // pause
-                  intervals[5] <= 550 && // quick
-                  intervals[6] <= 550;   // quick
+                  intervals[0] <= 550 && 
+                  intervals[1] <= 550 && 
+                  intervals[2] > 550 && intervals[2] <= 2500 && 
+                  intervals[3] <= 550 && 
+                  intervals[4] > 550 && intervals[4] <= 2500 && 
+                  intervals[5] <= 550 && 
+                  intervals[6] <= 550;
 
                 if (isRhythmCorrect) {
                   setLogoClickHistory([]);
-                  setCurrentTab('admin');
-                  if (setProfileDropdownOpen) setProfileDropdownOpen(false);
-                  window.dispatchEvent(
-                    new CustomEvent("app-toast", { 
-                      detail: language === 'bn' 
-                        ? "🔒 সিক্রেট রিদমিক রিদম ভেরিফাইড! এডমিন প্যানেল উন্মোচিত হচ্ছে..." 
-                        : "🔒 Secret rhythm pattern verified! Opening admin gateway..." 
-                    })
-                  );
+                  setPasscodeModalOpen(true);
+                  setPasscodeInput('');
                 }
               }
             }} 
@@ -1265,6 +1260,99 @@ export default function Navbar({
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Sleek Disguised Passcode Modal */}
+      {passcodeModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-zinc-100 font-sans relative overflow-hidden animate-fade-in">
+            {/* Ambient Background decoration */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-zinc-700 via-zinc-900 to-zinc-800" />
+            
+            <div className="flex items-center space-x-3.5 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center text-zinc-700 shadow-inner">
+                <ShieldCheck size={20} className="stroke-[2.5]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-zinc-900 tracking-tight">
+                  {language === 'bn' ? 'সিস্টেম ক্লায়েন্ট ভেরিফিকেশন' : 'System Client Verification'}
+                </h3>
+                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">
+                  {language === 'bn' ? 'ব্যবসায়িক ভেন্ডর ও লজিস্টিক পোর্টাল' : 'Business Vendor & Logistics Hub'}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-500 leading-relaxed font-semibold mb-4 bg-zinc-50 p-3 rounded-lg border border-zinc-100">
+              {language === 'bn' 
+                ? 'অননুমোদিত অ্যাক্সেস রোধে আপনার চার অঙ্কের পার্টনার পোর্টাল পিন (PIN) কোডটি প্রদান করুন।' 
+                : 'For secure localized environment tracking, please execute confirmation with your 4-digit partner allocation PIN.'}
+            </p>
+
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (passcodeInput === '7788') {
+                  setPasscodeModalOpen(false);
+                  setCurrentTab('admin');
+                  if (setProfileDropdownOpen) setProfileDropdownOpen(false);
+                  window.dispatchEvent(
+                    new CustomEvent("app-toast", { 
+                      detail: language === 'bn' 
+                        ? "🔒 সিক্রেট কোড সঠিক! অ্যাডমিন প্যানেল উন্মোচিত হচ্ছে..." 
+                        : "🔒 Security approved! Opening admin gateway..." 
+                    })
+                  );
+                } else {
+                  setPasscodeModalOpen(false);
+                  window.dispatchEvent(
+                    new CustomEvent("app-toast", { 
+                      detail: language === 'bn' 
+                        ? "❌ ত্রুটি: পার্টনার সেশন আইডি অবৈধ বা নেটওয়ার্ক সংযোগ নেই!" 
+                        : "❌ Error: Partner session context mismatched or inactive!" 
+                    })
+                  );
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-[10px] uppercase font-black text-zinc-600 tracking-widest mb-1.5">
+                  {language === 'bn' ? 'পোর্টাল পিন কোড' : 'PROMPT PORTAL PIN'}
+                </label>
+                <input 
+                  type="password" 
+                  maxLength={6}
+                  value={passcodeInput}
+                  onChange={(e) => setPasscodeInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="••••"
+                  autoFocus
+                  className="w-full text-center tracking-widest text-lg font-black bg-zinc-50 border-2 border-zinc-200 hover:border-zinc-300 focus:border-zinc-800 focus:ring-0 text-zinc-800 rounded-xl py-2.5 transition"
+                />
+              </div>
+
+              <div className="flex space-x-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasscodeModalOpen(false);
+                    setPasscodeInput('');
+                  }}
+                  className="w-1/2 bg-zinc-150 hover:bg-zinc-200 text-zinc-700 font-bold text-xs py-2.5 rounded-xl border-0 cursor-pointer transition text-center"
+                >
+                  {language === 'bn' ? 'বাতিল করুন' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={passcodeInput.length < 4}
+                  className="w-1/2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 rounded-xl border-0 cursor-pointer shadow-md transition text-center"
+                >
+                  {language === 'bn' ? 'নিশ্চিত করুন' : 'Confirm'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
