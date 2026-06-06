@@ -336,7 +336,7 @@ export default function UserProfilePanel({
                 <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
                   {language === 'bn'
                     ? 'যেকোনো পণ্য কার্টে যোগ করে অর্ডার সম্পন্ন করুন এবং লাইভ ট্র্যাকিং অনুসরণ করুন।'
-                    : 'Place an order through Nabik checkout to track physical shipment routes.'}
+                    : 'Place an order through Gadget Bazar checkout to track physical shipment routes.'}
                 </p>
               </div>
             ) : (

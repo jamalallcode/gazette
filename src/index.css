@@ -21,7 +21,7 @@
 /* Luxury custom ambient styling attributes */
 body {
   font-family: var(--font-sans);
-  background-color: #f0f2f5; /* Light blue-gray background matching Nabik Bazar */
+  background-color: #f0f2f5; /* Light blue-gray background matching Gadget Bazar */
   color: #1f2937; /* zinc-800 */
 }
 
@@ -81,3 +81,204 @@ body {
 .custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(245, 130, 32, 0.85);
 }
+
+/* Premium Ultra Elite Dark Mode Overrides */
+.dark body {
+  background-color: #05070a !important;
+  color: #f1f5f9 !important;
+}
+
+.dark #app-root-frame {
+  background-color: #05070a !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .bg-white {
+  background-color: #111822 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .bg-zinc-50 {
+  background-color: #111822 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .bg-zinc-100 {
+  background-color: #17202e !important;
+  color: #f1f5f9 !important;
+}
+
+/* Fallback attribute-level matches to catch all opacity slashes without causing browser parse discarding */
+.dark [class*="bg-white"] {
+  background-color: #111822 !important;
+}
+
+.dark [class*="bg-zinc-50"] {
+  background-color: #111822 !important;
+}
+
+.dark [class*="bg-zinc-100"] {
+  background-color: #17202e !important;
+}
+
+.dark [class*="bg-zinc-200"] {
+  background-color: #1e293b !important;
+}
+
+.dark .product-card,
+.dark .product-card-image-frame,
+.dark .product-card-details {
+  background-color: #111822 !important;
+  border-color: #243042 !important;
+}
+
+.dark .text-zinc-900,
+.dark .text-zinc-800,
+.dark .text-zinc-805,
+.dark .text-zinc-850,
+.dark .text-zinc-855,
+.dark .text-zinc-700,
+.dark .text-zinc-650,
+.dark .text-zinc-605,
+.dark .text-zinc-600 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-zinc-500,
+.dark .text-zinc-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .border-zinc-100,
+.dark .border-zinc-150,
+.dark .border-zinc-200,
+.dark .border-zinc-250,
+.dark .border-zinc-300 {
+  border-color: #243042 !important;
+}
+
+.dark input, 
+.dark select, 
+.dark textarea {
+  background-color: #1a2232 !important;
+  color: #f8fafc !important;
+  border-color: #2e3c54 !important;
+}
+
+.dark input::placeholder {
+  color: #64748b !important;
+}
+
+.dark .hover\:bg-zinc-50:hover {
+  background-color: #1a2232 !important;
+  color: #f8fafc !important;
+}
+
+.dark .hover\:bg-zinc-100:hover {
+  background-color: #1a2232 !important;
+  color: #f8fafc !important;
+}
+
+.dark .hover\:bg-orange-50:hover {
+  background-color: #1a2232 !important;
+  color: #f58220 !important;
+}
+
+.dark .bg-orange-50\/10 {
+  background-color: rgba(245, 130, 32, 0.08) !important;
+}
+
+.dark .rounded-2xl.shadow-xl,
+.dark .rounded-xl.shadow-2xl,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  background-color: #111822 !important;
+  border-color: #243042 !important;
+}
+
+/* Modal specific container backgrounds */
+.dark .bg-opacity-50 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Mobile responsive navigation overrides */
+.dark .order-5, 
+.dark .md\:hidden {
+  background-color: #111822 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .text-neutral-800 {
+  color: #f1f5f9 !important;
+}
+
+/* Ensure search containers and inputs look extraordinary in dark mode */
+.dark #desktop-search-container,
+.dark #mobile-search-container,
+.dark .search-bar-container {
+  background-color: #1a2232 !important;
+  border-color: #2e3c54 !important;
+}
+
+.dark #desktop-search-container input,
+.dark #mobile-search-container input,
+.dark .search-bar-container input {
+  background-color: transparent !important;
+  color: #f8fafc !important;
+}
+
+/* Premium Menu Bar Dark Mode Overrides */
+.dark #sticky-header-menu {
+  background-color: #1a2333 !important;
+  border-bottom: 1.5px solid #283752 !important;
+}
+
+/* Ensure consistent dark menu bar background regardless of position or class-level overrides */
+.dark [id="sticky-header-menu"] {
+  background-color: #1a2333 !important;
+}
+
+.dark #sticky-header-menu button.text-black,
+.dark #sticky-header-menu .text-black,
+.dark #sticky-header-menu button,
+.dark #sticky-header-menu a,
+.dark #sticky-header-menu span:not(.font-sans) {
+  color: #f1f5f9 !important;
+}
+
+/* Ensure the white brand logo remains white/light */
+.dark #sticky-header-menu .text-white {
+  color: #ffffff !important;
+}
+
+/* Set specific contrast for subtext 'PREMIUM STORE' under dark mode inside menu bar */
+.dark #sticky-header-menu .text-black\/80 {
+  color: #f58220 !important; /* Premium brand-orange accent color */
+}
+
+/* Hover state for buttons in dark mode */
+.dark #sticky-header-menu button:hover,
+.dark #sticky-header-menu button.text-black:hover {
+  background-color: #e06c09 !important;
+  color: #ffffff !important;
+}
+
+/* Premium Mobile Ribbon Header Dark Mode Overrides */
+.dark #mobile-ribbon-header {
+  background-color: #1a2333 !important;
+  border-bottom: 1px solid #283752 !important;
+}
+
+/* Ensure consistent background when sticky in dark mode */
+.dark [id="mobile-ribbon-header"] {
+  background-color: #1a2333 !important;
+}
+
+.dark #mobile-ribbon-header button:not(.bg-\[\#e06c09\]),
+.dark #mobile-ribbon-header svg:not(.text-\[\#f58220\]),
+.dark #mobile-ribbon-header span:not(.text-\[\#f58220\]),
+.dark #mobile-ribbon-header input {
+  color: #f1f5f9 !important;
+}
+
+

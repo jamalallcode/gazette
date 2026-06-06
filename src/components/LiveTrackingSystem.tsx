@@ -67,7 +67,7 @@ export default function LiveTrackingSystem({
   };
 
   const statusMilestones = [
-    { key: 'placed', label: language === 'bn' ? 'সংগৃহীত' : 'Received', desc: language === 'bn' ? 'অর্ডারের তথ্য সিস্টেমে নথিভুক্ত হযেছে' : 'Order securely saved by Nabik' },
+    { key: 'placed', label: language === 'bn' ? 'সংগৃহীত' : 'Received', desc: language === 'bn' ? 'অর্ডারের তথ্য সিস্টেমে নথিভুক্ত হযেছে' : 'Order securely saved by Gadget Bazar' },
     { key: 'processing', label: language === 'bn' ? 'প্রক্রিয়াকরণ' : 'Processing', desc: language === 'bn' ? 'পণ্য গুণগত মান নিশ্চিত করে প্যাকিং শেষ হয়েছে' : 'Items packed, quality approved' },
     { key: 'shipped', label: language === 'bn' ? 'শিপমেন্ট' : 'In Transit', desc: language === 'bn' ? 'ডেলিভারি পার্টনার কুরিয়ারে হস্তান্তর সম্পন্ন' : 'Handed over to Bangladeshi Courier' },
     { key: 'delivered', label: language === 'bn' ? 'ডেলিভারি' : 'Delivered', desc: language === 'bn' ? 'আপনার ঠিকানায় পণ্য পৌঁছে দেওয়া হয়েছে' : 'Arrived safely at your doorstep' }
@@ -166,7 +166,7 @@ export default function LiveTrackingSystem({
                   <div className="text-right">
                     <p className="text-[10px] text-zinc-400 font-bold uppercase">{language === 'bn' ? 'ডেলিভারি মাধ্যম' : 'Courier Method'}</p>
                     <p className="text-xs text-[#f58220] font-black mt-0.5">
-                      {trackedOrder.courierName || (language === 'bn' ? "নাবিক এক্সপ্রেস ডেলিভারি" : "Nabik Express Logistics")}
+                      {trackedOrder.courierName || (language === 'bn' ? "গেজেট এক্সপ্রেস ডেলিভারি" : "Gadget Bazar Express Logistics")}
                     </p>
                     {trackedOrder.courierTrackingId && (
                       <p className="text-[10px] text-zinc-500 font-mono font-bold mt-1 bg-white border border-zinc-200 px-1.5 py-0.5 rounded inline-block">

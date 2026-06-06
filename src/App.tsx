@@ -361,7 +361,7 @@ const sidebarExtraData: Record<string, {
         id: "printed-tshirt",
         name: "Premium Printed Tees",
         icon: "🎨",
-        brands: ["Aura Studio", "Nabik Signature"]
+        brands: ["Aura Studio", "Gadget Bazar Signature"]
       }
     ]
   },
@@ -510,6 +510,20 @@ export default function App() {
   // Settings States
   const [currency, setCurrency] = useState<'BDT' | 'USD'>('BDT');
   const [language, setLanguage] = useState<'en' | 'bn'>('bn'); // default to Bangla
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem("darkMode") === "true";
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("darkMode", "true");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("darkMode", "false");
+    }
+  }, [darkMode]);
+
   const isFirstSyncRef = useRef(true);
   const sessionStartTimeRef = useRef<number>(Date.now());
   const notifiedOrdersSetRef = useRef<Set<string>>(new Set());
@@ -918,6 +932,11 @@ export default function App() {
     setIsCheckoutOpen(true);
   };
 
+  const handleProductSelectToOrder = (prod: Product) => {
+    handleAddToCart(prod, 1);
+    handleOpenCheckout([{ product: prod, quantity: 1 }]);
+  };
+
   const handleOrderSuccess = (newOrder: Order) => {
     // Save to server database immediately!
     fetch("/api/orders", {
@@ -944,7 +963,7 @@ export default function App() {
     });
     
     // Trigger automated mobile SMS notification alert (and admin alert if enabled!)
-    triggerOrderSmsNotification(newOrder, 'placed', activeTenant?.siteName || "Nabik Bazar");
+    triggerOrderSmsNotification(newOrder, 'placed', activeTenant?.siteName || "Gadget Bazar");
 
     // Dispatch a browser-wide notification event to alert the admin inside the app UI instantly
     window.dispatchEvent(
@@ -1109,6 +1128,8 @@ export default function App() {
         }}
         unreadNotifications={unreadNotificationOrders}
         setUnreadNotifications={setUnreadNotificationOrders}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
       />
 
       {/* Main Container Layout */}
@@ -1131,7 +1152,7 @@ export default function App() {
                 {langText.orderSuccessTitle}
               </h2>
               <p className="text-xs text-zinc-500 mt-1 max-w-lg leading-relaxed">
-                {language === 'bn' ? 'নাবিক বাজারে আপনার অর্ডার সফলভাবে নথিভুক্ত হয়েছে! আনুমানিক সময়ের মধ্যে পণ্য পৌঁছে যাবে।' : langText.orderSuccessSubtitle}
+                {language === 'bn' ? 'গেজেট বাজারে আপনার অর্ডার সফলভাবে নথিভুক্ত হয়েছে! আনুমানিক সময়ের মধ্যে পণ্য পৌঁছে যাবে।' : langText.orderSuccessSubtitle}
               </p>
             </div>
 
@@ -1540,7 +1561,7 @@ export default function App() {
                       product={p}
                       currency={currency}
                       language={language}
-                      onSelectProduct={setSelectedProduct}
+                      onSelectProduct={handleProductSelectToOrder}
                       onAddToCart={(prod) => handleAddToCart(prod, 1)}
                     />
                   ))}
@@ -1552,7 +1573,7 @@ export default function App() {
             <div className="space-y-4 text-center">
               <div>
                 <h3 className="text-lg font-black tracking-wider uppercase text-zinc-900">{language === 'bn' ? 'জনপ্রিয় ক্যাটাগরি এক্সপ্লোর করুন' : 'EXPLORE POPULAR CATEGORIES'}</h3>
-                <p className="text-xs text-zinc-500 font-medium mt-0.5">{language === 'bn' ? 'নাবিক বাজারের সেরা নির্বাচিত পণ্যসামগ্রী' : 'Premium handpicked essentials for modern lifestyles'}</p>
+                <p className="text-xs text-zinc-500 font-medium mt-0.5">{language === 'bn' ? 'গেজেট বাজারের সেরা নির্বাচিত পণ্যসামগ্রী' : 'Premium handpicked essentials for modern lifestyles'}</p>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -2019,7 +2040,7 @@ export default function App() {
                             product={p}
                             currency={currency}
                             language={language}
-                            onSelectProduct={(prod) => setSelectedProduct(prod)}
+                            onSelectProduct={handleProductSelectToOrder}
                             onAddToCart={(prod) => handleAddToCart(prod, 1)}
                           />
                         ))}
@@ -2042,7 +2063,7 @@ export default function App() {
                         products={filteredProductsPriceRange}
                         currency={currency}
                         language={language}
-                        onSelectProduct={(prod) => setSelectedProduct(prod)}
+                        onSelectProduct={handleProductSelectToOrder}
                         onAddToCart={(prod) => handleAddToCart(prod, 1)}
                       />
                     ) : (
@@ -2053,7 +2074,7 @@ export default function App() {
                             product={p}
                             currency={currency}
                             language={language}
-                            onSelectProduct={(prod) => setSelectedProduct(prod)}
+                            onSelectProduct={handleProductSelectToOrder}
                             onAddToCart={(prod) => handleAddToCart(prod, 1)}
                           />
                         ))}
@@ -2083,7 +2104,7 @@ export default function App() {
                                 product={p}
                                 currency={currency}
                                 language={language}
-                                onSelectProduct={(prod) => setSelectedProduct(prod)}
+                                onSelectProduct={handleProductSelectToOrder}
                                 onAddToCart={(prod) => handleAddToCart(prod, 1)}
                               />
                             ))}
@@ -2105,7 +2126,7 @@ export default function App() {
                   products={products.filter(p => p.category === 'watches')}
                   currency={currency}
                   language={language}
-                  onSelectProduct={(prod) => setSelectedProduct(prod)}
+                  onSelectProduct={handleProductSelectToOrder}
                   onAddToCart={(prod) => handleAddToCart(prod, 1)}
                 />
 
@@ -2115,7 +2136,7 @@ export default function App() {
                   products={products.filter(p => p.category === 'gadgets')}
                   currency={currency}
                   language={language}
-                  onSelectProduct={(prod) => setSelectedProduct(prod)}
+                  onSelectProduct={handleProductSelectToOrder}
                   onAddToCart={(prod) => handleAddToCart(prod, 1)}
                 />
 
@@ -2125,7 +2146,7 @@ export default function App() {
                   products={products.filter(p => p.category === 'appliances')}
                   currency={currency}
                   language={language}
-                  onSelectProduct={(prod) => setSelectedProduct(prod)}
+                  onSelectProduct={handleProductSelectToOrder}
                   onAddToCart={(prod) => handleAddToCart(prod, 1)}
                 />
 
@@ -2135,7 +2156,7 @@ export default function App() {
                   products={products.filter(p => p.category === 'tshirt')}
                   currency={currency}
                   language={language}
-                  onSelectProduct={(prod) => setSelectedProduct(prod)}
+                  onSelectProduct={handleProductSelectToOrder}
                   onAddToCart={(prod) => handleAddToCart(prod, 1)}
                 />
 
@@ -2145,7 +2166,7 @@ export default function App() {
                   products={products.filter(p => p.category === 'laptop')}
                   currency={currency}
                   language={language}
-                  onSelectProduct={(prod) => setSelectedProduct(prod)}
+                  onSelectProduct={handleProductSelectToOrder}
                   onAddToCart={(prod) => handleAddToCart(prod, 1)}
                 />
               </div>
@@ -2392,7 +2413,7 @@ export default function App() {
             products={products}
             language={language}
             currency={currency}
-            onSelectProduct={(prod) => setSelectedProduct(prod)}
+            onSelectProduct={handleProductSelectToOrder}
           />
         )}
 
@@ -2489,7 +2510,7 @@ export default function App() {
               <div className="flex items-center space-x-2">
                 <div className="h-10 w-28 bg-white rounded p-1.5 flex items-center justify-center shadow-xs overflow-hidden select-none">
                   <span className="text-zinc-800 text-xs font-black tracking-tighter uppercase flex items-center justify-center">
-                    <span className="inline-block bg-orange-500 text-white p-0.5 rounded mr-1">🛒</span> Nabik Bazar
+                    <span className="inline-block bg-orange-500 text-white p-0.5 rounded mr-1">🛒</span> Gadget Bazar
                   </span>
                 </div>
               </div>
@@ -2600,7 +2621,7 @@ export default function App() {
                   <div className="h-2.5 w-2.5 rounded-full bg-green-400 animate-ping"></div>
                   <div className="text-left leading-none">
                     <h4 className="text-xs font-black tracking-wide">
-                      {language === 'bn' ? `${activeTenant?.shopNameBn || "নাবিক বাজার"} হেল্প ডেস্ক` : `${activeTenant?.shopName || "Nabik Bazar"} Help Desk`}
+                      {language === 'bn' ? `${activeTenant?.shopNameBn || "গেজেট বাজার"} হেল্প ডেস্ক` : `${activeTenant?.shopName || "Gadget Bazar"} Help Desk`}
                     </h4>
                     <span className="text-[9px] text-opacity-80 text-white block mt-0.5">
                       {language === 'bn' ? 'সর্বদা আপনার সেবায় নিয়োজিত' : 'Always here to guide you'}
@@ -2616,8 +2637,8 @@ export default function App() {
               <div className="p-4 space-y-3 text-xs text-left max-h-60 overflow-y-auto">
                 <p className="p-2.5 bg-zinc-100 rounded-lg text-zinc-700">
                   {language === 'bn' 
-                    ? `${activeTenant?.shopNameBn || "নাবিক বাজার"} হেল্পডেস্কে আপনাকে স্বাগত! আমাদের হটলাইন নম্বর ${activeTenant?.phone || "+8801784905075"} এ সরাসরি কল করতে পারেন বা নিচের সাহায্য টপিক বেছে নিন।`
-                    : `Welcome to ${activeTenant?.shopName || "Nabik Bazar"} Customer Care! Learn more with our instant quick answers or ring ${activeTenant?.phone || "+8801784905075"}.`}
+                    ? `${activeTenant?.shopNameBn || "গেজেট বাজার"} হেল্পডেস্কে আপনাকে স্বাগত! আমাদের হটলাইন নম্বর ${activeTenant?.phone || "+8801784905075"} এ সরাসরি কল করতে পারেন বা নিচের সাহায্য টপিক বেছে নিন।`
+                    : `Welcome to ${activeTenant?.shopName || "Gadget Bazar"} Customer Care! Learn more with our instant quick answers or ring ${activeTenant?.phone || "+8801784905075"}.`}
                 </p>
 
                 {whatsAppResponse && (
@@ -2674,7 +2695,7 @@ export default function App() {
             <div className="bg-[#fd7e14] text-white p-5 flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
                 <Store size={22} className="stroke-[2.5px]" />
-                <h3 className="font-extrabold tracking-wide uppercase text-sm">{language === 'bn' ? 'নাবিক মাল্টিভেন্ডর জোন' : 'Nabik Multivendor Suite'}</h3>
+                <h3 className="font-extrabold tracking-wide uppercase text-sm">{language === 'bn' ? 'গেজেট বাজার মাল্টিভেন্ডর জোন' : 'Gadget Bazar Multivendor Suite'}</h3>
               </div>
               <button 
                 onClick={() => {
@@ -2713,7 +2734,7 @@ export default function App() {
                 <div className="space-y-4">
                   <p className="text-zinc-500 leading-relaxed">
                     {language === 'bn' 
-                      ? "নাবিক বাজার মাল্টিভেন্ডর প্লাটফর্মে বর্তমানে ৪টি অত্যন্ত বিশ্বস্ত মার্চেন্ট প্রতিষ্ঠান রেজিস্টার্ড রয়েছে। যেকোনো বিক্রেতার ক্যাটাগরি ফিল্টার করতে নামের পাশে ক্লিক করুন।"
+                      ? "গেজেট বাজার মাল্টিভেন্ডর প্লাটফর্মে বর্তমানে ৪টি অত্যন্ত বিশ্বস্ত মার্চেন্ট প্রতিষ্ঠান রেজিস্টার্ড রয়েছে। যেকোনো বিক্রেতার ক্যাটাগরি ফিল্টার করতে নামের পাশে ক্লিক করুন।"
                       : "We currently host 4 elite verified merchant outlets around Bangladesh. Click on a vendor to load their inventories."}
                   </p>
 
@@ -2754,7 +2775,7 @@ export default function App() {
                       <h4 className="text-sm font-black text-zinc-900">{language === 'bn' ? 'আবেদনটি সফলভাবে জমা হয়েছে!' : 'Application Submitted Successfully!'}</h4>
                       <p className="text-xs text-zinc-500 max-w-sm mx-auto">
                         {language === 'bn' 
-                          ? `ধন্যবাদ, '${merchantName}'। নাবিক বাজার বিক্রেতা রিভিউ টিম শীঘ্রই আপনার প্রদত্ত নম্বরে যোগাযোগ করে স্টোরটি সক্রিয় করে দিবে।`
+                          ? `ধন্যবাদ, '${merchantName}'। গেজেট বাজার বিক্রেতা রিভিউ টিম শীঘ্রই আপনার প্রদত্ত নম্বরে যোগাযোগ করে স্টোরটি সক্রিয় করে দিবে।`
                           : `Thank you, '${merchantName}'. Our Review Team will call your phone soon to verify and activate.`}
                       </p>
                     </div>
@@ -2774,7 +2795,7 @@ export default function App() {
                           required
                           value={merchantName}
                           onChange={(e) => setMerchantName(e.target.value)}
-                          placeholder="e.g. Nabik IT World" 
+                          placeholder="e.g. Gadget Bazar IT World" 
                           className="w-full border border-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-orange-500 text-xs text-zinc-800 bg-white" 
                         />
                       </div>
@@ -2819,7 +2840,7 @@ export default function App() {
 
             <div className="bg-zinc-50 p-4 border-t text-[10px] text-zinc-550 flex justify-between items-center text-zinc-500 selection-none font-bold">
               <span>Trusted Multi-vendor Network</span>
-              <span>© ২০২৬ নাবিক বাজার পোর্টাল</span>
+              <span>© ২০২৬ গেজেট বাজার পোর্টাল</span>
             </div>
 
           </div>

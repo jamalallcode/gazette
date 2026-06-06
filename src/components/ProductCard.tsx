@@ -54,12 +54,12 @@ export default function ProductCard({
 
   return (
     <div 
-      className="group bg-white border border-zinc-150 rounded-lg overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all duration-300 flex flex-col h-full relative"
+      onClick={() => onSelectProduct(product)}
+      className="product-card group bg-white border border-zinc-150 rounded-lg overflow-hidden hover:shadow-md hover:border-zinc-300 transition-all duration-300 flex flex-col h-full relative cursor-pointer"
     >
       {/* Product Image Frame - Clean container with lower height matching screenshot */}
       <div 
-        className="relative h-20 sm:h-24 md:h-28 overflow-hidden bg-white cursor-pointer w-full flex items-center justify-center p-2.5"
-        onClick={() => onSelectProduct(product)}
+        className="product-card-image-frame relative h-20 sm:h-24 md:h-28 overflow-hidden bg-white w-full flex items-center justify-center p-2.5"
         id={`product-img-frame-${product.id}`}
       >
         <img
@@ -93,7 +93,10 @@ export default function ProductCard({
         {!isOutOfStock && (
           <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 z-10">
             <button
-              onClick={() => onSelectProduct(product)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectProduct(product);
+              }}
               className="p-1.5 bg-white hover:bg-zinc-100 text-zinc-700 rounded-full shadow-md transition-all hover:scale-110 cursor-pointer border-0"
               title={language === 'en' ? 'Details' : 'বিস্তারিত'}
             >
@@ -114,7 +117,7 @@ export default function ProductCard({
       </div>
 
       {/* Product Details Section - Compact layout & zero lines division matching user's custom photo */}
-      <div className="p-2 sm:p-2.5 flex flex-col flex-grow bg-white border-t border-zinc-50 text-left">
+      <div className="product-card-details p-2 sm:p-2.5 flex flex-col flex-grow bg-white border-t border-zinc-50 text-left">
         {/* Brand label and rating in one mini row */}
         <div className="text-[8px] sm:text-[9px] text-zinc-400 font-semibold tracking-normal mb-1 flex items-center justify-between">
           <span>{product.brand || displayCategory}</span>
@@ -129,7 +132,6 @@ export default function ProductCard({
         {/* Standard bold title */}
         <h3 
           className="text-zinc-900 hover:text-[#f97316] text-[11px] sm:text-xs font-semibold leading-snug line-clamp-2 transition-colors duration-200 cursor-pointer text-left h-8 sm:h-9 flex-shrink-0" 
-          onClick={() => onSelectProduct(product)}
         >
           {displayName}
         </h3>

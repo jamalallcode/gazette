@@ -678,7 +678,7 @@ export default function ProductDetailModal({
 
               </div>
 
-              {/* Vendor Info Box - Custom professional representation of Nabik Bazar as seen in screenshot */}
+              {/* Vendor Info Box - Custom professional representation of Gadget Bazar as seen in screenshot */}
               <div className="bg-white shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-2xl p-6 flex flex-col items-center select-none text-center border border-zinc-100/30">
                 <div className="flex items-center space-x-3 w-full justify-start pb-4 border-b border-zinc-100/50">
                   <div className="h-12 w-12 rounded-full border border-zinc-100 bg-white flex items-center justify-center p-1.5 shadow-3xs overflow-hidden select-none shrink-0">
@@ -689,7 +689,7 @@ export default function ProductDetailModal({
                   </div>
                   <div className="text-left leading-tight">
                     <h3 className="text-base font-black text-zinc-900 tracking-tight">
-                      Nabik Bazar
+                      Gadget Bazar
                     </h3>
                     <span className="text-[9px] font-bold text-[#f58220] uppercase tracking-widest mt-0.5 block">
                       VERIFIED MERCHANT
@@ -721,7 +721,7 @@ export default function ProductDetailModal({
 
                 <button
                   type="button"
-                  onClick={() => alert(language === 'bn' ? 'নাবিক বাজার আউটলেটে আপনাকে স্বাগতম!' : 'Welcome to Nabik Bazar outlet store!')}
+                  onClick={() => alert(language === 'bn' ? 'গেজেট বাজার আউটলেটে আপনাকে স্বাগতম!' : 'Welcome to Gadget Bazar outlet store!')}
                   className="w-full mt-2.5 py-3 px-5 bg-[#f58220] hover:bg-orange-600 text-white font-extrabold text-xs tracking-wider uppercase rounded-xl shadow-xs cursor-pointer transition flex items-center justify-center space-x-2 border-0 active:scale-95"
                 >
                   <span className="text-xs">🔒</span>
@@ -909,11 +909,11 @@ export default function ProductDetailModal({
         <div className="bg-[#5c5d60] rounded-2xl p-6 sm:p-10 text-white mt-12 grid grid-cols-1 md:grid-cols-12 gap-8 shadow-sm">
           
           <div className="md:col-span-4 flex flex-col space-y-4 text-left">
-            {/* Nabik Bazar logo inside footer */}
+            {/* Gadget Bazar logo inside footer */}
             <div className="flex items-center space-x-2">
               <div className="h-10 w-28 bg-white rounded p-1.5 flex items-center justify-center shadow-xs overflow-hidden select-none">
                 <span className="text-zinc-800 text-xs font-black tracking-tighter uppercase flex items-center justify-center">
-                  <span className="inline-block bg-orange-500 text-white p-0.5 rounded mr-1">🛒</span> Nabik Bazar
+                  <span className="inline-block bg-orange-500 text-white p-0.5 rounded mr-1">🛒</span> Gadget Bazar
                 </span>
               </div>
             </div>

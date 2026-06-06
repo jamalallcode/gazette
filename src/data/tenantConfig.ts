@@ -161,9 +161,9 @@ export const DEFAULT_MENU_ITEMS: MenuItemConfig[] = [
 export const PRESET_TENANTS: TenantConfig[] = [
   {
     id: "nabik-bazar",
-    name: "Gazzette (Default)",
-    shopName: "Gazzette",
-    shopNameBn: "Gazzette",
+    name: "Gadget Bazar (Default)",
+    shopName: "Gadget Bazar",
+    shopNameBn: "গেজেট বাজার",
     tagline: "Your Ultimate Tech & Style Outlet",
     taglineBn: "আপনার পছন্দের সেরা গ্যাজেট ও ফ্যাশন হাউজ",
     logoUrl: "", // Empty to fall back to the newly designed gorgeous custom vector logo
@@ -172,7 +172,7 @@ export const PRESET_TENANTS: TenantConfig[] = [
     address: "Haji Mohshin Road, Khulna, Bangladesh",
     addressBn: "হাজী মহসিন রোড, খুলনা, বাংলাদেশ",
     whatsappNumber: "8801784905075",
-    whatsappMessage: "Hello! I would like to make an inquiry about products on Gazzette.",
+    whatsappMessage: "Hello! I would like to make an inquiry about products on Gadget Bazar.",
     defaultCurrency: "BDT",
     defaultLanguage: "bn",
     primaryColor: "#f58220",

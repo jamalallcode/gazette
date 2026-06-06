@@ -71,7 +71,7 @@ export default function OrderSuccessModal({
           <body class="font-sans antialiased text-zinc-900 bg-white">
             <div class="max-w-xl mx-auto border p-6 rounded-2xl shadow-sm bg-neutral-50/50">
               <div class="text-center mb-6 border-b pb-4">
-                <h1 class="text-2xl font-black text-amber-600">NABIK BAZAR (নাবিক বাজার)</h1>
+                <h1 class="text-2xl font-black text-amber-600">GADGET BAZAR (গেজেট বাজার)</h1>
                 <p class="text-xs text-zinc-550 mt-1">Order Placement Invoice Receipt</p>
                 <p class="text-xs text-zinc-400 font-mono mt-1">ID: ${order.id} | Date: ${order.date}</p>
               </div>
@@ -383,7 +383,7 @@ export default function OrderSuccessModal({
 
             <button
               onClick={() => {
-                const messageText = `Assalamu Alaikum, I just confirmed an order at Nabik Bazar!\nOrder ID: ${order.id}\nTotal: ${totalDisplay}\nEstimated Delivery: ${order.estimatedDelivery}`;
+                const messageText = `Assalamu Alaikum, I just confirmed an order at Gadget Bazar!\nOrder ID: ${order.id}\nTotal: ${totalDisplay}\nEstimated Delivery: ${order.estimatedDelivery}`;
                 const encodedMsg = encodeURIComponent(messageText);
                 window.open(`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '') || '01784905075'}?text=${encodedMsg}`, '_blank');
               }}

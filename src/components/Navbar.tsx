@@ -13,7 +13,9 @@ import {
   ShieldCheck,
   LayoutGrid,
   Bell,
-  Languages
+  Languages,
+  Sun,
+  Moon
 } from "lucide-react";
 import { TenantConfig, MenuItemConfig, MenuItemDropdownItem, DEFAULT_MENU_ITEMS } from "../data/tenantConfig";
 
@@ -40,7 +42,7 @@ const GazzetteLogo = ({ isMobile = false, isDarkBg = false }: { isMobile?: boole
       {/* Brand Text Styling */}
       <div className="flex flex-col text-left justify-center">
         <span className={`font-sans font-black tracking-tight uppercase leading-none ${isDarkBg ? 'text-white' : 'text-zinc-900'} ${isMobile ? 'text-[16px]' : 'text-[18px]'} tracking-[0.03em]`}>
-          Gazzette
+          Gadget Bazar
         </span>
         <span className={`${isDarkBg ? 'text-black/80 font-black' : 'text-[#f58220] font-black'} tracking-[0.14em] leading-none ${isMobile ? 'text-[7.5px] mt-1' : 'text-[8px] mt-1.5'} font-sans uppercase`}>
           PREMIUM STORE
@@ -75,6 +77,8 @@ interface NavbarProps {
   onScrollToVideo?: () => void;
   unreadNotifications?: any[];
   setUnreadNotifications?: (orders: any[]) => void;
+  darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
 }
 
 export default function Navbar({
@@ -101,7 +105,9 @@ export default function Navbar({
   onScrollToBlog,
   onScrollToVideo,
   unreadNotifications = [],
-  setUnreadNotifications
+  setUnreadNotifications,
+  darkMode,
+  setDarkMode
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesDropdownOpen, setCategoriesDropdownOpen] = useState(false);
@@ -473,7 +479,7 @@ export default function Navbar({
     {name: "Redragon Kumara Board", nameBn: "রেডড্রাগন কিবোর্ড", count: 1},
     {name: "Rapoo MultiMode Wireless", nameBn: "রাপো ওয়্যারলেস কিবোর্ড", count: 2},
     {name: "Logitech G Pro Series", nameBn: "লজিটেক প্রো মাউস কিবোর্ড", count: 1},
-    {name: "Nabik Signature Polo", nameBn: "নাবিক সিগনেচার পোলো শার্ট", count: 1},
+    {name: "Gadget Bazar Signature Polo", nameBn: "গেজেট বাজার সিগনেচার পোলো শার্ট", count: 1},
     {name: "Club Room Designer Premium", nameBn: "ক্লাব রুম ডিজাইনার টিশার্ট", count: 1}
   ];
 
@@ -488,7 +494,7 @@ export default function Navbar({
   const activeCategoryLabel = categoriesList.find(c => c.id === selectedCategory)?.[language === 'bn' ? 'nameBn' : 'name'] || "Categories";
 
   return (
-    <header className="w-full flex flex-col font-sans text-zinc-805" id="nabik-bazar-header">
+    <header className="w-full flex flex-col font-sans text-zinc-805" id="gadget-bazar-header">
       
       {/* 1. Maroon/Red Top Offer Banner */}
       {showEidBanner && activeTenant?.enableDiscountedProducts && (
@@ -508,7 +514,17 @@ export default function Navbar({
       )}
 
       {/* 2. Mobile Ribbon Header - Optimized with borderless aesthetics and clean branding */}
-      <div className="order-4 bg-zinc-50/80 backdrop-blur-md py-3.5 px-4.5 border-b border-zinc-200 shadow-xs animate-fade-in md:hidden relative z-50">
+      {isSticky && (
+        <div className="h-[105px] md:hidden" />
+      )}
+      <div 
+        id="mobile-ribbon-header"
+        className={`order-4 bg-zinc-50/80 backdrop-blur-md py-3.5 px-4.5 border-b border-zinc-200 shadow-xs animate-fade-in md:hidden z-50 transition-all duration-300 ${
+          isSticky 
+            ? "fixed top-0 left-0 right-0 shadow-md bg-zinc-50/95" 
+            : "relative"
+        }`}
+      >
         <div className="max-w-7xl mx-auto flex flex-col space-y-3.5">
           
           {/* Top Brand Bar Row */}
@@ -685,6 +701,16 @@ export default function Navbar({
                 </div>
               )}
 
+              {/* Premium Mobile Dark Mode Toggle */}
+              <button
+                type="button"
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2.5 rounded-full hover:bg-black/5 active:bg-black/10 text-neutral-800 hover:text-[#f58220] transition-colors duration-200 cursor-pointer flex items-center justify-center shrink-0"
+                title={darkMode ? (language === 'bn' ? 'লাইট মোড' : 'Light Mode') : (language === 'bn' ? 'ডার্ক মোড' : 'Dark Mode')}
+              >
+                {darkMode ? <Sun size={18} className="stroke-[2.5px] text-amber-500 fill-amber-50" /> : <Moon size={18} className="stroke-[2.5px] text-zinc-850" />}
+              </button>
+
               {/* Mobile Menu hamburger icon with modern borderless tactile styling */}
               <button 
                 type="button"
@@ -701,7 +727,7 @@ export default function Navbar({
           {/* Row 2: Search Input Tray - Upgraded to ultra high-contrast pure white pill container */}
           <div className="w-full pt-1.5">
             <div className="relative">
-              <div className="flex items-center overflow-hidden bg-white rounded-xl border border-zinc-250 focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
+              <div id="mobile-search-container" className="flex items-center overflow-hidden bg-white rounded-xl border border-zinc-250 focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
                 <Search size={15} className="text-zinc-400 stroke-[2.5px] mr-2 shrink-0 animate-pulse" />
                 <input
                   type="text"
@@ -752,7 +778,7 @@ export default function Navbar({
                             setSearchQuery(brand.name);
                             setSearchFocused(false);
                             setIsHoveringSuggestions(false);
-                            triggerToast(`Showing products for brand: ${language === 'bn' ? brand.nameBn : brand.name}`);
+                            triggerToast(`Showing products for brand: ${brand.name}`);
                             if (onBrandSelect) onBrandSelect();
                           }}
                           className={`w-full text-left px-4 py-2.5 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex justify-between items-center text-xs font-semibold ${
@@ -760,7 +786,7 @@ export default function Navbar({
                           }`}
                         >
                           <span className={`text-zinc-800 ${isMokarram ? 'text-orange-600 font-extrabold' : ''}`}>
-                            {language === 'bn' ? brand.nameBn : brand.name}
+                            {brand.name}
                           </span>
                           <span className="text-zinc-400 font-bold text-[10px] font-mono">({brand.count})</span>
                         </button>
@@ -862,7 +888,7 @@ export default function Navbar({
                       {/* Render Dropdown menu */}
                       {hasDropdown && isOpen && (
                         <div
-                          className="absolute top-full left-0 pt-2 w-72 h-auto z-[999]"
+                          className="absolute top-full left-0 pt-3 w-72 h-auto z-[999]"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-2.5 text-left font-sans animate-in fade-in slide-in-from-top-2 duration-200 max-h-[354px] overflow-y-auto divide-y divide-zinc-100">
@@ -876,12 +902,12 @@ export default function Navbar({
                                     setSelectedCategory('all');
                                     setSearchQuery(brand.name);
                                     setOpenDropdownId(null);
-                                    triggerToast(`Showing products for brand: ${language === 'bn' ? brand.nameBn : brand.name}`);
+                                    triggerToast(`Showing products for brand: ${brand.name}`);
                                     if (onBrandSelect) onBrandSelect();
                                   }}
                                   className="w-full text-left px-5 py-2 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex justify-between items-center"
                                 >
-                                  <span className="font-semibold text-zinc-800 text-[12.5px]">{language === 'bn' ? brand.nameBn : brand.name}</span>
+                                  <span className="font-semibold text-zinc-800 text-[12.5px]">{brand.name}</span>
                                   <span className="text-zinc-400 font-bold text-[11px] font-mono">({brand.count})</span>
                                 </button>
                               ))
@@ -912,7 +938,7 @@ export default function Navbar({
               
               {/* White rounded Search Bar */}
               <div className="relative group w-[220px] lg:w-[280px]">
-                <div className="flex items-center overflow-hidden bg-white rounded-lg border border-zinc-300 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600 shadow-sm transition h-[36px]">
+                <div id="desktop-search-container" className="flex items-center overflow-hidden bg-white rounded-lg border border-zinc-300 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600 shadow-sm transition h-[36px]">
                   <input
                     type="text"
                     placeholder={language === 'bn' ? "এখানে খুঁজুন..." : "Search here..."}
@@ -924,7 +950,7 @@ export default function Navbar({
                       setSearchQuery(e.target.value);
                       if (currentTab !== 'shop') setCurrentTab('shop');
                     }}
-                    className="w-full px-4 text-xs text-zinc-800 bg-white placeholder-zinc-400 focus:outline-none focus:ring-0 border-0 outline-none font-sans font-semibold"
+                    className="w-full px-4 text-xs text-zinc-800 bg-transparent placeholder-zinc-400 focus:outline-none focus:ring-0 border-0 outline-none font-sans font-semibold"
                   />
                   <button 
                     type="button"
@@ -962,15 +988,15 @@ export default function Navbar({
                               setSearchQuery(brand.name);
                               setSearchFocused(false);
                               setIsHoveringSuggestions(false);
-                              triggerToast(`Showing products for brand: ${language === 'bn' ? brand.nameBn : brand.name}`);
+                              triggerToast(`Showing products for brand: ${brand.name}`);
                               if (onBrandSelect) onBrandSelect();
                             }}
                             className={`w-full text-left px-4 py-2 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex justify-between items-center ${
                               isMokarram ? "bg-orange-50/30" : ""
                             }`}
                           >
-                            <span className={`font-semibold text-zinc-805 text-[11.5px] ${isMokarram ? 'text-orange-600 font-extrabold' : ''}`}>
-                              {language === 'bn' ? brand.nameBn : brand.name}
+                            <span className={`font-semibold text-zinc-855 text-[11.5px] ${isMokarram ? 'text-orange-600 font-extrabold' : ''}`}>
+                              {brand.name}
                             </span>
                             <span className="text-zinc-400 font-bold text-[10px] font-mono">({brand.count})</span>
                           </button>
@@ -982,6 +1008,16 @@ export default function Navbar({
 
               {/* Direct Inline Controls for Languages, Wishlists, Notifications, Profiles & Checkout Cart */}
               <div className="flex items-center space-x-2 shrink-0 animate-fade-in">
+                
+                {/* Premium Desktop Dark Mode Toggle Switch */}
+                <button
+                  type="button"
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="p-2 rounded-full hover:bg-black/10 text-black hover:text-white transition duration-200 cursor-pointer flex items-center justify-center shrink-0 relative"
+                  title={darkMode ? (language === 'bn' ? 'লাইট মোড' : 'Light Mode') : (language === 'bn' ? 'ডার্ক মোড' : 'Dark Mode')}
+                >
+                  {darkMode ? <Sun size={18} className="stroke-[2.5px] text-amber-300 fill-amber-300/20" /> : <Moon size={18} className="stroke-[2.5px] text-zinc-900 hover:text-white" />}
+                </button>
                 
                 {/* 3. Direct Admin Alert Bell (only shown for passcode-logged-in admins) */}
                 {currentUser && currentUser.role === 'admin' && (
@@ -1512,7 +1548,7 @@ export default function Navbar({
                                 }}
                                 className="w-full text-left py-1.5 px-2 text-xs text-zinc-700 hover:text-orange-500 hover:bg-white rounded transition flex justify-between items-center cursor-pointer border-0 bg-transparent font-medium"
                               >
-                                <span className="font-bold text-zinc-800">{language === 'bn' ? brand.nameBn : brand.name}</span>
+                                <span className="font-bold text-zinc-800">{brand.name}</span>
                                 <span className="text-zinc-400 text-[10px] font-mono font-bold">({brand.count})</span>
                               </button>
                             ))

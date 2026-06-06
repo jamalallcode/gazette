@@ -317,7 +317,7 @@ export function sendWhatsappSimulated(
 export function triggerOrderSmsNotification(
   order: Order,
   eventType: 'placed' | 'shipped' | 'delivered',
-  shopName: string = "Nabik Bazar"
+  shopName: string = "Gadget Bazar"
 ): SmsLog | null {
   const settings = getSmsSettings();
   

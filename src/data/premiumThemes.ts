@@ -18,12 +18,12 @@ export interface PremiumTheme {
 export const PREMIUM_THEMES: PremiumTheme[] = [
   {
     id: "nabik-classic",
-    name: "Nabik Classic Amber",
-    nameBn: "নাবিক ক্লাসিক অ্যাম্বার",
+    name: "Gadget Bazar Classic",
+    nameBn: "গেজেট বাজার ক্লাসিক",
     category: "Corporate / Retail",
     categoryBn: "কর্পোরেট / রিটেইল",
-    shopName: "Nabik Bazar",
-    shopNameBn: "নাবিক বাজার",
+    shopName: "Gadget Bazar",
+    shopNameBn: "গেজেট বাজার",
     tagline: "Shop Smart, Live Better",
     taglineBn: "স্মার্ট শপিং, সেরা জীবন",
     primaryColor: "#f58220",

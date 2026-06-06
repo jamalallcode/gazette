@@ -72,28 +72,26 @@ app.get("/api/debug-server-logs", (req, res) => {
   // Simple JSON-file and In-memory Order Database
   const ORDERS_FILE = path.join(process.cwd(), "orders_database.json");
   
-  function readOrdersFromDisk() {
-    try {
-      if (fs.existsSync(ORDERS_FILE)) {
-        return JSON.parse(fs.readFileSync(ORDERS_FILE, "utf-8"));
-      }
-    } catch (e) {
-      console.error("Error reading orders file:", e);
+  let cachedOrders: any[] = [];
+  try {
+    if (fs.existsSync(ORDERS_FILE)) {
+      cachedOrders = JSON.parse(fs.readFileSync(ORDERS_FILE, "utf-8"));
     }
-    return [];
+  } catch (e) {
+    console.error("Error pre-loading orders database:", e);
+  }
+
+  function readOrdersFromDisk() {
+    return cachedOrders;
   }
 
   function writeOrdersToDisk(ordersList: any[]) {
+    cachedOrders = ordersList;
     try {
       fs.writeFileSync(ORDERS_FILE, JSON.stringify(ordersList, null, 2), "utf-8");
     } catch (e) {
-      console.error("Error writing orders file:", e);
+      console.error("Error writing orders to disk:", e);
     }
-  }
-
-  // Pre-seed if file doesn't exist
-  if (!fs.existsSync(ORDERS_FILE)) {
-    writeOrdersToDisk([]);
   }
 
   // Admin Authentication (Direct Login without OTP as requested)

@@ -262,7 +262,7 @@ export default function ResellerConfigPanel({
                 <Settings size={20} className="text-yellow-450 animate-pulse text-brand" style={{ color: 'var(--brand-color)' }} />
                 <div className="text-left">
                   <h3 className="text-sm font-black tracking-tight leading-none">
-                    {language === 'bn' ? 'নাবিক রিসেলার ও ক্লোনিং স্যুট' : 'Reseller White-label Panel'}
+                    {language === 'bn' ? 'গেজেট বাজার রিসেলার ও ক্লোনিং স্যুট' : 'Reseller White-label Panel'}
                   </h3>
                   <span className="text-[10px] text-zinc-400 font-bold mt-1 block">
                     {language === 'bn' ? 'যেকোনো ক্লায়েন্টের জন্য সাইটটি কাস্টমাইজ করুন' : 'Clone & customize this eCommerce site in real-time'}
@@ -907,7 +907,7 @@ export default function ResellerConfigPanel({
 
             {/* Footer with branding */}
             <div className="p-4 bg-zinc-90 border-t border-zinc-150 text-center select-none bg-zinc-50 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
-              {language === 'bn' ? 'নাবিক কাস্টম সলিউশনস' : 'Nabik Multitenant Suite'}
+              {language === 'bn' ? 'গেজেট বাজার কাস্টম সলিউশনস' : 'Gadget Bazar Multitenant Suite'}
             </div>
 
           </div>

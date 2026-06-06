@@ -82,7 +82,7 @@ export default function AdminLogin({
         </h1>
         <p className="text-xs text-center text-zinc-500 font-semibold mb-8 select-none leading-relaxed">
           {language === 'bn' 
-            ? 'শুধুমাত্র অনুমোদিত নাবিক বাজার এডমিনদের জন্য সিক্রেট সেশন।' 
+            ? 'শুধুমাত্র অনুমোদিত গেজেট বাজার এডমিনদের জন্য সিক্রেট সেশন।' 
             : 'Secure authentication window for authorized administrators only.'}
         </p>
 
