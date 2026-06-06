@@ -689,10 +689,10 @@ export default function AdminPanel({
         {/* Branding Title */}
         <div className="p-4 border-b border-[#0c4a85] flex items-center justify-between">
           <div className="flex items-center space-x-2 truncate">
-            <div className="h-8 w-8 bg-[#f58220] rounded-lg flex items-center justify-center font-black text-white text-md">NB</div>
+            <div className="h-8 w-8 bg-[#f58220] rounded-lg flex items-center justify-center font-black text-white text-md">GB</div>
             {sidebarOpen && (
               <div className="text-left font-black tracking-wide leading-none">
-                <span className="text-[#f58220] text-[13px] block">NABIK</span>
+                <span className="text-[#f58220] text-[13px] block">GADGET</span>
                 <span className="text-white text-[11px] block text-opacity-80">BAZAR</span>
               </div>
             )}
@@ -2108,10 +2108,10 @@ export default function AdminPanel({
             {/* Profile badge */}
             <div className="flex items-center space-x-2 pl-2 border-l border-zinc-200">
               <div className="w-8 h-8 rounded-full bg-cover bg-center bg-[#063b6d] text-white flex items-center justify-center font-bold text-xs">
-                NS
+                GB
               </div>
               <div className="text-left hidden md:block leading-none">
-                <span className="text-xs font-extrabold text-zinc-900 block">Nibiz Soft</span>
+                <span className="text-xs font-extrabold text-zinc-900 block">Gadget Bazar</span>
                 <span className="text-[10px] text-zinc-400 block mt-0.5">Master Admin</span>
               </div>
               <ChevronDown size={12} className="text-zinc-400 hidden md:block" />
