@@ -2548,22 +2548,22 @@ export default function AdminPanel({
                       <table className="w-full text-xs text-left border-collapse">
                         <thead>
                           <tr className="bg-zinc-55 bg-indigo-50/20 text-indigo-900 border-b border-zinc-200 font-extrabold uppercase text-[10.5px] select-none tracking-wide">
-                            <th className="p-4">Order ID</th>
-                            <th className="p-4">Customer Name</th>
-                            <th className="p-4">Billing Date</th>
-                            <th className="p-4">Delivery Cargo Address</th>
-                            <th className="p-4">Amount Billing</th>
-                            <th className="p-4">Logistics Status</th>
-                            <th className="p-4 text-center">Action Decision</th>
+                            <th className="px-2.5 py-3 hover:bg-indigo-50/10">Order ID</th>
+                            <th className="px-2.5 py-3 hover:bg-indigo-50/10">Customer Name</th>
+                            <th className="px-2.5 py-3 hover:bg-indigo-50/10">Billing Date</th>
+                            <th className="px-2.5 py-3 hover:bg-indigo-50/10">Delivery Cargo Address</th>
+                            <th className="px-2.5 py-3 hover:bg-indigo-50/10">Amount Billing</th>
+                            <th className="px-2.5 py-3 text-center">Logistics Status</th>
+                            <th className="px-2.5 py-3 text-center">Action Decision</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-200">
                           {displayOrders.map((order) => (
                             <tr key={order.id} className="hover:bg-zinc-50/50 transition">
-                              <td className="p-4 font-black text-[#f58220]">{order.id}</td>
-                              <td className="p-4 leading-normal">
-                                <strong className="block text-zinc-800 font-bold">{order.customerInfo.name}</strong>
-                                <span className="block text-[10px] text-zinc-400 font-mono">{order.customerInfo.phone}</span>
+                              <td className="px-2.5 py-3 font-black text-[#f58220]">{order.id}</td>
+                              <td className="px-2.5 py-3 leading-normal">
+                                <strong className="block text-zinc-800 font-bold max-w-[120px] truncate" title={order.customerInfo.name}>{order.customerInfo.name}</strong>
+                                <span className="block text-[10px] text-zinc-400 font-mono mt-0.5">{order.customerInfo.phone}</span>
                                 {(() => {
                                   const rsk = analyzeOrderRisk(
                                     order.customerInfo.phone, 
@@ -2581,25 +2581,31 @@ export default function AdminPanel({
                                         }`} 
                                         title={rsk.matchedThreats.join(" | ")}
                                       >
-                                        <span>⚠ {rsk.riskLevel} RISK</span>
+                                        <span>⚠ {rsk.riskLevel}</span>
                                       </span>
                                     );
                                   }
                                   return (
                                     <span className="inline-flex items-center space-x-1 mt-1 text-[8.5px] text-emerald-700 font-black uppercase">
-                                      <span>✓ Whitelisted</span>
+                                      <span>✓ Clean</span>
                                     </span>
                                   );
                                 })()}
                               </td>
-                              <td className="p-4 text-zinc-600 font-mono">{order.date}</td>
-                              <td className="p-4 truncate max-w-xs font-medium text-zinc-600">{order.customerInfo.address}</td>
-                              <td className="p-4">
-                                <strong className="font-mono text-zinc-900">৳{order.totalBDT.toLocaleString()}</strong>
-                                <span className="block text-[10px] text-zinc-400">USD ${order.totalUSD} • {order.customerInfo.paymentMethod}</span>
+                              <td className="px-2.5 py-3 text-zinc-600 font-mono text-[11px] leading-relaxed max-w-[100px] break-words">{order.date}</td>
+                              <td className="px-2.5 py-3">
+                                <div className="max-w-[150px] truncate font-medium text-zinc-650 text-xs" title={order.customerInfo.address}>
+                                  {order.customerInfo.address}
+                                </div>
                               </td>
-                              <td className="p-4">
-                                <span className={`px-2.5 py-1 text-[10.5px] font-black uppercase rounded-full ${
+                              <td className="px-2.5 py-3">
+                                <strong className="font-mono text-zinc-900 block">৳{order.totalBDT.toLocaleString()}</strong>
+                                <span className="block text-[9.5px] text-zinc-400 font-medium">
+                                  USD ${order.totalUSD} • {order.customerInfo.paymentMethod === 'Cash on Delivery' ? 'COD' : order.customerInfo.paymentMethod}
+                                </span>
+                              </td>
+                              <td className="px-2.5 py-3 text-center">
+                                <span className={`px-2.5 py-1 text-[10.5px] font-black uppercase rounded-full inline-block ${
                                   order.status === 'delivered' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                   order.status === 'shipped' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
                                   'bg-amber-50 text-amber-700 border border-[#fdecd5]'
@@ -2607,37 +2613,39 @@ export default function AdminPanel({
                                   {order.status}
                                 </span>
                               </td>
-                              <td className="p-4 flex items-center justify-center space-x-1.5">
-                                {order.status !== 'delivered' && (
+                              <td className="px-2.5 py-3 text-center whitespace-nowrap">
+                                <div className="flex items-center justify-center space-x-1">
+                                  {order.status !== 'delivered' && (
+                                    <button 
+                                      onClick={() => {
+                                        const nextStatus = order.status === 'placed' ? 'processing' : order.status === 'processing' ? 'shipped' : 'delivered';
+                                        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: nextStatus } : o));
+                                        
+                                        // Trigger custom auto SMS notification
+                                        if (nextStatus === 'shipped' || nextStatus === 'delivered') {
+                                          triggerOrderSmsNotification(order, nextStatus);
+                                        }
+                                        
+                                        setSuccessMsg(`Dispatched order ${order.id} to '${nextStatus}' stage.`);
+                                        setTimeout(() => setSuccessMsg(""), 3050);
+                                      }}
+                                      className="bg-zinc-100 hover:bg-[#f58220] border hover:border-0 hover:text-white px-2 py-1 text-[10px] font-bold rounded cursor-pointer transition text-zinc-600 shadow-sm shrink-0"
+                                    >
+                                      Dispatch &gt;
+                                    </button>
+                                  )}
                                   <button 
                                     onClick={() => {
-                                      const nextStatus = order.status === 'placed' ? 'processing' : order.status === 'processing' ? 'shipped' : 'delivered';
-                                      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: nextStatus } : o));
-                                      
-                                      // Trigger custom auto SMS notification
-                                      if (nextStatus === 'shipped' || nextStatus === 'delivered') {
-                                        triggerOrderSmsNotification(order, nextStatus);
-                                      }
-                                      
-                                      setSuccessMsg(`Dispatched order ${order.id} to '${nextStatus}' stage.`);
-                                      setTimeout(() => setSuccessMsg(""), 3050);
+                                      setSelectedInvoiceOrder(order);
+                                      setIsInvoiceModalOpen(true);
                                     }}
-                                    className="bg-zinc-100 hover:bg-[#f58220] border hover:border-0 hover:text-white px-2.5 py-1 text-[10px] font-bold rounded cursor-pointer transition text-zinc-600"
+                                    className="bg-[#f58220]/10 hover:bg-[#f58220] border-0 hover:text-white px-2 py-1.5 rounded cursor-pointer text-[#f58220] font-black text-[9.5px] uppercase flex items-center justify-center space-x-1 transition shadow-sm shrink-0"
+                                    title="Modern Invoice Generator"
                                   >
-                                    Dispatch &gt;
+                                    <Printer size={11} />
+                                    <span>{language === 'bn' ? "ইনভয়েস" : "Invoice"}</span>
                                   </button>
-                                )}
-                                <button 
-                                  onClick={() => {
-                                    setSelectedInvoiceOrder(order);
-                                    setIsInvoiceModalOpen(true);
-                                  }}
-                                  className="bg-[#f58220]/10 hover:bg-[#f58220] border-0 hover:text-white px-2 py-1.5 rounded cursor-pointer text-[#f58220] font-black text-[9.5px] uppercase flex items-center space-x-1 transition"
-                                  title="Modern Invoice Generator"
-                                >
-                                  <Printer size={12} />
-                                  <span>{language === 'bn' ? "ইনভয়েস" : "Invoice"}</span>
-                                </button>
+                                </div>
                               </td>
                             </tr>
                           ))}

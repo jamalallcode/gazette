@@ -513,19 +513,13 @@ export default function Navbar({
         </div>
       )}
 
-      {/* 2. Mobile Ribbon Header - Optimized with borderless aesthetics and clean branding */}
-      {isSticky && (
-        <div className="h-[105px] md:hidden" />
-      )}
+      {/* 2. Mobile Ribbon Header - Fixed Logo/Top Row Only */}
+      <div className="h-[56px] lg:hidden" />
       <div 
         id="mobile-ribbon-header"
-        className={`order-4 bg-zinc-50/80 backdrop-blur-md py-3.5 px-4.5 border-b border-zinc-200 shadow-xs animate-fade-in md:hidden z-50 transition-all duration-300 ${
-          isSticky 
-            ? "fixed top-0 left-0 right-0 shadow-md bg-zinc-50/95" 
-            : "relative"
-        }`}
+        className="order-4 bg-zinc-50/95 backdrop-blur-md py-2.5 px-4.5 border-b border-zinc-200 shadow-sm animate-fade-in lg:hidden z-50 transition-all duration-300 fixed top-0 left-0 right-0 h-[56px] flex items-center"
       >
-        <div className="max-w-7xl mx-auto flex flex-col space-y-3.5">
+        <div className="max-w-7xl mx-auto w-full">
           
           {/* Top Brand Bar Row */}
           <div className="flex items-center justify-between w-full">
@@ -724,88 +718,124 @@ export default function Navbar({
             </div>
           </div>
 
-          {/* Row 2: Search Input Tray - Upgraded to ultra high-contrast pure white pill container */}
-          <div className="w-full pt-1.5">
-            <div className="relative">
-              <div id="mobile-search-container" className="flex items-center overflow-hidden bg-white rounded-xl border border-zinc-250 focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
-                <Search size={15} className="text-zinc-400 stroke-[2.5px] mr-2 shrink-0 animate-pulse" />
-                <input
-                  type="text"
-                  placeholder={language === 'bn' ? "আপনি এখানে কী খুঁজছেন?" : "What are you looking for?"}
-                  value={searchQuery}
-                  aria-label="Mobile Search items"
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setSearchFocused(false), 250)}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (currentTab !== 'shop') setCurrentTab('shop');
-                  }}
-                  className="w-full text-xs font-semibold text-zinc-800 bg-transparent placeholder-zinc-400 focus:outline-none border-0 outline-none p-0 font-sans"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="text-zinc-400 hover:text-zinc-700 bg-transparent border-0 p-1 font-bold text-xs cursor-pointer flex items-center justify-center h-full"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+        </div>
 
-              {/* Suggestions autocomplete list for mobile */}
-              {(searchFocused || isHoveringSuggestions) && (
-                <div 
-                  onMouseEnter={() => setIsHoveringSuggestions(true)}
-                  onMouseLeave={() => setIsHoveringSuggestions(false)}
-                  className="absolute top-full left-0 right-0 mt-1 bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-1.5 z-[9999] max-h-[220px] overflow-y-auto divide-y divide-zinc-105 font-sans"
-                >
-                  {brandList
-                    .filter((b) => {
-                      if (!searchQuery) return true;
-                      return b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             b.nameBn.toLowerCase().includes(searchQuery.toLowerCase());
-                    })
-                    .map((brand) => {
-                      const isMokarram = brand.name === "Mokarram";
-                      return (
-                        <button
-                          key={brand.name}
+        {/* Mobile Menu list item drawers */}
+        {mobileMenuOpen && (
+          <div className="absolute top-full left-0 right-0 lg:hidden bg-white text-zinc-900 border-b border-zinc-200 py-4 px-5 space-y-2.5 z-[999] shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto animate-fade-in text-left">
+            
+            <div className="flex flex-col space-y-1 text-sm font-bold">
+              {(activeTenant?.menuItems || DEFAULT_MENU_ITEMS).filter(item => item.enabled && !["seller_zone", "blog", "video", "track_order"].includes(item.id)).map((item) => {
+                const hasDropdown = item.dropdownType && item.dropdownType !== 'none';
+                const isSpecialBrand = item.dropdownType === 'brandList';
+                const isDropdownOpen = openDropdownId === item.id;
+
+                return (
+                  <div key={item.id} className="w-full">
+                    {hasDropdown ? (
+                      <>
+                        <button 
                           type="button"
                           onClick={() => {
-                            setCurrentTab('shop');
-                            setSelectedCategory('all');
-                            setSearchQuery(brand.name);
-                            setSearchFocused(false);
-                            setIsHoveringSuggestions(false);
-                            triggerToast(`Showing products for brand: ${brand.name}`);
-                            if (onBrandSelect) onBrandSelect();
+                            if (openDropdownId === item.id) {
+                              setOpenDropdownId(null);
+                            } else {
+                              setOpenDropdownId(item.id);
+                            }
                           }}
-                          className={`w-full text-left px-4 py-2.5 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex justify-between items-center text-xs font-semibold ${
-                            isMokarram ? "bg-orange-50/20" : ""
-                          }`}
+                          className="w-full text-left py-2 hover:bg-zinc-50 rounded px-2 flex justify-between items-center"
                         >
-                          <span className={`text-zinc-800 ${isMokarram ? 'text-orange-600 font-extrabold' : ''}`}>
-                            {brand.name}
-                          </span>
-                          <span className="text-zinc-400 font-bold text-[10px] font-mono">({brand.count})</span>
+                          <span>{item.label}</span>
+                          <ChevronDown size={14} className={`transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
-                      );
-                    })}
-                </div>
+                        
+                        {isDropdownOpen && (
+                          <div className="pl-4 max-h-48 overflow-y-auto space-y-1 mt-1 bg-zinc-50 rounded-lg p-1.5 border border-zinc-100">
+                            {isSpecialBrand ? (
+                              brandList.map((brand) => (
+                                <button
+                                  key={brand.name}
+                                  type="button"
+                                  onClick={() => {
+                                    setCurrentTab('shop');
+                                    setSelectedCategory('all');
+                                    setSearchQuery(brand.name);
+                                    setMobileMenuOpen(false);
+                                    setOpenDropdownId(null);
+                                    if (onBrandSelect) onBrandSelect();
+                                  }}
+                                  className="w-full text-left py-1.5 px-2 text-xs text-zinc-700 hover:text-orange-500 hover:bg-white rounded transition flex justify-between items-center cursor-pointer border-0 bg-transparent font-medium"
+                                >
+                                  <span className="font-bold text-zinc-800">{brand.name}</span>
+                                  <span className="text-zinc-400 text-[10px] font-mono font-bold">({brand.count})</span>
+                                </button>
+                              ))
+                            ) : (
+                              item.dropdownItems?.map((dpItem) => (
+                                <button
+                                  key={dpItem.id}
+                                  type="button"
+                                  onClick={() => {
+                                    handleDropdownItemClick(dpItem);
+                                    setMobileMenuOpen(false);
+                                  }}
+                                  className="w-full text-left py-1.5 px-2 text-xs text-zinc-700 hover:text-[#f58220] hover:bg-white rounded transition cursor-pointer border-0 bg-transparent font-semibold"
+                                >
+                                  {dpItem.label}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          handleMenuItemClick(item);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full text-left py-2 hover:bg-zinc-50 rounded px-2"
+                      >
+                        {item.label}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+              {activeTenant?.enableAiAdvisor && (
+                <button 
+                  onClick={() => {
+                    setCurrentTab('ai-advisor');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left py-2 text-brand hover:bg-zinc-50 rounded px-2 font-black"
+                  style={{ color: 'var(--brand-color)' }}
+                >
+                  Aura AI Assistant
+                </button>
               )}
+              <button 
+                onClick={() => {
+                  setCurrentTab('admin');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left py-2 text-[#f58220] hover:bg-zinc-50 rounded px-2"
+              >
+                Admin Dashboard
+              </button>
             </div>
           </div>
+        )}
 
-        </div>
       </div>
 
       {/* 4. Navigation Menu Bar: White code categories trigger + Orange Navigation strip */}
       {isSticky && (
-        <div className="order-3 h-[44px] hidden md:block" />
+        <div className="order-3 h-[44px] hidden lg:block" />
       )}
       <div 
-        className={`order-3 bg-[#f58220] text-black hidden md:block transition-all duration-300 ease-in-out ${
+        className={`order-3 bg-[#f58220] text-black hidden lg:block transition-all duration-300 ease-in-out ${
           isSticky 
             ? "fixed top-0 left-0 right-0 z-50 shadow-xl bg-[#f58220]/95 backdrop-blur-md border-b border-orange-600/20 py-1" 
             : "relative shadow-md py-0"
@@ -937,7 +967,7 @@ export default function Navbar({
             <div className="flex items-center space-x-3.5 shrink-0 my-1.5 ml-4">
               
               {/* White rounded Search Bar */}
-              <div className="relative group w-[220px] lg:w-[280px]">
+              <div className="relative group w-[180px] xl:w-[280px] lg:w-[220px]">
                 <div id="desktop-search-container" className="flex items-center overflow-hidden bg-white rounded-lg border border-zinc-300 focus-within:border-orange-600 focus-within:ring-1 focus-within:ring-orange-600 shadow-sm transition h-[36px]">
                   <input
                     type="text"
@@ -1393,7 +1423,7 @@ export default function Navbar({
                                 onClick={() => {
                                   setCurrentUser?.(null);
                                   setCurrentTab('shop');
-                                  triggerToast("Session logged out.");
+                                  triggerToast("Successfully cleared active session.");
                                   setProfileDropdownOpen(false);
                                   setQuickHubOpen(false);
                                 }}
@@ -1405,6 +1435,7 @@ export default function Navbar({
                           )}
                         </div>
                       )}
+
 
                       {/* 4. Real-time notifications bell for admins */}
                       {currentUser && currentUser.role === 'admin' && (
@@ -1475,140 +1506,84 @@ export default function Navbar({
               </div>
 
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu list item drawers */}
-      {mobileMenuOpen && (
-        <div className="order-5 md:hidden bg-white text-zinc-900 border-b border-zinc-200 py-3 px-4 space-y-2 z-40 relative">
-          
-          {/* Mobile language toggle option is no longer needed per user request, commented out to preserve code structure */}
-          {/* 
-          <button 
-            type="button"
-            onClick={() => {
-              const targetLang = language === 'en' ? 'bn' : 'en';
-              setLanguage(targetLang);
-              setMobileMenuOpen(false);
-              triggerToast(targetLang === 'bn' ? 'ভাষা পরিবর্তন সফল হয়েছে!' : 'Language changed successfully!');
-            }}
-            className="w-full text-left py-2.5 px-3 bg-orange-50 text-[#f58220] rounded-xl flex items-center justify-between font-extrabold text-[12.5px] border border-orange-100 transition-all active:scale-95"
-          >
-            <div className="flex items-center space-x-2">
-              <Languages size={15} className="text-[#f58220] stroke-[2.5px]" />
-              <span>{language === 'bn' ? 'English এ পরিবর্তন করুন' : 'Change Language (বাংলা)'}</span>
+      {/* 3. Mobile Search Tray - Scrolls with the page, goes behind the fixed top logo header */}
+      <div className="order-4 lg:hidden bg-zinc-50/95 dark:bg-[#1a2333]/95 backdrop-blur-md pb-3 pt-2 px-4.5 border-b border-zinc-200 dark:border-[#283752]/80 shadow-sm relative z-40">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="relative">
+            <div id="mobile-search-container" className="flex items-center overflow-hidden bg-white dark:bg-[#111827] rounded-xl border border-zinc-250 dark:border-[#283752] focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
+              <Search size={15} className="text-zinc-400 dark:text-zinc-550 stroke-[2.5px] mr-2 shrink-0 animate-pulse" />
+              <input
+                type="text"
+                placeholder={language === 'bn' ? "আপনি এখানে কী খুঁজছেন?" : "What are you looking for?"}
+                value={searchQuery}
+                aria-label="Mobile Search items"
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 250)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (currentTab !== 'shop') setCurrentTab('shop');
+                }}
+                className="w-full text-xs font-semibold text-zinc-800 dark:text-slate-100 bg-transparent placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none border-0 outline-none p-0 font-sans"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-zinc-400 dark:text-zinc-550 hover:text-zinc-700 dark:hover:text-zinc-200 bg-transparent border-0 p-1 font-bold text-xs cursor-pointer flex items-center justify-center h-full"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            <span className="text-[10px] uppercase font-mono tracking-wider bg-white border border-orange-200 text-orange-600 px-1.5 py-0.5 rounded-md leading-none">
-              {language === 'bn' ? 'EN' : 'বাংলা'}
-            </span>
-          </button>
-          */}
 
-          <div className="flex flex-col space-y-1 text-sm font-bold">
-            {(activeTenant?.menuItems || DEFAULT_MENU_ITEMS).filter(item => item.enabled && !["seller_zone", "blog", "video", "track_order"].includes(item.id)).map((item) => {
-              const hasDropdown = item.dropdownType && item.dropdownType !== 'none';
-              const isSpecialBrand = item.dropdownType === 'brandList';
-              const isDropdownOpen = openDropdownId === item.id;
-
-              return (
-                <div key={item.id} className="w-full">
-                  {hasDropdown ? (
-                    <>
-                      <button 
+            {/* Suggestions autocomplete list for mobile */}
+            {(searchFocused || isHoveringSuggestions) && (
+              <div 
+                onMouseEnter={() => setIsHoveringSuggestions(true)}
+                onMouseLeave={() => setIsHoveringSuggestions(false)}
+                className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a2333] text-zinc-800 dark:text-slate-100 rounded-xl shadow-2xl border border-zinc-200 dark:border-[#283752] py-1.5 z-[9999] max-h-[220px] overflow-y-auto divide-y divide-zinc-105 dark:divide-zinc-800 font-sans"
+              >
+                {brandList
+                  .filter((b) => {
+                    if (!searchQuery) return true;
+                    return b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           b.nameBn.toLowerCase().includes(searchQuery.toLowerCase());
+                  })
+                  .map((brand) => {
+                    const isMokarram = brand.name === "Mokarram";
+                    return (
+                      <button
+                        key={brand.name}
                         type="button"
                         onClick={() => {
-                          if (openDropdownId === item.id) {
-                            setOpenDropdownId(null);
-                          } else {
-                            setOpenDropdownId(item.id);
-                          }
+                          setCurrentTab('shop');
+                          setSelectedCategory('all');
+                          setSearchQuery(brand.name);
+                          setSearchFocused(false);
+                          setIsHoveringSuggestions(false);
+                          triggerToast(`Showing products for brand: ${brand.name}`);
+                          if (onBrandSelect) onBrandSelect();
                         }}
-                        className="w-full text-left py-2 hover:bg-zinc-50 rounded px-2 flex justify-between items-center"
+                        className={`w-full text-left px-4 py-2.5 hover:bg-orange-50 dark:hover:bg-zinc-800 hover:text-[#f58220] dark:hover:text-amber-500 transition border-0 bg-transparent cursor-pointer flex justify-between items-center text-xs font-semibold ${
+                          isMokarram ? "bg-orange-50/20 dark:bg-zinc-800/30" : ""
+                        }`}
                       >
-                        <span>{item.label}</span>
-                        <ChevronDown size={14} className={`transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        <span className={`text-zinc-800 dark:text-zinc-200 ${isMokarram ? 'text-orange-600 dark:text-orange-400 font-extrabold' : ''}`}>
+                          {brand.name}
+                        </span>
+                        <span className="text-zinc-400 dark:text-zinc-500 font-bold text-[10px] font-mono">({brand.count})</span>
                       </button>
-                      
-                      {isDropdownOpen && (
-                        <div className="pl-4 max-h-48 overflow-y-auto space-y-1 mt-1 bg-zinc-50 rounded-lg p-1.5 border border-zinc-100">
-                          {isSpecialBrand ? (
-                            brandList.map((brand) => (
-                              <button
-                                key={brand.name}
-                                type="button"
-                                onClick={() => {
-                                  setCurrentTab('shop');
-                                  setSelectedCategory('all');
-                                  setSearchQuery(brand.name);
-                                  setMobileMenuOpen(false);
-                                  setOpenDropdownId(null);
-                                  if (onBrandSelect) onBrandSelect();
-                                }}
-                                className="w-full text-left py-1.5 px-2 text-xs text-zinc-700 hover:text-orange-500 hover:bg-white rounded transition flex justify-between items-center cursor-pointer border-0 bg-transparent font-medium"
-                              >
-                                <span className="font-bold text-zinc-800">{brand.name}</span>
-                                <span className="text-zinc-400 text-[10px] font-mono font-bold">({brand.count})</span>
-                              </button>
-                            ))
-                          ) : (
-                            item.dropdownItems?.map((dpItem) => (
-                              <button
-                                key={dpItem.id}
-                                type="button"
-                                onClick={() => {
-                                  handleDropdownItemClick(dpItem);
-                                  setMobileMenuOpen(false);
-                                }}
-                                className="w-full text-left py-1.5 px-2 text-xs text-zinc-700 hover:text-[#f58220] hover:bg-white rounded transition cursor-pointer border-0 bg-transparent font-semibold"
-                              >
-                                {dpItem.label}
-                              </button>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        handleMenuItemClick(item);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full text-left py-2 hover:bg-zinc-50 rounded px-2"
-                    >
-                      {item.label}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-            {activeTenant?.enableAiAdvisor && (
-              <button 
-                onClick={() => {
-                  setCurrentTab('ai-advisor');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full text-left py-2 text-brand hover:bg-zinc-50 rounded px-2 font-black"
-                style={{ color: 'var(--brand-color)' }}
-              >
-                Aura AI Assistant
-              </button>
+                    );
+                  })}
+              </div>
             )}
-            <button 
-              onClick={() => {
-                setCurrentTab('admin');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-left py-2 text-[#f58220] hover:bg-zinc-50 rounded px-2"
-            >
-              Admin Dashboard
-            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Profile Details Dialog Modal */}
       {profileModalOpen && (
