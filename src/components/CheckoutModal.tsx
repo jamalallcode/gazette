@@ -51,11 +51,6 @@ export default function CheckoutModal({
     if (!formData.name.trim()) {
       newErrors.name = language === 'en' ? "Full name is required" : "সম্পূর্ণ নাম আবশ্যিক";
     }
-    if (!formData.email.trim()) {
-      newErrors.email = language === 'en' ? "Email address is required" : "ইমেইল অ্যাড্রেস আবশ্যিক";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = language === 'en' ? "Invalid email pattern" : "সঠিক ইমেইল ফরম্যাট প্রদান করুন";
-    }
     if (!formData.phone.trim()) {
       newErrors.phone = language === 'en' ? "Phone number is required" : "ফোন নাম্বার আবশ্যিক";
     } else if (formData.phone.trim().length < 10) {
@@ -180,22 +175,6 @@ export default function CheckoutModal({
                 />
                 {errors.phone && <p className="text-[11px] text-red-400 mt-1">{errors.phone}</p>}
               </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-[9px] font-bold tracking-widest text-zinc-400 uppercase mb-2">
-                {language === 'en' ? 'Email Address' : 'ইমেইল ঠিকানা'} <span className="text-amber-500">*</span>
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="you@domain.com"
-                className="w-full px-4.5 py-3 bg-zinc-900/40 border border-zinc-850 rounded-xl text-zinc-150 text-zinc-100 placeholder-zinc-650 text-xs focus:outline-none focus:border-amber-500/80 focus:bg-zinc-950 transition-all font-mono"
-                id="checkout-email"
-              />
-              {errors.email && <p className="text-[11px] text-red-400 mt-1">{errors.email}</p>}
             </div>
 
             {/* Delivery address */}

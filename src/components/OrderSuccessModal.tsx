@@ -80,7 +80,7 @@ export default function OrderSuccessModal({
                   <h3 class="font-bold text-zinc-900 border-b pb-1 uppercase tracking-wider text-[10px]">Customer Specs</h3>
                   <p class="mt-2 text-zinc-750"><strong>Name:</strong> ${order.customerInfo.name}</p>
                   <p class="text-zinc-750"><strong>Phone:</strong> ${order.customerInfo.phone}</p>
-                  <p class="text-zinc-750"><strong>Email:</strong> ${order.customerInfo.email}</p>
+                  ${order.customerInfo.email ? `<p class="text-zinc-750"><strong>Email:</strong> ${order.customerInfo.email}</p>` : ''}
                   <p class="text-zinc-750"><strong>Shipping Address:</strong> ${order.customerInfo.address}</p>
                 </div>
                 <div>

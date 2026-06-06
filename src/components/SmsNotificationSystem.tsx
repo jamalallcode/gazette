@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { 
   getSmsSettings, saveSmsSettings, getSmsLogs, POPULAR_GATEWAYS, 
-  sendSmsSimulated, SmsLog, SmsSettings 
+  sendSmsSimulated, SmsLog, SmsSettings, convertBanglaToEnglishDigits
 } from "../utils/smsHelper";
 
 export default function SmsNotificationSystem({ language }: { language: 'en' | 'bn' }) {
@@ -57,7 +57,7 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
     e.preventDefault();
     if (!testMobile || !testMsg) return;
 
-    const phoneClean = testMobile.replace(/\D/g, '');
+    const phoneClean = convertBanglaToEnglishDigits(testMobile).replace(/\D/g, '');
     const clientName = testName.trim() || (language === 'bn' ? "সম্মানিত গ্রাহক" : "Retail Customer");
 
     const responseLog = sendSmsSimulated(phoneClean, clientName, testMsg);

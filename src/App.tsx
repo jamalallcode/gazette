@@ -1162,7 +1162,9 @@ export default function App() {
                 <div className="space-y-1.5 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                   <p><span className="text-zinc-550 font-bold">Name:</span> <strong className="text-zinc-800">{placedOrderReceipt.customerInfo.name}</strong></p>
                   <p><span className="text-zinc-550 font-bold">Phone:</span> <strong className="text-zinc-850 font-mono">{placedOrderReceipt.customerInfo.phone}</strong></p>
-                  <p><span className="text-zinc-550 font-bold">Email:</span> <strong className="text-zinc-850 font-mono">{placedOrderReceipt.customerInfo.email}</strong></p>
+                  {placedOrderReceipt.customerInfo.email && (
+                    <p><span className="text-zinc-550 font-bold">Email:</span> <strong className="text-zinc-850 font-mono">{placedOrderReceipt.customerInfo.email}</strong></p>
+                  )}
                   <p><span className="text-zinc-550 font-bold">{langText.address}:</span> <span className="text-zinc-700">{placedOrderReceipt.customerInfo.address}</span></p>
                 </div>
               </div>

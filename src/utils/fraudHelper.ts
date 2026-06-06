@@ -155,7 +155,12 @@ export function saveFraudConfig(config: FraudConfig): void {
  * Clean & normalize a phone number for accurate matching
  */
 export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '');
+  const banglaDigits: Record<string, string> = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+  };
+  const converted = phone.replace(/[০-৯]/g, (w) => banglaDigits[w] || w);
+  const digits = converted.replace(/\D/g, '');
   if (digits.startsWith('880')) {
     return digits.slice(2); // turn 88017... to 017...
   }

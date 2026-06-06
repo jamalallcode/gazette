@@ -38,6 +38,14 @@ export interface SmsSettings {
   adminWhatsappTemplate?: string;
 }
 
+export function convertBanglaToEnglishDigits(str: string): string {
+  const banglaDigits: Record<string, string> = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+  };
+  return str.replace(/[০-৯]/g, (w) => banglaDigits[w] || w);
+}
+
 export interface SmsLog {
   id: string;
   timestamp: string;
@@ -346,8 +354,8 @@ export function triggerOrderSmsNotification(
     .replace(/{shop_name}/g, shopName);
 
   let recipientPhone = order.customerInfo.phone || "";
-  // Strip non-digits
-  recipientPhone = recipientPhone.replace(/\D/g, '');
+  // Strip non-digits after converting Bangla numbers
+  recipientPhone = convertBanglaToEnglishDigits(recipientPhone).replace(/\D/g, '');
   if (!recipientPhone) {
     recipientPhone = "01784905075"; // fallback simulation number
   }
@@ -365,7 +373,8 @@ export function triggerOrderSmsNotification(
       .replace(/{total_bdt}/g, order.totalBDT.toString())
       .replace(/{shop_name}/g, shopName);
 
-    sendSmsSimulated(settings.adminPhone.replace(/\D/g, '') || "01784905075", "Sellsull Admin Alert Routing", formattedAdminMessage, order.id);
+    const cleanAdminPhone = convertBanglaToEnglishDigits(settings.adminPhone).replace(/\D/g, '') || "01784905075";
+    sendSmsSimulated(cleanAdminPhone, "Sellsull Admin Alert Routing", formattedAdminMessage, order.id);
   }
 
   // Send admin WhatsApp alert on placement if enabled
@@ -378,7 +387,8 @@ export function triggerOrderSmsNotification(
       .replace(/{total_bdt}/g, order.totalBDT.toString())
       .replace(/{shop_name}/g, shopName);
 
-    sendWhatsappSimulated(settings.adminWhatsappNumber.replace(/\D/g, '') || "01784905075", "Sellsull Admin WhatsApp Alert Routing", formattedWhatsappMessage, order.id);
+    const cleanAdminWhatsapp = convertBanglaToEnglishDigits(settings.adminWhatsappNumber).replace(/\D/g, '') || "01784905075";
+    sendWhatsappSimulated(cleanAdminWhatsapp, "Sellsull Admin WhatsApp Alert Routing", formattedWhatsappMessage, order.id);
   }
 
   return customerLog;
