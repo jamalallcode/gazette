@@ -1509,7 +1509,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch" id="hurry-up-grid">
                 {/* Left side column: Countdown vertical grid container */}
-                <div className="md:col-span-3 bg-gradient-to-br from-[#f58220] to-orange-500 text-white rounded-xl p-6 flex flex-col justify-center items-center shadow-sm relative min-h-[220px] md:min-h-0">
+                <div className="hidden md:flex md:col-span-3 bg-gradient-to-br from-[#f58220] to-orange-500 text-white rounded-xl p-6 flex-col justify-center items-center shadow-sm relative min-h-[220px] md:min-h-0">
                   <div className="w-full text-center space-y-4">
                     <div className="grid grid-cols-4 gap-2 text-center">
                       <div className="bg-white/10 backdrop-blur-md rounded-lg py-3 px-1 border border-white/10 shadow-xs">

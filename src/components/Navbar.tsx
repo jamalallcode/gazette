@@ -175,6 +175,11 @@ export default function Navbar({
 
   // Custom configuration menu state variables
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const openDropdownIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    openDropdownIdRef.current = openDropdownId;
+  }, [openDropdownId]);
 
   const handleMouseEnterItem = (id: string) => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
@@ -341,6 +346,13 @@ export default function Navbar({
         !target.closest('#profile-sidebar-container')
       ) {
         setProfileDropdownOpen(false);
+      }
+
+      // Menu dropdown (such as Brand dropdown) handling
+      if (openDropdownIdRef.current) {
+        if (!target.closest(`#nav-menu-item-${openDropdownIdRef.current}`)) {
+          setOpenDropdownId(null);
+        }
       }
     }
 
@@ -831,6 +843,7 @@ export default function Navbar({
                   return (
                     <div
                       key={item.id}
+                      id={`nav-menu-item-${item.id}`}
                       className="relative"
                       onMouseEnter={() => handleMouseEnterItem(item.id)}
                       onMouseLeave={handleMouseLeaveItem}
@@ -842,7 +855,7 @@ export default function Navbar({
                           isSticky ? "py-2" : "py-3"
                         }`}
                       >
-                        <span>{language === 'bn' ? item.labelBn : item.label}</span>
+                        <span>{item.label}</span>
                         {hasDropdown && <ChevronDown size={12} className="stroke-[3.5px] ml-0.5 inline" />}
                       </button>
 
@@ -880,7 +893,7 @@ export default function Navbar({
                                   onClick={() => handleDropdownItemClick(dpItem)}
                                   className="w-full text-left px-5 py-2.5 text-xs font-bold text-zinc-700 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
                                 >
-                                  {language === 'bn' ? dpItem.labelBn : dpItem.label}
+                                  {dpItem.label}
                                 </button>
                               ))
                             )}
@@ -1435,7 +1448,8 @@ export default function Navbar({
       {mobileMenuOpen && (
         <div className="order-5 md:hidden bg-white text-zinc-900 border-b border-zinc-200 py-3 px-4 space-y-2 z-40 relative">
           
-          {/* Beautiful and convenient mobile language toggle button */}
+          {/* Mobile language toggle option is no longer needed per user request, commented out to preserve code structure */}
+          {/* 
           <button 
             type="button"
             onClick={() => {
@@ -1454,6 +1468,7 @@ export default function Navbar({
               {language === 'bn' ? 'EN' : 'বাংলা'}
             </span>
           </button>
+          */}
 
           <div className="flex flex-col space-y-1 text-sm font-bold">
             {(activeTenant?.menuItems || DEFAULT_MENU_ITEMS).filter(item => item.enabled && !["seller_zone", "blog", "video", "track_order"].includes(item.id)).map((item) => {
@@ -1476,7 +1491,7 @@ export default function Navbar({
                         }}
                         className="w-full text-left py-2 hover:bg-zinc-50 rounded px-2 flex justify-between items-center"
                       >
-                        <span>{language === 'bn' ? item.labelBn : item.label}</span>
+                        <span>{item.label}</span>
                         <ChevronDown size={14} className={`transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                       </button>
                       
@@ -1512,7 +1527,7 @@ export default function Navbar({
                                 }}
                                 className="w-full text-left py-1.5 px-2 text-xs text-zinc-700 hover:text-[#f58220] hover:bg-white rounded transition cursor-pointer border-0 bg-transparent font-semibold"
                               >
-                                {language === 'bn' ? dpItem.labelBn : dpItem.label}
+                                {dpItem.label}
                               </button>
                             ))
                           )}
@@ -1528,7 +1543,7 @@ export default function Navbar({
                       }}
                       className="w-full text-left py-2 hover:bg-zinc-50 rounded px-2"
                     >
-                      {language === 'bn' ? item.labelBn : item.label}
+                      {item.label}
                     </button>
                   )}
                 </div>
