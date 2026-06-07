@@ -492,10 +492,16 @@ export default function AdminPanel({
   const [newNotifTarget, setNewNotifTarget] = useState("All App Users");
 
   // Announcements Marquees
-  const [marquees, setMarquees] = useState([
-    { announcement: "Exciting flat savings up to BDT 1,200 on appliances with bKash premium wallet payments!" }
-  ]);
+  const [marquees, setMarquees] = useState(() => {
+    const savedText = localStorage.getItem("gadget_bazar_marquee_text");
+    return [
+      { announcement: savedText || "Eid Offer Discount Price Coming Soon" }
+    ];
+  });
   const [newMarqueeText, setNewMarqueeText] = useState("");
+  const [isMarqueeEnabled, setIsMarqueeEnabled] = useState(() => {
+    return localStorage.getItem("gadget_bazar_marquee_enabled") !== "false";
+  });
 
   // Customer Management
   const [customersList, setCustomersList] = useState([
@@ -4598,9 +4604,39 @@ export default function AdminPanel({
                   {marquees.map((mq, i) => (
                     <div key={i} className="py-2 flex items-center justify-between">
                       <span className="text-zinc-700 italic">"{mq.announcement}"</span>
-                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">ACTIVE</span>
+                      <span className={`${isMarqueeEnabled ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-400'} px-2 py-0.5 rounded text-[10px] font-bold`}>
+                        {isMarqueeEnabled ? 'ACTIVE' : 'DISABLED'}
+                      </span>
                     </div>
                   ))}
+                </div>
+
+                {/* Marquee Banner Toggle Switch */}
+                <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-lg border border-neutral-100">
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-805">অফার বার অন/অফ করুন (Toggle Banner Visibility)</h4>
+                    <p className="text-[10px] text-zinc-405 leading-relaxed">সুইচ অফ করলে হোমপেজে অফার বারটি পুরোপুরি হাইড হয়ে যাবে।</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !isMarqueeEnabled;
+                      setIsMarqueeEnabled(nextState);
+                      localStorage.setItem("gadget_bazar_marquee_enabled", String(nextState));
+                      window.dispatchEvent(new Event("storage"));
+                      setSuccessMsg(`Marquee banner ${nextState ? "enabled" : "disabled"} successfully.`);
+                      setTimeout(() => setSuccessMsg(""), 3000);
+                    }}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none border-0 ${
+                      isMarqueeEnabled ? 'bg-[#f58220]' : 'bg-zinc-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                        isMarqueeEnabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
 
                 <div className="space-y-2 pt-3 border-t">
@@ -4616,6 +4652,8 @@ export default function AdminPanel({
                     onClick={() => {
                       if (!newMarqueeText) return;
                       setMarquees([{ announcement: newMarqueeText }]);
+                      localStorage.setItem("gadget_bazar_marquee_text", newMarqueeText);
+                      window.dispatchEvent(new Event("storage"));
                       setNewMarqueeText("");
                       setSuccessMsg("Public home marquee adjusted successfully.");
                       setTimeout(() => setSuccessMsg(""), 3000);

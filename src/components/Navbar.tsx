@@ -111,7 +111,9 @@ export default function Navbar({
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesDropdownOpen, setCategoriesDropdownOpen] = useState(false);
-  const [showEidBanner, setShowEidBanner] = useState(true);
+  const [showEidBanner, setShowEidBanner] = useState(() => {
+    return localStorage.getItem("gadget_bazar_marquee_enabled") !== "false";
+  });
   const [isSticky, setIsSticky] = useState(false);
   
   // Custom states matching requested items
@@ -172,6 +174,26 @@ export default function Navbar({
 
   const [searchFocused, setSearchFocused] = useState(false);
   const [isHoveringSuggestions, setIsHoveringSuggestions] = useState(false);
+
+  const [announcementText, setAnnouncementText] = useState(() => {
+    return localStorage.getItem("gadget_bazar_marquee_text") || "Eid Offer Discount Price Coming Soon";
+  });
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedMsg = localStorage.getItem("gadget_bazar_marquee_text");
+      if (savedMsg) {
+        setAnnouncementText(savedMsg);
+      }
+      const savedEnabled = localStorage.getItem("gadget_bazar_marquee_enabled");
+      setShowEidBanner(savedEnabled !== "false");
+    };
+    window.addEventListener("storage", handleStorageChange);
+    handleStorageChange();
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [currentTab]);
 
   // Hover timeout managers for smooth, unbreakable desktop dropdown transitions using refs to avoid React state closure desync
   const profileTimeoutRef = useRef<any>(null);
@@ -498,18 +520,38 @@ export default function Navbar({
       
       {/* 1. Maroon/Red Top Offer Banner */}
       {showEidBanner && activeTenant?.enableDiscountedProducts && (
-        <div className="order-1 bg-[#511111] text-white text-xs py-1 px-4 select-none relative transition-all duration-300">
-          <div className="max-w-7xl mx-auto flex justify-center items-center font-bold text-sm">
-            <span>Eid Offer Discount Price Coming Soon</span>
+        <div className="order-5 mt-2 -mb-1 bg-gradient-to-r from-[#3e0b0c] via-[#511111] to-[#3e0b0c] text-white text-xs py-1 px-4 select-none relative transition-all duration-300 border-b border-red-950/40">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            {/* Left aligned fixed premium ribbon badge */}
+            <div className="flex items-center space-x-2 shrink-0 z-10 mr-4">
+              <span className="inline-flex items-center bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 text-white text-[11px] font-black tracking-widest px-3 py-1 rounded-lg shadow-[0_0_12px_rgba(245,130,32,0.4)] border border-amber-400/30">
+                <span className="relative flex h-2 w-2 mr-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-85"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-100"></span>
+                </span>
+                {language === 'bn' ? "অফার 🔥" : "OFFER 🔥"}
+              </span>
+            </div>
+
+            {/* Premium center scrolling marquee container */}
+            <div className="flex-1 overflow-hidden relative h-[18px] flex items-center pr-4 [mask-image:linear-gradient(to_right,transparent_0%,white_6%,white_94%,transparent_100%)]">
+              <div className="w-full">
+                <span className="premium-marquee font-medium text-xs md:text-xs tracking-wide text-zinc-100 hover:text-amber-300 transition-colors duration-150 cursor-pointer">
+                  {announcementText}
+                </span>
+              </div>
+            </div>
+
+            {/* Dismiss banner icon button */}
+            <button 
+              type="button"
+              onClick={() => setShowEidBanner(false)}
+              className="shrink-0 hover:text-orange-400 font-bold bg-[#380b0c]/80 hover:bg-[#200506] border-0 text-white rounded-md w-5 h-5 flex items-center justify-center transition cursor-pointer z-10 text-[10px] ml-1"
+              id="dismiss-eid-banner"
+            >
+              ✕
+            </button>
           </div>
-          <button 
-            type="button"
-            onClick={() => setShowEidBanner(false)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 hover:text-orange-400 font-bold bg-[#380b0c] hover:bg-[#200506] border-0 text-white rounded w-6 h-6 flex items-center justify-center transition cursor-pointer"
-            id="dismiss-eid-banner"
-          >
-            ✕
-          </button>
         </div>
       )}
 
@@ -1511,7 +1553,7 @@ export default function Navbar({
       </div>
 
       {/* 3. Mobile Search Tray - Scrolls with the page, goes behind the fixed top logo header */}
-      <div className="order-4 lg:hidden bg-zinc-50/95 dark:bg-[#1a2333]/95 backdrop-blur-md pb-3 pt-2 px-4.5 border-b border-zinc-200 dark:border-[#283752]/80 shadow-sm relative z-40">
+      <div className="order-4 lg:hidden bg-white dark:bg-white pb-3 pt-2 px-4.5 border-b border-zinc-200 dark:border-zinc-200 shadow-sm relative z-40">
         <div className="max-w-7xl mx-auto w-full">
           <div className="relative">
             <div id="mobile-search-container" className="flex items-center overflow-hidden bg-white dark:bg-[#111827] rounded-xl border border-zinc-250 dark:border-[#283752] focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
