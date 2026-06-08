@@ -2243,7 +2243,7 @@ export default function AdminPanel({
               </button>
 
               {messagesDropdownOpen && (
-                <div className="absolute right-[-60px] sm:right-0 mt-2 w-80 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-80 mt-2 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <Mail size={13} className="text-blue-600" />
@@ -2334,7 +2334,7 @@ export default function AdminPanel({
               </button>
 
               {cartsDropdownOpen && (
-                <div className="absolute right-[-110px] sm:right-0 mt-2 w-85 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-85 mt-2 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <ShoppingCart size={13} className="text-cyan-600" />
