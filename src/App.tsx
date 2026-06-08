@@ -2464,6 +2464,7 @@ export default function App() {
               orders={orders}
               setOrders={setOrders}
               language={language}
+              setLanguage={setLanguage}
               currency={currency}
               activeTenant={activeTenant}
               setActiveTenant={setActiveTenant}

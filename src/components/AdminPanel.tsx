@@ -25,6 +25,7 @@ interface AdminPanelProps {
   orders: Order[];
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   language: 'en' | 'bn';
+  setLanguage: (lang: 'en' | 'bn') => void;
   currency: 'BDT' | 'USD';
   activeTenant: TenantConfig;
   setActiveTenant: (tenant: TenantConfig) => void;
@@ -59,6 +60,7 @@ export default function AdminPanel({
   orders,
   setOrders,
   language,
+  setLanguage,
   currency,
   activeTenant,
   setActiveTenant,
@@ -68,6 +70,113 @@ export default function AdminPanel({
   // Navigation inside panel
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [adminBellDropdownOpen, setAdminBellDropdownOpen] = useState(false);
+  
+  // Interactive state declarations for the top icons and selectors
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [messagesDropdownOpen, setMessagesDropdownOpen] = useState(false);
+  const [cartsDropdownOpen, setCartsDropdownOpen] = useState(false);
+
+  // State-driven interactive client messages
+  const [clientInquiries, setClientInquiries] = useState([
+    {
+      id: "msg-1",
+      sender: "Karim Islam",
+      avatar: "KI",
+      textBn: "আমি ১০০ কেজি প্রিমিয়াম ঘি নিতে চাই, কোনো হোলসেল ডিসকাউন্ট আছে?",
+      textEn: "I want to buy 100 kg premium ghee, is there any wholesale discount?",
+      timeBn: "১০ মিনিট আগে",
+      timeEn: "10m ago",
+      resolved: false,
+    },
+    {
+      id: "msg-2",
+      sender: "Shafiqul Alam",
+      avatar: "SA",
+      textBn: "অর্ডার নং #২৪৫২ ঢাকা সিটির বাইরে কতদিনে ডেলিভারি হবে?",
+      textEn: "How long will Order #2452 take to deliver outside Dhaka City?",
+      timeBn: "২৫ মিনিট আগে",
+      timeEn: "25m ago",
+      resolved: false,
+    },
+    {
+      id: "msg-3",
+      sender: "Nusrat Jahan",
+      avatar: "NJ",
+      textBn: "টি-শার্টের কালার কি ১০০% গ্যারান্টি? প্রথমবার নিচ্ছি তাই জিজ্ঞেস করলাম।",
+      textEn: "Is the T-shirt color 100% guaranteed? Asking since it's my first purchase.",
+      timeBn: "১ ঘণ্টা আগে",
+      timeEn: "1h ago",
+      resolved: false,
+    },
+    {
+      id: "msg-4",
+      sender: "Dr. Rafiq",
+      avatar: "DR",
+      textBn: "আপনাদের সুগন্ধি দুধে কোনো প্রকার প্রিজারভেটিভ বা কেমিক্যাল মেশানো নেই তো?",
+      textEn: "Is there any preservative or chemical in your flavored milk?",
+      timeBn: "৩ ঘণ্টা আগে",
+      timeEn: "3h ago",
+      resolved: false,
+    },
+    {
+      id: "msg-5",
+      sender: "Arif Hasan",
+      avatar: "AH",
+      textBn: "কালকে অর্ডার করলে কি রবিবারের মধ্যে খুলনাতে পাওয়া যাবে?",
+      textEn: "If I order tomorrow, will I get it in Khulna by Sunday?",
+      timeBn: "৫ ঘণ্টা আগে",
+      timeEn: "5h ago",
+      resolved: false,
+    }
+  ]);
+
+  // State-driven abandoned shopping carts
+  const [abandonedCarts, setAbandonedCarts] = useState([
+    {
+      id: "cart-1",
+      customer: "Anisur Rahman",
+      phone: "01724905075",
+      itemsBn: "২x প্রিমিয়াম ঘি, ১x খাঁটি মধু",
+      itemsEn: "2x Premium Ghee, 1x Pure Honey",
+      total: 3250,
+      timeBn: "১২ মিনিট আগে",
+      timeEn: "12 mins ago",
+      status: "pending"
+    },
+    {
+      id: "cart-2",
+      customer: "Mariam Begum",
+      phone: "01815904832",
+      itemsBn: "১x এক্সক্লুসিভ টি-শার্ট",
+      itemsEn: "1x Exclusive T-Shirt",
+      total: 950,
+      timeBn: "৪৫ মিনিট আগে",
+      timeEn: "45 mins ago",
+      status: "pending"
+    },
+    {
+      id: "cart-3",
+      customer: "Fahim Tazwar",
+      phone: "01987541235",
+      itemsBn: "৩x স্মার্ট স্পোর্টস ওয়াচ",
+      itemsEn: "3x Smart Sport Watch",
+      total: 8700,
+      timeBn: "২ ঘণ্টা আগে",
+      timeEn: "2 hours ago",
+      status: "pending"
+    },
+    {
+      id: "cart-4",
+      customer: "Tanzina Sultana",
+      phone: "01567123490",
+      itemsBn: "২x খাঁটি সরিষার তেল",
+      itemsEn: "2x Pure Mustard Oil",
+      total: 1980,
+      timeBn: "৫ ঘণ্টা আগে",
+      timeEn: "5 hours ago",
+      status: "pending"
+    }
+  ]);
 
   // Modern Invoice System states
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
@@ -2051,8 +2160,8 @@ export default function AdminPanel({
       >
         
         {/* TOP NAVBAR */}
-        <header className="bg-white border-b border-zinc-200 h-16 px-4 md:px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center space-x-4">
+        <header className="bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-1 sm:space-x-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="text-zinc-600 hover:text-zinc-900 p-2 hover:bg-zinc-100 rounded-lg cursor-pointer"
@@ -2064,22 +2173,234 @@ export default function AdminPanel({
             </div>
           </div>
 
-          <div className="flex items-center space-x-5 text-sm">
-            {/* Language dropdown replica */}
-            <div className="flex items-center space-x-2 text-zinc-700 bg-zinc-50 border border-zinc-200 py-1.5 px-3 rounded-lg text-xs font-bold leading-none select-none">
-              <span>🇺🇸 English (US)</span>
-              <ChevronDown size={12} className="text-zinc-400" />
+          <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-5 text-sm">
+            {/* Interactive Language Selection Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  setLangDropdownOpen(!langDropdownOpen);
+                  setMessagesDropdownOpen(false);
+                  setCartsDropdownOpen(false);
+                }}
+                className="flex items-center space-x-1 sm:space-x-2 text-zinc-700 bg-zinc-50 border border-zinc-200 py-1.5 px-2 sm:px-3 rounded-lg text-xs font-bold leading-none select-none hover:bg-zinc-100 transition cursor-pointer border-0"
+              >
+                <span>{language === 'bn' ? "🇧🇩 বাংলা (BD)" : "🇺🇸 English (US)"}</span>
+                <ChevronDown size={12} className="text-zinc-400 shrink-0" />
+              </button>
+
+              {langDropdownOpen && (
+                <div className="absolute right-0 mt-1.5 w-40 bg-white border border-zinc-200 rounded-xl shadow-xl py-1 z-[9999] animate-in fade-in slide-in-from-top-1">
+                  <button 
+                    onClick={() => {
+                      setLanguage('en');
+                      setLangDropdownOpen(false);
+                      const event = new CustomEvent("app-toast", { detail: "Language switched to English!" });
+                      window.dispatchEvent(event);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-zinc-50 border-0 bg-transparent cursor-pointer ${language === 'en' ? 'text-[#063b6d] bg-[#063b6d]/5' : 'text-zinc-700'}`}
+                  >
+                    <span>🇺🇸 English</span>
+                    {language === 'en' && <Check size={12} className="text-[#063b6d]" />}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setLanguage('bn');
+                      setLangDropdownOpen(false);
+                      const event = new CustomEvent("app-toast", { detail: "ভাষা পরিবর্তন করে বাংলায় করা হয়েছে!" });
+                      window.dispatchEvent(event);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-zinc-50 border-0 bg-transparent cursor-pointer ${language === 'bn' ? 'text-[#063b6d] bg-[#063b6d]/5' : 'text-zinc-700'}`}
+                  >
+                    <span>🇧🇩 বাংলা</span>
+                    {language === 'bn' && <Check size={12} className="text-[#063b6d]" />}
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Icons indicators with red badges */}
+            {/* Interactive Messages Dropdown */}
             <div className="relative">
-              <Mail className="text-zinc-600 hover:text-zinc-900 cursor-pointer h-5 w-5" />
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">5</span>
+              <button 
+                onClick={() => {
+                  setMessagesDropdownOpen(!messagesDropdownOpen);
+                  setLangDropdownOpen(false);
+                  setCartsDropdownOpen(false);
+                }}
+                className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
+              >
+                <Mail className="text-zinc-600 hover:text-[#063b6d] h-5 w-5" />
+                {clientInquiries.filter(m => !m.resolved).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse">
+                    {clientInquiries.filter(m => !m.resolved).length}
+                  </span>
+                )}
+              </button>
+
+              {messagesDropdownOpen && (
+                <div className="absolute right-[-60px] sm:right-0 mt-2 w-80 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
+                    <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
+                      <Mail size={13} className="text-blue-600" />
+                      <span>{language === 'bn' ? `গ্রাহক বার্তা (${clientInquiries.filter(m => !m.resolved).length})` : `Inquiries (${clientInquiries.filter(m => !m.resolved).length})`}</span>
+                    </span>
+                    {clientInquiries.filter(m => !m.resolved).length > 0 && (
+                      <button 
+                        onClick={() => {
+                          setClientInquiries(clientInquiries.map(m => ({ ...m, resolved: true })));
+                          const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সব বার্তা সমাধান করা হয়েছে!" : "All messages resolved!" });
+                          window.dispatchEvent(event);
+                        }}
+                        className="bg-transparent border-0 text-[10px] text-zinc-400 hover:text-blue-600 font-extrabold uppercase cursor-pointer"
+                      >
+                        {language === 'bn' ? "সব সমাধান" : "Resolve All"}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 custom-sidebar-scrollbar">
+                    {clientInquiries.filter(m => !m.resolved).length === 0 ? (
+                      <div className="py-6 text-center text-zinc-400 space-y-1">
+                        <span className="text-lg">📬</span>
+                        <p className="text-[11px] font-bold">{language === 'bn' ? "কোনো নতুন বার্তা নেই" : "No new messages"}</p>
+                        <p className="text-[9px] text-zinc-400 max-w-[200px] mx-auto leading-normal">{language === 'bn' ? "সবগুলো গ্রাহক বার্তা সফলভাবে সমাধান করা হয়েছে।" : "All customer inquiries have been fully answered."}</p>
+                      </div>
+                    ) : (
+                      clientInquiries.filter(m => !m.resolved).map((msg) => (
+                        <div key={msg.id} className="bg-zinc-50 hover:bg-zinc-100/70 border border-zinc-100 rounded-xl p-3 space-y-2 transition duration-150 text-xs">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6.5 h-6.5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black shrink-0">
+                                {msg.avatar}
+                              </div>
+                              <span className="text-xs font-extrabold text-zinc-800">{msg.sender}</span>
+                            </div>
+                            <span className="text-[9px] font-bold text-zinc-400 font-mono bg-zinc-200/50 px-1.5 py-0.5 rounded-sm shrink-0">
+                              {language === 'bn' ? msg.timeBn : msg.timeEn}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-600 bg-white border border-zinc-100 p-2 rounded-lg font-medium leading-relaxed">
+                            {language === 'bn' ? msg.textBn : msg.textEn}
+                          </p>
+                          <div className="flex items-center justify-end gap-1.5 pt-0.5">
+                            <a 
+                              href={`https://wa.me/01784905075?text=${encodeURIComponent(`Dear ${msg.sender}, thank you for your query about: ${language === 'bn' ? msg.textBn : msg.textEn}`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2.5 py-1 font-bold no-underline"
+                            >
+                              💬 WhatsApp
+                            </a>
+                            <button 
+                              onClick={() => {
+                                setClientInquiries(clientInquiries.map(m => m.id === msg.id ? { ...m, resolved: true } : m));
+                                const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "বার্তা সমাধান করা হয়েছে!" : "Message resolved successfully!" });
+                                window.dispatchEvent(event);
+                              }}
+                              className="text-[10px] bg-zinc-200 hover:bg-blue-600 hover:text-white text-zinc-700 rounded-lg px-2.5 py-1 font-bold cursor-pointer border-0 transition"
+                            >
+                              ✔️ {language === 'bn' ? 'সমাধান' : 'Resolve'}
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             
+            {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
             <div className="relative">
-              <ShoppingCart className="text-zinc-600 hover:text-zinc-900 cursor-pointer h-5 w-5" />
-              <span className="absolute -top-1.5 -right-1.5 bg-cyan-600 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">52</span>
+              <button 
+                onClick={() => {
+                  setCartsDropdownOpen(!cartsDropdownOpen);
+                  setLangDropdownOpen(false);
+                  setMessagesDropdownOpen(false);
+                }}
+                className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
+              >
+                <ShoppingCart className="text-zinc-600 hover:text-[#063b6d] h-5 w-5" />
+                {(52 - abandonedCarts.filter(c => c.status === 'recovered').length) > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-cyan-600 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse">
+                    {52 - abandonedCarts.filter(c => c.status === 'recovered').length}
+                  </span>
+                )}
+              </button>
+
+              {cartsDropdownOpen && (
+                <div className="absolute right-[-110px] sm:right-0 mt-2 w-85 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
+                    <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
+                      <ShoppingCart size={13} className="text-cyan-600" />
+                      <span>{language === 'bn' ? `পরিত্যক্ত কার্ট (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})` : `Abandoned Carts (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})`}</span>
+                    </span>
+                    <button 
+                      onClick={() => {
+                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সকল পরিত্যক্ত কার্ট প্রসেস করা হচ্ছে..." : "Processing recovery queues..." });
+                        window.dispatchEvent(event);
+                      }}
+                      className="bg-transparent border-0 text-[10px] text-zinc-400 hover:text-cyan-600 font-extrabold uppercase cursor-pointer"
+                    >
+                      {language === 'bn' ? "রিকভারি ট্র্যাকার" : "Recovery Sync"}
+                    </button>
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto space-y-2.5 pr-1 custom-sidebar-scrollbar">
+                    {/* List active target rows */}
+                    {abandonedCarts.filter(c => c.status !== 'recovered').map((cart) => {
+                      const totalText = currency === 'BDT' ? `৳${cart.total.toLocaleString()}` : `$${(cart.total / 120).toFixed(1)}`;
+                      return (
+                        <div key={cart.id} className="border border-zinc-150 rounded-xl p-3 space-y-2 bg-zinc-50/55 hover:bg-cyan-50/10 transition text-xs">
+                          <div className="flex justify-between items-start">
+                            <div className="text-left">
+                              <span className="text-xs font-extrabold text-zinc-800 block leading-tight">{cart.customer}</span>
+                              <span className="text-[9.5px] font-bold text-zinc-400 font-mono block mt-0.5">{cart.phone} • {language === 'bn' ? cart.timeBn : cart.timeEn}</span>
+                            </div>
+                            <span className="text-xs font-black text-cyan-600 font-mono bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded-lg shrink-0">
+                              {totalText}
+                            </span>
+                          </div>
+
+                          <div className="bg-white border border-zinc-100 p-2 rounded-lg space-y-1">
+                            <span className="text-[9.5px] uppercase font-black tracking-wider text-zinc-400 block">{language === 'bn' ? "আইটেমসমূহ:" : "Items Proposed:"}</span>
+                            <span className="text-xs font-bold text-zinc-700 block truncate">{language === 'bn' ? cart.itemsBn : cart.itemsEn}</span>
+                          </div>
+
+                          <div className="flex justify-end gap-1.5 pt-0.5">
+                            <button 
+                              onClick={() => {
+                                setAbandonedCarts(abandonedCarts.map(c => c.id === cart.id ? { ...c, status: "reminded" } : c));
+                                const event = new CustomEvent("app-toast", { detail: language === 'bn' ? `সফলভাবে রিমাইন্ডার SMS পাঠানো হয়েছে ${cart.customer} কে!` : `Reminder notification SMS sent to ${cart.customer}!` });
+                                window.dispatchEvent(event);
+                              }}
+                              className={`text-[10px] rounded-lg px-2.5 py-1 font-bold cursor-pointer border-0 transition ${cart.status === 'reminded' ? 'bg-[#063b6d] text-white' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
+                            >
+                              {cart.status === 'reminded' ? (language === 'bn' ? "🔔 রিমাইন্ডার প্রেরিত" : "🔔 Sent Again") : (language === 'bn' ? "📣 রিমাইন্ডার SMS" : "📣 Send SMS")}
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setAbandonedCarts(abandonedCarts.map(c => c.id === cart.id ? { ...c, status: "recovered" } : c));
+                                const event = new CustomEvent("app-toast", { detail: language === 'bn' ? `কার্টটি সফলভাবে রিকভারড চিহ্নিত হয়েছে!` : `Cart marked as recovered successfully!` });
+                                window.dispatchEvent(event);
+                              }}
+                              className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2.5 py-1 font-bold cursor-pointer border-0 transition"
+                            >
+                              🟢 {language === 'bn' ? 'রিকভারড' : 'Recovered'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Placeholder static counts indicator */}
+                    <div className="text-center py-2 border-t border-dashed border-zinc-150 mt-2">
+                      <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">
+                        {language === 'bn' ? `+৪৮টি অবশিষ্ট পরিত্যক্ত সেশন ব্যাকগ্রাউন্ডে সংরক্ষিত` : `+48 older abandoned checkout logs archived`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Real-time Order Notification Bell on Admin Panel */}
@@ -2182,8 +2503,8 @@ export default function AdminPanel({
             </div>
 
             {/* Profile badge */}
-            <div className="flex items-center space-x-2 pl-2 border-l border-zinc-200">
-              <div className="w-8 h-8 rounded-full bg-cover bg-center bg-[#063b6d] text-white flex items-center justify-center font-bold text-xs">
+            <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 border-l border-zinc-200">
+              <div className="w-8 h-8 rounded-full bg-cover bg-center bg-[#063b6d] text-white flex items-center justify-center font-bold text-xs shrink-0">
                 GB
               </div>
               <div className="text-left hidden md:block leading-none">
