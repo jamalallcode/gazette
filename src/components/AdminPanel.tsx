@@ -80,6 +80,7 @@ export default function AdminPanel({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const cartsContainerRef = useRef<HTMLDivElement>(null);
   const profileContainerRef = useRef<HTMLDivElement>(null);
+  const bellContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -93,13 +94,16 @@ export default function AdminPanel({
       if (profileDropdownOpen && profileContainerRef.current && !profileContainerRef.current.contains(target)) {
         setProfileDropdownOpen(false);
       }
+      if (adminBellDropdownOpen && bellContainerRef.current && !bellContainerRef.current.contains(target)) {
+        setAdminBellDropdownOpen(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [messagesDropdownOpen, cartsDropdownOpen, profileDropdownOpen]);
+  }, [messagesDropdownOpen, cartsDropdownOpen, profileDropdownOpen, adminBellDropdownOpen]);
 
   // State-driven interactive client messages
   const [clientInquiries, setClientInquiries] = useState([
@@ -2231,6 +2235,7 @@ export default function AdminPanel({
                   setMessagesDropdownOpen(!messagesDropdownOpen);
                   setCartsDropdownOpen(false);
                   setProfileDropdownOpen(false);
+                  setAdminBellDropdownOpen(false);
                 }}
                 className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
               >
@@ -2243,7 +2248,7 @@ export default function AdminPanel({
               </button>
 
               {messagesDropdownOpen && (
-                <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-80 mt-2 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="absolute right-[-24px] sm:right-0 mt-3.5 w-[calc(100vw-24px)] sm:w-80 max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <Mail size={13} className="text-blue-600" />
@@ -2322,6 +2327,7 @@ export default function AdminPanel({
                   setCartsDropdownOpen(!cartsDropdownOpen);
                   setMessagesDropdownOpen(false);
                   setProfileDropdownOpen(false);
+                  setAdminBellDropdownOpen(false);
                 }}
                 className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
               >
@@ -2334,7 +2340,7 @@ export default function AdminPanel({
               </button>
 
               {cartsDropdownOpen && (
-                <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-85 mt-2 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="absolute right-[-48px] sm:right-0 mt-3.5 w-[calc(100vw-24px)] sm:w-85 max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <ShoppingCart size={13} className="text-cyan-600" />
@@ -2411,9 +2417,15 @@ export default function AdminPanel({
 
             {/* Real-time Order Notification Bell on Admin Panel */}
             <div 
+              ref={bellContainerRef}
               onMouseEnter={() => setAdminBellDropdownOpen(true)}
               onMouseLeave={() => setAdminBellDropdownOpen(false)}
-              onClick={() => setAdminBellDropdownOpen(!adminBellDropdownOpen)}
+              onClick={() => {
+                setAdminBellDropdownOpen(!adminBellDropdownOpen);
+                setMessagesDropdownOpen(false);
+                setCartsDropdownOpen(false);
+                setProfileDropdownOpen(false);
+              }}
               className="flex items-center cursor-pointer select-none group relative py-2"
               id="admin-realtime-notifications-bell"
             >
@@ -2429,7 +2441,7 @@ export default function AdminPanel({
               {/* Admin Notification dropdown panel */}
               {adminBellDropdownOpen && (
                 <div 
-                  className="absolute top-full right-0 pt-2 w-80 h-auto z-[9990]"
+                  className="absolute top-full right-[-8px] pt-3.5 w-[calc(100vw-24px)] sm:w-80 max-w-[340px] h-auto z-[9990]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="bg-white text-zinc-850 rounded-2xl shadow-2xl border border-zinc-200 py-3.5 px-4 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200 space-y-3">
