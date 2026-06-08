@@ -748,7 +748,7 @@ export default function AdminPanel({
 
       {/* LEFT SIDEBAR (NABIK BAZAR THEME) */}
       <aside 
-        className={`bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:h-full self-stretch select-none ${
+        className={`bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto overscroll-y-contain z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:h-full self-stretch select-none ${
           sidebarOpen ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none font-bold' : 'w-0 -translate-x-full lg:translate-x-0 lg:w-16'
         }`}
         style={{
