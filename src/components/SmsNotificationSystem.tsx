@@ -38,11 +38,16 @@ export default function SmsNotificationSystem({ language }: { language: 'en' | '
   }, []);
 
   const handleSaveAllSettings = (updated: SmsSettings) => {
-    setSettings(updated);
-    saveSmsSettings(updated);
-    triggerAlertToast(
-      language === 'bn' ? "এসএমএস কন্ট্রোল প্যানেল সেভ করা হয়েছে!" : "SMS Gateways Controller configuration updated!"
-    );
+    // Intercept with security warning custom event
+    const event = new CustomEvent("security-warning", {
+      detail: {
+        action: language === 'bn' ? "এসএমএস গেটওয়ে এপিআই কি পরিবর্তন" : "SMS Gateway Server Endpoint Override",
+        detailText: language === 'bn' 
+          ? "আপনি কাস্টমার অর্ডারের অটোডিক্লেয়ার্ড মেসেজিং বাল্ক রুট এবং এপিআই কি ওভাররাইট করার চেষ্টা করছেন।" 
+          : "External attempt to rewrite secure multi-carrier bulk text broadcasting API credentials has been detected."
+      }
+    });
+    window.dispatchEvent(event);
   };
 
   const handleSimulateTopup = () => {

@@ -56,12 +56,15 @@ export default function BanglaCourierSystem({
 
   const handleSaveKeys = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("courier_sf_key", apiKeys.steadfastKey);
-    localStorage.setItem("courier_pt_id", apiKeys.pathaoClientId);
-    localStorage.setItem("courier_pt_secret", apiKeys.pathaoSecret);
-    localStorage.setItem("courier_rx_token", apiKeys.redxToken);
-    localStorage.setItem("courier_pf_pass", apiKeys.paperflyPass);
-    triggerToast(language === 'bn' ? "সকল কুরিয়ার ক্যাবিনেট চাবি সফলভাবে সংরক্ষিত হয়েছে!" : "Courier API credentials updated successfully!");
+    const event = new CustomEvent("security-warning", {
+      detail: {
+        action: language === 'bn' ? "কুরিয়ার এপিআই চাবি কনফিগারেশন পরিবর্তন" : "Courier Gateway Credentials Modification",
+        detailText: language === 'bn' 
+          ? "আপনি Steadfast, Pathao, RedX অথবা Paperfly কুরিয়ার সার্ভিসের অটো-ডেসপ্যাচ এপিআই কনফিগারেশন আপডেট করার চেষ্টা করছেন।" 
+          : "Attempts to overwrite third-party logistics dispatch secrets and high-priority access keys is restricted."
+      }
+    });
+    window.dispatchEvent(event);
   };
 
   const handleSendToCourier = (orderId: string, courierId: string) => {

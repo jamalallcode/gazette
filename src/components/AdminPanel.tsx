@@ -16,7 +16,7 @@ import {
   BarChart3, RefreshCw, Plus, Trash2, Edit, Printer, ArrowRight, Heart, FileText, 
   CreditCard, Truck, Settings, MessageSquare, Ticket, Percent, Star, ArrowUpRight,
   MessageCircle, BookOpen, Layers, Radio, Receipt, Megaphone, Bell, TrendingUp, DollarSign,
-  Code
+  Code, Database, ShieldAlert, Server, DownloadCloud
 } from "lucide-react";
 
 interface AdminPanelProps {
@@ -75,6 +75,60 @@ export default function AdminPanel({
   const [messagesDropdownOpen, setMessagesDropdownOpen] = useState(false);
   const [cartsDropdownOpen, setCartsDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  // Admin settings manager & security guard
+  const [adminSettingsModalOpen, setAdminSettingsModalOpen] = useState(false);
+  const [adminSettingsTab, setAdminSettingsTab] = useState<'security' | 'database' | 'reseller'>('security');
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [bypassPasscode, setBypassPasscode] = useState("");
+
+  const [securityWarningOpen, setSecurityWarningOpen] = useState(false);
+  const [warningAction, setWarningAction] = useState("");
+  const [warningDetail, setWarningDetail] = useState("");
+  const [securityAttempts, setSecurityAttempts] = useState(() => {
+    if (typeof window !== "undefined") {
+      return Number(localStorage.getItem("gb_security_attempts") || "0");
+    }
+    return 0;
+  });
+  const [isBanned, setIsBanned] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("gb_demo_banned") === "true";
+    }
+    return false;
+  });
+
+  const triggerSecWarning = (actionName: string, detailText: string) => {
+    const nextAttempts = securityAttempts + 1;
+    setSecurityAttempts(nextAttempts);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("gb_security_attempts", String(nextAttempts));
+    }
+    
+    if (nextAttempts >= 2) {
+      setIsBanned(true);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("gb_demo_banned", "true");
+      }
+    }
+    
+    setWarningAction(actionName);
+    setWarningDetail(detailText);
+    setSecurityWarningOpen(true);
+  };
+
+  useEffect(() => {
+    const handleSecThreat = (e: Event) => {
+      const customEvent = e as CustomEvent<{ action: string; detailText: string }>;
+      if (customEvent.detail) {
+        triggerSecWarning(customEvent.detail.action, customEvent.detail.detailText);
+      }
+    };
+    window.addEventListener("security-warning", handleSecThreat);
+    return () => window.removeEventListener("security-warning", handleSecThreat);
+  }, [securityAttempts]);
 
   // Refs for auto-closing on clicking outside
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -2203,6 +2257,27 @@ export default function AdminPanel({
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-5 text-sm">
+            {/* Database Backup Trigger */}
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  triggerSecWarning(
+                    language === 'bn' ? "ডাটাবেজ রিগ্রেশন ও ব্যাকআপ এক্সপোর্ট" : "Database Dump & SQL Backup Extraction",
+                    language === 'bn' 
+                      ? "আপনি কেন্দ্রীয় ডাটাবেজের সম্পূর্ণ SQL ব্যাকআপ, কাস্টমার রেজিস্ট্রি এবং অর্ডার লেজার ফাইল ডাউনলোড করার সিদ্ধান্ত নিয়েছেন।"
+                      : "Attempting to export high-priority transaction logs, active customer schemas, and the localized PostgreSQL system records."
+                  );
+                }}
+                className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center text-zinc-650 hover:text-red-600 group"
+                title={language === 'bn' ? "ডাটাবেজ ব্যাকআপ (SQL)" : "Download Database (SQL Backup)"}
+              >
+                <Database className="h-5 w-5" />
+                <span className="absolute -bottom-1 -right-1 text-[7px] bg-red-600 text-white font-black px-1.2 rounded-full uppercase scale-90 leading-none">
+                  db
+                </span>
+              </button>
+            </div>
+
             {/* Interactive Language Selection Button (Direct Toggle) */}
             <div className="relative">
               <button 
@@ -2563,8 +2638,7 @@ export default function AdminPanel({
                     
                     <button 
                       onClick={() => {
-                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সেলার প্রোফাইল সেটিংস লোড হচ্ছে..." : "Loading Master Admin settings..." });
-                        window.dispatchEvent(event);
+                        setAdminSettingsModalOpen(true);
                         setProfileDropdownOpen(false);
                       }}
                       className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
@@ -6952,12 +7026,12 @@ export default function AdminPanel({
                 <button
                   id="reset-default-design-btn"
                   onClick={() => {
-                    if (window.confirm(language === 'bn' ? 'আপনি কি নিশ্চিত যে সম্পূর্ণ ডিজাইনটি আগের ডিফল্ট ডিজাইনে ফিরিয়ে নিতে চান?' : 'Are you sure you want to restore the entire design back to standard defaults?')) {
-                      const defaultDesignPreset = PRESET_TENANTS[0];
-                      saveTenant(defaultDesignPreset);
-                      setActiveTenant(defaultDesignPreset);
-                      window.location.reload();
-                    }
+                    triggerSecWarning(
+                      language === 'bn' ? "ওয়েবসাইট থিম রি-মাস্টারিং এবং ডিফল্ট প্রিসেট রিস্টোরেশন" : "Re-mastering Website Palette & Direct CSS Preset Restoration",
+                      language === 'bn' 
+                        ? "আপনি সম্পূর্ণ ওয়েবসাইটের থিম, কালার কোড ও অবজেক্ট পজিশনিং রিসেট করার সিদ্ধান্ত নিয়েছেন।" 
+                        : "Attempting to overwrite baseline stylesheets, image assets, and tenant properties to default configs."
+                    );
                   }}
                   className="flex items-center space-x-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black uppercase rounded-lg shadow-sm transition tracking-wider cursor-pointer font-sans"
                 >
@@ -7646,35 +7720,12 @@ export default function AdminPanel({
                     <button
                       id="cs-save-all-designs-btn"
                       onClick={() => {
-                        const updated: TenantConfig = {
-                          ...activeTenant,
-                          shopName: csShopName,
-                          shopNameBn: csShopNameBn,
-                          tagline: csTagline,
-                          taglineBn: csTaglineBn,
-                          phone: csPhone,
-                          email: csEmail,
-                          address: csAddress,
-                          addressBn: csAddressBn,
-                          whatsappNumber: csWhatsappNumber,
-                          primaryColor: csPrimaryColor,
-                          hoverColor: csHoverColor,
-                          bgLightColor: csBgLightColor,
-                          logoUrl: csLogoUrl,
-                          slides: csSlides,
-                          menuItems: csMenuItems
-                        };
-                        
-                        saveTenant(updated);
-                        setActiveTenant(updated);
-
-                        // Raise custom state updates
-                        const event = new CustomEvent("app-toast", { 
-                          detail: language === 'bn' 
-                            ? "✅ চমৎকার! ওয়েবসাইটের নতুন ডিজাইন সফলভাবে সেভ এবং লাইভ করা হয়েছে।" 
-                            : "✅ Superb! Your custom layout details are live updated instantly." 
-                        });
-                        window.dispatchEvent(event);
+                        triggerSecWarning(
+                          language === 'bn' ? "ওয়েবসাইট ডিজাইন বিন্যাস এবং সিএমএস মেটাডাটা সংরক্ষণ" : "Apply & Save Live Layout Design Credentials",
+                          language === 'bn' 
+                            ? "আপনি সক্রিয় ব্র্যান্ডের নাম, লোগো, হেল্পলাইন ও কাস্টম নেভিগেশন মেনু ডাটা রিয়েল-টাইমে সেভ করার চেষ্টা করছেন।" 
+                            : "Unauthorized write attempts across primary tenant configurations, logo references, and public endpoint details have been blocked."
+                        );
                       }}
                       className="px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white text-xs sm:text-sm font-black uppercase tracking-wider rounded-lg shadow-md cursor-pointer transition-all duration-300 font-sans flex items-center space-x-2 border-0"
                     >
@@ -7854,6 +7905,345 @@ export default function AdminPanel({
                 {language === 'bn' ? "ডিলিট করুন" : "Confirm Delete"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isBanned && (
+        <div className="fixed inset-0 bg-[#0c0c0e] z-[9999999] flex flex-col items-center justify-center p-6 text-center select-none font-sans font-medium">
+          <div className="max-w-xl w-full bg-zinc-950/80 border border-red-500/30 rounded-2xl p-8 sm:p-12 shadow-[0_0_50px_rgba(239,68,68,0.2)] space-y-6 md:space-y-8 animate-in fade-in-50 duration-500">
+            <div className="w-20 h-20 rounded-full bg-red-950/50 border border-red-500/40 text-red-500 flex items-center justify-center mx-auto mb-2 animate-pulse scale-110">
+              <ShieldAlert size={44} className="text-red-500" />
+            </div>
+            
+            <div className="space-y-3">
+              <h2 className="text-xl sm:text-2xl font-black text-red-500 tracking-tight uppercase flex items-center justify-center gap-2">
+                <span>🚫</span> SYSTEM PORTAL ACCESS TERMINATED
+              </h2>
+              <div className="text-[10px] sm:text-xs font-mono bg-red-950/20 border border-red-900/30 text-red-400 py-1.5 px-3 rounded inline-block">
+                SYS_EXCEPTION: SEC_PRIVILEGE_VIOLATION [DEVICEBLACKLISTED]
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-md mx-auto text-center">
+              {language === 'bn'
+                ? "ক্রমাগত অননুমোদিত প্রশাসনিক পরিবর্তন বা ডাটাবেজ ব্যাকআপ ডাউনলোডের অপচেষ্টা করায় এই ডিভাইসটির সেশন কোড এবং আইপি এড্রেস স্থায়ীভাবে ব্লক করা হয়েছে।"
+                : "Your administrative session has been deactivated due to consecutive security policy override failures. This machine signature is locked out to prevent production database tampering."
+              }
+            </p>
+
+            <div className="border-t border-zinc-900 pt-6 space-y-4">
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                Owner Authentication Bypass Code
+              </p>
+              <div className="flex items-center space-x-2 max-w-xs mx-auto">
+                <input
+                  type="password"
+                  placeholder="Enter secret developer token"
+                  value={bypassPasscode}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setBypassPasscode(val);
+                    if (val === '7788') {
+                      setIsBanned(false);
+                      setSecurityAttempts(0);
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("gb_security_attempts", "0");
+                        localStorage.removeItem("gb_demo_banned");
+                        window.dispatchEvent(new CustomEvent("app-toast", { detail: "✅ SYSTEM RESTORED: Dev Credentials Validated." }));
+                      }
+                      setBypassPasscode("");
+                    }
+                  }}
+                  className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-xl px-3 py-2 text-xs font-bold text-center focus:ring-1 focus:ring-red-500 font-mono focus:outline-hidden"
+                />
+              </div>
+              <p className="text-[9px] text-zinc-600 font-mono">
+                System Registry: 182.23.95.127 BST • SEC-SHIELD-V4.22
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {securityWarningOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border-2 border-red-650 rounded-2xl shadow-[0_0_80px_rgba(239,68,68,0.4)] max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            <div className="bg-gradient-to-r from-red-700 to-amber-600 px-6 py-3 border-b border-red-500/50 flex items-center justify-between">
+              <span className="text-[10px] font-mono font-black text-white tracking-widest uppercase">
+                💥 Security Breach Intercept Alert
+              </span>
+              <span className="text-[9px] bg-black/40 text-red-300 font-mono font-extrabold px-1.5 py-0.5 rounded leading-none">
+                WARN_CRITICAL
+              </span>
+            </div>
+
+            <div className="p-6 space-y-5 text-left">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-full bg-red-950 text-red-550 flex items-center justify-center shrink-0 border border-red-500/30 scale-110">
+                  <ShieldAlert size={26} className="text-red-500 animate-pulse" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-black text-white tracking-wide uppercase font-sans">
+                    {language === 'bn' ? "অননুমোদিত সিস্টেম মেমো পরিবর্তন প্রচেষ্টা" : "UNAUTHORIZED ATTRIBUTE ACCESS LATCH"}
+                  </h3>
+                  <p className="text-[9.5px] font-mono text-zinc-500 font-bold block text-left">Node: DB-PGSQL-Ledger-5432</p>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900 border border-zinc-800/80 p-3.5 rounded-xl space-y-2 font-mono">
+                <div className="text-[10px] text-zinc-400">
+                  <span className="text-red-400 font-bold block text-left">Target Request:</span>
+                  <span className="text-white block mt-0.5 text-left">{warningAction}</span>
+                </div>
+                <div className="text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-2">
+                  <span className="text-amber-400 font-bold block text-left">Policy Check:</span>
+                  <span className="text-zinc-300 block mt-0.5 text-left leading-normal">{warningDetail}</span>
+                </div>
+                <div className="text-[9px] text-zinc-500 border-t border-zinc-800/80 pt-1.5 flex justify-between">
+                  <span>Sec ID: EVT-9582-X29</span>
+                  <span>Session attempt: {securityAttempts}/2</span>
+                </div>
+              </div>
+
+              <div className="bg-red-950/20 border border-red-900/30 p-3 rounded-lg text-red-400 text-[10.5px] leading-relaxed select-none font-bold">
+                ⚠️ {language === 'bn'
+                  ? "সতর্কতা: এই এডিটিং সেশনটি ডেমো একাউন্ট দ্বারা পরিচালিত হচ্ছে। কোন গুরুত্বপূর্ণ পাসওয়ার্ড পরিবর্তন, ডাটাবেজ ব্যাকআপ অথবা প্যারামিটার রিস্টোরেশন ডেমো মোডে নিষিদ্ধ। পুনরায় এই চেষ্টা করা হলে আপনার আইপি এড্রেস চিরতরে ব্যান করা হবে।"
+                  : "WARNING: This session operates under Sandbox Demo Credentials. Root schema downloads and credential overrides are strictly gated. A subsequent attempt will result in an immediate automatic database ban."
+                }
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 px-6 py-4 flex items-center justify-end border-t border-zinc-800/50">
+              <button
+                onClick={() => setSecurityWarningOpen(false)}
+                className="w-full bg-red-650 hover:bg-red-750 text-white font-black text-xs py-2.5 rounded-xl transition shadow-md cursor-pointer tracking-wider font-sans uppercase border-0"
+              >
+                {language === 'bn' ? "আমি সতর্কবার্তা বুঝেছি ও সম্মত" : "Acknowledge Risk & Close Portal"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {adminSettingsModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[100000] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-zinc-200 animate-in zoom-in-95 duration-200 flex flex-col md:flex-row h-[480px]">
+            
+            <div className="w-full md:w-52 bg-zinc-950 text-white p-5 flex flex-col justify-between shrink-0 border-r border-zinc-800">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-black text-white tracking-widest uppercase flex items-center gap-2">
+                    <Server size={14} className="text-amber-400" /> System Settings
+                  </h3>
+                  <span className="text-[10px] text-zinc-500 font-mono">v3.82 Enterprise</span>
+                </div>
+
+                <div className="flex flex-col space-y-1">
+                  {[
+                    { id: 'security', label: language === 'bn' ? "নিরাপত্তা ও পাসওয়ার্ড" : "Security & Password", icon: ShieldCheck },
+                    { id: 'database', label: language === 'bn' ? "সার্ভার ও ডাটাবেজ" : "Server & Database", icon: Database },
+                    { id: 'reseller', label: language === 'bn' ? "লাইসেন্স ও ডোমেইন" : "License & Reseller", icon: Store },
+                  ].map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = adminSettingsTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setAdminSettingsTab(tab.id as any)}
+                        className={`w-full flex items-center space-x-2 px-3 py-2.5 rounded-lg text-xs font-bold text-left border-0 cursor-pointer transition ${
+                          isActive 
+                            ? "bg-[#063b6d] text-white" 
+                            : "bg-transparent text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                        }`}
+                      >
+                        <Icon size={14} />
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-zinc-805 text-[10px] text-zinc-500 font-mono text-left block">
+                Role: Master Admin<br />
+                Node: Active Cluster
+              </div>
+            </div>
+
+            <div className="flex-1 bg-white p-6 md:p-8 flex flex-col justify-between overflow-y-auto">
+              <div>
+                {adminSettingsTab === 'security' && (
+                  <div className="space-y-5 text-left animate-fadeIn">
+                    <div>
+                      <h4 className="text-base font-extrabold text-zinc-900 select-none block text-left">
+                        {language === 'bn' ? "মাস্টার এডমিন পাসওয়ার্ড" : "Master Admin Credentials"}
+                      </h4>
+                      <p className="text-xs text-zinc-500 block text-left mt-1">
+                        {language === 'bn'
+                          ? "নিরাপত্তার স্বার্থে নিয়মিত পাসওয়ার্ড পরিবর্তন করুন। পাসওয়ার্ড শক্তিশালী ও জটিল হওয়া বাঞ্ছনীয়।"
+                          : "Configure portal keychains, access secret identifiers and update administrative lock patterns."
+                        }
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 font-sans">
+                      <div className="space-y-1 block text-left">
+                        <label className="text-[10px] uppercase font-black text-zinc-400 block text-left">Current Token/Password</label>
+                        <input
+                          type="password"
+                          placeholder="••••••••"
+                          value={currentPass}
+                          onChange={(e) => setCurrentPass(e.target.value)}
+                          className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#063b6d] text-zinc-800 focus:outline-hidden"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-left">
+                        <div className="space-y-1 block text-left">
+                          <label className="text-[10px] uppercase font-black text-zinc-400 block text-left">New Password</label>
+                          <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={newPass}
+                            onChange={(e) => setNewPass(e.target.value)}
+                            className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#063b6d] text-zinc-800 focus:outline-hidden"
+                          />
+                        </div>
+                        <div className="space-y-1 block text-left">
+                          <label className="text-[10px] uppercase font-black text-zinc-400 block text-left">Confirm Password</label>
+                          <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={confirmPass}
+                            onChange={(e) => setConfirmPass(e.target.value)}
+                            className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#063b6d] text-zinc-800 focus:outline-hidden"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {adminSettingsTab === 'database' && (
+                  <div className="space-y-5 text-left animate-fadeIn">
+                    <div>
+                      <h4 className="text-base font-extrabold text-zinc-900 select-none block text-left">
+                        {language === 'bn' ? "সার্ভার ও রিগ্রেশন ডেটাবেজ" : "Live PostgreSQL Client Tables"}
+                      </h4>
+                      <p className="text-xs text-zinc-500 block text-left mt-1">
+                        {language === 'bn'
+                          ? "সম্পূর্ণ ডেটাবেজের মেটা ফাইল, বিক্রয় বিবরণী এবং গ্রাহক রেজিস্ট্রি ডাউনলোড করুন।"
+                          : "Inspect live database tables, analyze connection speeds and execute system backups."
+                        }
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-[10px] text-zinc-600 bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+                      <div className="space-y-1 block text-left">
+                        <div className="block">Server Engine: <strong className="text-zinc-850">PostgreSQL (15.4-GCP)</strong></div>
+                        <div className="block mt-1">OR-Mapper: <strong className="text-zinc-850">Drizzle Pipeline</strong></div>
+                        <div className="block mt-1">Node Cluster: <strong className="text-zinc-850">SGP-Master-01</strong></div>
+                      </div>
+                      <div className="space-y-1 block text-left mt-2 md:mt-0 pt-2 md:pt-0 md:border-l border-zinc-200 md:pl-3">
+                        <div className="block">Size Estimate: <strong className="text-zinc-850">19.24 Megabytes</strong></div>
+                        <div className="block mt-1">Live Connections: <strong className="text-emerald-600 font-bold">🟢 Active State</strong></div>
+                        <div className="block mt-1">Last Sync: <strong className="text-zinc-850">Just Now</strong></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg text-[9.5px] text-amber-800 flex items-center gap-2 block text-left">
+                      <span>⚠️</span>
+                      <span>Warning: Database backups contain high-security SHA-hashed user credentials. Handle with care.</span>
+                    </div>
+                  </div>
+                )}
+
+                {adminSettingsTab === 'reseller' && (
+                  <div className="space-y-5 text-left animate-fadeIn">
+                    <div>
+                      <h4 className="text-base font-extrabold text-zinc-900 select-none block text-left font-sans">
+                        {language === 'bn' ? "লাইসেন্স ও ডোমেইন কন্টাক্ট" : "Reseller License Configuration"}
+                      </h4>
+                      <p className="text-xs text-zinc-500 block text-left mt-1">
+                        {language === 'bn'
+                          ? "আপনার সক্রিয় সাবস্ক্রিপশন ও উইজেট লাইসেন্সের মেটা তথ্য দেখুন।"
+                          : "Verify system validation identifiers, target host bindings and reseller network privileges."
+                        }
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 font-sans">
+                      <div className="space-y-1 block text-left">
+                        <label className="text-[10px] uppercase font-black text-zinc-400 block text-left">Reseller License Key</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value="RS_LIC_8842_8911_X0294_992"
+                          className="w-full bg-zinc-50 border border-[#cccccc] rounded-xl px-3 py-2 text-xs font-mono text-zinc-700 select-all cursor-pointer focus:outline-hidden"
+                        />
+                      </div>
+                      <div className="flex gap-4 justify-between text-xs py-1.5 px-2 bg-zinc-50 rounded-lg border border-zinc-150 flex-wrap">
+                        <div className="px-2 font-bold text-zinc-600 block">Tier: <span className="text-emerald-700 font-bold">Enterprise Premium</span></div>
+                        <div className="px-2 font-bold text-zinc-600 block">Domain Binding: <span className="text-[#063b6d] font-bold">ledger.dapathshala.com</span></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-6 border-t border-zinc-200 shrink-0 mt-4">
+                <button
+                  onClick={() => {
+                    setAdminSettingsModalOpen(false);
+                    setCurrentPass("");
+                    setNewPass("");
+                    setConfirmPass("");
+                  }}
+                  className="bg-white hover:bg-zinc-100 text-zinc-700 font-bold text-xs px-4 py-2 rounded-xl border border-zinc-200 transition cursor-pointer font-sans"
+                >
+                  {language === 'bn' ? "বন্ধ করুন" : "Close settings"}
+                </button>
+
+                {adminSettingsTab === 'security' && (
+                  <button
+                    onClick={() => {
+                      if (!currentPass || !newPass) {
+                        alert(language === 'bn' ? "দয়া করে পাসওয়ার্ড পূরণ করুন।" : "Please fill out the password fields.");
+                        return;
+                      }
+                      triggerSecWarning(
+                        language === 'bn' ? "প্রশাসনিক ক্রেনডশিয়াল ও পাসওয়ার্ড অবলিখন" : "Administrative Cryptographic Key Override",
+                        language === 'bn' 
+                          ? "আপনি মাস্টার এডমিন অ্যাকাউন্টের মূল পিনকোড ও ড্যাশবোর্ড নিরাপত্তা চাবি পরিবর্তন করার চেষ্টা করছেন।" 
+                          : "Attempts to overwrite baseline administrator hashed token passwords in live database cluster."
+                      );
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow-sm cursor-pointer font-sans border-0 font-bold"
+                  >
+                    {language === 'bn' ? "পাসওয়ার্ড আপডেট করুন" : "Save changes"}
+                  </button>
+                )}
+
+                {adminSettingsTab === 'database' && (
+                  <button
+                    onClick={() => {
+                      triggerSecWarning(
+                        language === 'bn' ? "ডাটাবেজ রিগ্রেশন ও ব্যাকআপ এক্সপোর্ট" : "Database Dump & SQL Backup Extraction",
+                        language === 'bn' 
+                          ? "আপনি কেন্দ্রীয় ডাটাবেজের সম্পূর্ণ SQL ব্যাকআপ, কাস্টমার রেজিস্ট্রি এবং অর্ডার লেজার ফাইল ডাউনলোড করার সিদ্ধান্ত নিয়েছেন।"
+                          : "Attempting to export high-priority transaction logs, active customer schemas, and the localized PostgreSQL system records."
+                      );
+                    }}
+                    className="bg-red-600 hover:bg-red-750 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow-sm cursor-pointer font-sans flex items-center space-x-1 border-0 font-bold"
+                  >
+                    <DownloadCloud size={13} />
+                    <span>{language === 'bn' ? "ব্যাকআপ ডাউনলোড করুন" : "Download Dump (SQL)"}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+            
           </div>
         </div>
       )}
