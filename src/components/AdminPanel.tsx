@@ -175,13 +175,19 @@ export default function AdminPanel({
       const headerEl = document.getElementById("gadget-bazar-header");
       
       let computedTop = 140;
-      if (headerEl) {
-        const headerRect = headerEl.getBoundingClientRect();
-        computedTop = Math.max(52, headerRect.bottom);
+      const isStickyMode = scrollY > 150;
+      
+      if (isStickyMode) {
+        computedTop = 52; // Sticky Navbar bottom offset
       } else {
-        const hasBanner = document.getElementById("dismiss-eid-banner") !== null;
-        const fallbackHeaderHeight = hasBanner ? 144 : 100;
-        computedTop = scrollY > 150 ? 52 : Math.max(52, fallbackHeaderHeight - scrollY);
+        if (headerEl) {
+          const headerRect = headerEl.getBoundingClientRect();
+          computedTop = headerRect.bottom;
+        } else {
+          const hasBanner = document.getElementById("dismiss-eid-banner") !== null;
+          const fallbackHeaderHeight = hasBanner ? 144 : 100;
+          computedTop = fallbackHeaderHeight - scrollY;
+        }
       }
       setStickyTop(computedTop);
 
