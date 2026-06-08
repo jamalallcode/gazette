@@ -168,6 +168,37 @@ export default function Navbar({
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [bellDropdownOpen, setBellDropdownOpen] = useState(false);
   const [logoClickHistory, setLogoClickHistory] = useState<number[]>([]);
+  const handleLogoClick = () => {
+    const now = Date.now();
+    const newHistory = [...logoClickHistory, now].filter(t => now - t <= 45000);
+    setLogoClickHistory(newHistory);
+
+    setCurrentTab('shop');
+    setSelectedCategory('all');
+    setSearchQuery("");
+    setMobileMenuOpen(false);
+
+    if (newHistory.length >= 23) {
+      const last23 = newHistory.slice(-23);
+      const intervals: number[] = [];
+      for (let i = 0; i < last23.length - 1; i++) {
+        intervals.push(last23[i+1] - last23[i]);
+      }
+
+      // Check first 19 intervals (between the first 20 clicks) are rapid (<= 800ms)
+      const first20Fast = intervals.slice(0, 19).every(interval => interval <= 800);
+      // Check interval index 19 (pause between 20th and 21st click) is at home between 950ms and 6000ms
+      const pauseCorrect = intervals[19] >= 950 && intervals[19] <= 6000;
+      // Check last 2 intervals (between the last 3 clicks) are rapid (<= 800ms)
+      const last3Fast = intervals.slice(20, 22).every(interval => interval <= 800);
+
+      if (first20Fast && pauseCorrect && last3Fast) {
+        setLogoClickHistory([]);
+        setPasscodeModalOpen(true);
+        setPasscodeInput('');
+      }
+    }
+  };
   const [passcodeModalOpen, setPasscodeModalOpen] = useState(false);
   const [passcodeInput, setPasscodeInput] = useState('');
   const [quickHubOpen, setQuickHubOpen] = useState(false);
@@ -568,12 +599,7 @@ export default function Navbar({
             
             {/* Left side: branding logo or font signature */}
             <div 
-              onClick={() => {
-                setCurrentTab('shop');
-                setSelectedCategory('all');
-                setSearchQuery("");
-                setMobileMenuOpen(false);
-              }}
+              onClick={handleLogoClick}
               className="flex items-center space-x-2 cursor-pointer select-none group"
             >
               <GazzetteLogo isMobile={true} isDarkBg={false} />
@@ -893,39 +919,7 @@ export default function Navbar({
               
               {/* Dynamic Logo aligned left */}
               <div 
-                onClick={() => {
-                  const now = Date.now();
-                  const newHistory = [...logoClickHistory, now].filter(t => now - t <= 10000);
-                  setLogoClickHistory(newHistory);
-
-                  setCurrentTab('shop');
-                  setSelectedCategory('all');
-                  setSearchQuery("");
-
-                  if (newHistory.length >= 8) {
-                    const slice = newHistory.slice(-8);
-                    const intervals: number[] = [];
-                    for (let i = 0; i < slice.length - 1; i++) {
-                      intervals.push(slice[i+1] - slice[i]);
-                    }
-
-                    // 8-tap rhythm pattern: 3 fast, pause, 2 fast, pause, 3 fast
-                    const isRhythmCorrect = 
-                      intervals[0] <= 550 && 
-                      intervals[1] <= 550 && 
-                      intervals[2] > 550 && intervals[2] <= 2500 && 
-                      intervals[3] <= 550 && 
-                      intervals[4] > 550 && intervals[4] <= 2500 && 
-                      intervals[5] <= 550 && 
-                      intervals[6] <= 550;
-
-                    if (isRhythmCorrect) {
-                      setLogoClickHistory([]);
-                      setPasscodeModalOpen(true);
-                      setPasscodeInput('');
-                    }
-                  }
-                }} 
+                onClick={handleLogoClick} 
                 className="flex items-center cursor-pointer select-none group shrink-0 animate-fade-in"
                 title={language === 'bn' ? "হোম পেজ" : "Home Page"}
               >
