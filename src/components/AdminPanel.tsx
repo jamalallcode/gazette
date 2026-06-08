@@ -7974,9 +7974,19 @@ export default function AdminPanel({
               <span className="text-[10px] font-mono font-black text-white tracking-widest uppercase">
                 💥 Security Breach Intercept Alert
               </span>
-              <span className="text-[9px] bg-black/40 text-red-300 font-mono font-extrabold px-1.5 py-0.5 rounded leading-none">
-                WARN_CRITICAL
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-[9px] bg-black/40 text-red-300 font-mono font-extrabold px-1.5 py-0.5 rounded leading-none mr-1">
+                  WARN_CRITICAL
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSecurityWarningOpen(false)}
+                  className="text-red-100 hover:text-white hover:bg-black/20 p-1.5 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
+                  title={language === 'bn' ? 'বাতিল / ফিরে যান' : 'Cancel / Go Back'}
+                >
+                  <X size={15} className="stroke-[3]" />
+                </button>
+              </div>
             </div>
 
             <div className="p-6 space-y-5 text-left">
@@ -8015,12 +8025,20 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <div className="bg-zinc-900 px-6 py-4 flex items-center justify-end border-t border-zinc-800/50">
+            <div className="bg-zinc-900 px-6 py-4 flex items-center justify-between gap-3 border-t border-zinc-800/50">
               <button
+                type="button"
                 onClick={() => setSecurityWarningOpen(false)}
-                className="w-full bg-red-650 hover:bg-red-750 text-white font-black text-xs py-2.5 rounded-xl transition shadow-md cursor-pointer tracking-wider font-sans uppercase border-0"
+                className="flex-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-extrabold text-xs py-2.5 rounded-xl transition cursor-pointer font-sans uppercase border border-zinc-700 text-center"
               >
-                {language === 'bn' ? "আমি সতর্কবার্তা বুঝেছি ও সম্মত" : "Acknowledge Risk & Close Portal"}
+                {language === 'bn' ? "বাতিল / ফিরে যান" : "Cancel / Go Back"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSecurityWarningOpen(false)}
+                className="flex-1 bg-red-650 hover:bg-red-750 text-white font-black text-xs py-2.5 rounded-xl transition shadow-md cursor-pointer tracking-wider font-sans uppercase border-0 text-center"
+              >
+                {language === 'bn' ? "আমি সতর্কবার্তা বুঝেছি" : "Acknowledge Warning"}
               </button>
             </div>
           </div>
