@@ -2248,7 +2248,7 @@ export default function AdminPanel({
               </button>
 
               {messagesDropdownOpen && (
-                <div className="absolute right-[-24px] sm:right-0 mt-3.5 w-[calc(100vw-24px)] sm:w-80 max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="fixed sm:absolute top-[70px] sm:top-auto left-3 right-3 sm:left-auto sm:right-0 mt-0 sm:mt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <Mail size={13} className="text-blue-600" />
@@ -2340,7 +2340,7 @@ export default function AdminPanel({
               </button>
 
               {cartsDropdownOpen && (
-                <div className="absolute right-[-48px] sm:right-0 mt-3.5 w-[calc(100vw-24px)] sm:w-85 max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="fixed sm:absolute top-[70px] sm:top-auto left-3 right-3 sm:left-auto sm:right-0 mt-0 sm:mt-4 w-auto sm:w-85 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <ShoppingCart size={13} className="text-cyan-600" />
@@ -2441,7 +2441,7 @@ export default function AdminPanel({
               {/* Admin Notification dropdown panel */}
               {adminBellDropdownOpen && (
                 <div 
-                  className="absolute top-full right-[-8px] pt-3.5 w-[calc(100vw-24px)] sm:w-80 max-w-[340px] h-auto z-[9990]"
+                  className="fixed sm:absolute top-[70px] sm:top-full left-3 right-3 sm:left-auto sm:right-[-8px] pt-0 sm:pt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] h-auto z-[9990]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="bg-white text-zinc-850 rounded-2xl shadow-2xl border border-zinc-200 py-3.5 px-4 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200 space-y-3">
@@ -2541,7 +2541,7 @@ export default function AdminPanel({
               </button>
 
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-3.5 w-56 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
+                <div className="fixed sm:absolute top-[70px] sm:top-auto left-3 right-3 sm:left-auto sm:right-0 mt-0 sm:mt-4 w-auto sm:w-56 max-w-none sm:max-w-none bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-zinc-100 mb-1.5">
                     <p className="text-xs font-extrabold text-zinc-800 leading-tight">Gadget Bazar Admin</p>
                     <p className="text-[10px] font-bold text-zinc-400 mt-0.5">settlementregister@gmail.com</p>
