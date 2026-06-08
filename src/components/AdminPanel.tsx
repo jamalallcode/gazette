@@ -748,14 +748,16 @@ export default function AdminPanel({
 
       {/* LEFT SIDEBAR (NABIK BAZAR THEME) */}
       <aside 
-        className={`bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto overscroll-y-contain z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:h-full self-stretch select-none ${
+        className={`bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky select-none ${
           sidebarOpen ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none font-bold' : 'w-0 -translate-x-full lg:translate-x-0 lg:w-16'
         }`}
         style={{
           top: isDesktop ? `${stickyTop}px` : undefined,
+          height: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
+          maxHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
           minHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
           transition: isTransitioningTop 
-            ? 'top 700ms cubic-bezier(0.16, 1, 0.3, 1), min-height 700ms cubic-bezier(0.16, 1, 0.3, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
+            ? 'top 700ms cubic-bezier(0.16, 1, 0.3, 1), height 700ms cubic-bezier(0.16, 1, 0.3, 1), max-height 700ms cubic-bezier(0.16, 1, 0.3, 1), min-height 700ms cubic-bezier(0.16, 1, 0.3, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
             : 'width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         id="side-bar-navigation"
