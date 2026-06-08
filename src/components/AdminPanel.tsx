@@ -2189,7 +2189,7 @@ export default function AdminPanel({
       >
         
         {/* TOP NAVBAR */}
-        <header className="bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
+        <header className="relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-1 sm:space-x-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -2229,7 +2229,7 @@ export default function AdminPanel({
             </div>
 
             {/* Interactive Messages Dropdown */}
-            <div className="relative" ref={messagesContainerRef}>
+            <div className="sm:relative" ref={messagesContainerRef}>
               <button 
                 onClick={() => {
                   setMessagesDropdownOpen(!messagesDropdownOpen);
@@ -2248,7 +2248,7 @@ export default function AdminPanel({
               </button>
 
               {messagesDropdownOpen && (
-                <div className="fixed sm:absolute top-[70px] sm:top-auto left-3 right-3 sm:left-auto sm:right-0 mt-0 sm:mt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <Mail size={13} className="text-blue-600" />
@@ -2321,7 +2321,7 @@ export default function AdminPanel({
             </div>
             
             {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
-            <div className="relative" ref={cartsContainerRef}>
+            <div className="sm:relative" ref={cartsContainerRef}>
               <button 
                 onClick={() => {
                   setCartsDropdownOpen(!cartsDropdownOpen);
@@ -2340,7 +2340,7 @@ export default function AdminPanel({
               </button>
 
               {cartsDropdownOpen && (
-                <div className="fixed sm:absolute top-[70px] sm:top-auto left-3 right-3 sm:left-auto sm:right-0 mt-0 sm:mt-4 w-auto sm:w-85 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-85 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <ShoppingCart size={13} className="text-cyan-600" />
@@ -2426,7 +2426,7 @@ export default function AdminPanel({
                 setCartsDropdownOpen(false);
                 setProfileDropdownOpen(false);
               }}
-              className="flex items-center cursor-pointer select-none group relative py-2"
+              className="flex items-center cursor-pointer select-none group sm:relative py-2"
               id="admin-realtime-notifications-bell"
             >
               <div className="relative p-2 rounded-full hover:bg-zinc-100 transition duration-150">
@@ -2441,7 +2441,7 @@ export default function AdminPanel({
               {/* Admin Notification dropdown panel */}
               {adminBellDropdownOpen && (
                 <div 
-                  className="fixed sm:absolute top-[70px] sm:top-full left-3 right-3 sm:left-auto sm:right-[-8px] pt-0 sm:pt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] h-auto z-[9990]"
+                  className="absolute top-[64px] sm:top-full left-4 right-4 sm:left-auto sm:right-[-8px] pt-3 sm:pt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] h-auto z-[9990]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="bg-white text-zinc-850 rounded-2xl shadow-2xl border border-zinc-200 py-3.5 px-4 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200 space-y-3">
@@ -2521,7 +2521,7 @@ export default function AdminPanel({
             </div>
 
             {/* Profile badge */}
-            <div className="relative pl-1.5 sm:pl-2 border-l border-zinc-200" ref={profileContainerRef}>
+            <div className="sm:relative pl-1.5 sm:pl-2 border-l border-zinc-200" ref={profileContainerRef}>
               <button 
                 onClick={() => {
                   setProfileDropdownOpen(!profileDropdownOpen);
@@ -2541,7 +2541,7 @@ export default function AdminPanel({
               </button>
 
               {profileDropdownOpen && (
-                <div className="fixed sm:absolute top-[70px] sm:top-auto left-3 right-3 sm:left-auto sm:right-0 mt-0 sm:mt-4 w-auto sm:w-56 max-w-none sm:max-w-none bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
+                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-56 max-w-none sm:max-w-none bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-zinc-100 mb-1.5">
                     <p className="text-xs font-extrabold text-zinc-800 leading-tight">Gadget Bazar Admin</p>
                     <p className="text-[10px] font-bold text-zinc-400 mt-0.5">settlementregister@gmail.com</p>
