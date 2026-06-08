@@ -75,6 +75,7 @@ export default function AdminPanel({
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [messagesDropdownOpen, setMessagesDropdownOpen] = useState(false);
   const [cartsDropdownOpen, setCartsDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   // State-driven interactive client messages
   const [clientInquiries, setClientInquiries] = useState([
@@ -2181,15 +2182,24 @@ export default function AdminPanel({
                   setLangDropdownOpen(!langDropdownOpen);
                   setMessagesDropdownOpen(false);
                   setCartsDropdownOpen(false);
+                  setProfileDropdownOpen(false);
                 }}
-                className="flex items-center space-x-1 sm:space-x-2 text-zinc-700 bg-zinc-50 border border-zinc-200 py-1.5 px-2 sm:px-3 rounded-lg text-xs font-bold leading-none select-none hover:bg-zinc-100 transition cursor-pointer border-0"
+                className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center text-zinc-600 hover:text-[#063b6d]"
+                title={language === 'bn' ? "ভাষা পরিবর্তন করুন" : "Change Language"}
               >
-                <span>{language === 'bn' ? "🇧🇩 বাংলা (BD)" : "🇺🇸 English (US)"}</span>
-                <ChevronDown size={12} className="text-zinc-400 shrink-0" />
+                <Globe className="h-5 w-5" />
+                <span className="absolute -bottom-1 -right-1 text-[8px] bg-[#063b6d] text-white font-extrabold px-1 rounded-full uppercase scale-90 leading-none">
+                  {language}
+                </span>
               </button>
 
               {langDropdownOpen && (
-                <div className="absolute right-0 mt-1.5 w-40 bg-white border border-zinc-200 rounded-xl shadow-xl py-1 z-[9999] animate-in fade-in slide-in-from-top-1">
+                <div className="absolute right-0 mt-2 w-44 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-1.5 z-[9999] animate-in fade-in slide-in-from-top-1 text-left font-sans">
+                  <div className="px-3.5 py-1 pb-1.5 border-b border-zinc-100 mb-1">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                      {language === 'bn' ? "ভাষা নির্বাচন করুন" : "Select Language"}
+                    </span>
+                  </div>
                   <button 
                     onClick={() => {
                       setLanguage('en');
@@ -2199,7 +2209,7 @@ export default function AdminPanel({
                     }}
                     className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-zinc-50 border-0 bg-transparent cursor-pointer ${language === 'en' ? 'text-[#063b6d] bg-[#063b6d]/5' : 'text-zinc-700'}`}
                   >
-                    <span>🇺🇸 English</span>
+                    <span className="flex items-center gap-2">🇺🇸 <span>English (US)</span></span>
                     {language === 'en' && <Check size={12} className="text-[#063b6d]" />}
                   </button>
                   <button 
@@ -2211,7 +2221,7 @@ export default function AdminPanel({
                     }}
                     className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-zinc-50 border-0 bg-transparent cursor-pointer ${language === 'bn' ? 'text-[#063b6d] bg-[#063b6d]/5' : 'text-zinc-700'}`}
                   >
-                    <span>🇧🇩 বাংলা</span>
+                    <span className="flex items-center gap-2">🇧🇩 <span>বাংলা (BD)</span></span>
                     {language === 'bn' && <Check size={12} className="text-[#063b6d]" />}
                   </button>
                 </div>
@@ -2225,6 +2235,7 @@ export default function AdminPanel({
                   setMessagesDropdownOpen(!messagesDropdownOpen);
                   setLangDropdownOpen(false);
                   setCartsDropdownOpen(false);
+                  setProfileDropdownOpen(false);
                 }}
                 className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
               >
@@ -2316,6 +2327,7 @@ export default function AdminPanel({
                   setCartsDropdownOpen(!cartsDropdownOpen);
                   setLangDropdownOpen(false);
                   setMessagesDropdownOpen(false);
+                  setProfileDropdownOpen(false);
                 }}
                 className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
               >
@@ -2503,15 +2515,89 @@ export default function AdminPanel({
             </div>
 
             {/* Profile badge */}
-            <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 border-l border-zinc-200">
-              <div className="w-8 h-8 rounded-full bg-cover bg-center bg-[#063b6d] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                GB
-              </div>
-              <div className="text-left hidden md:block leading-none">
-                <span className="text-xs font-extrabold text-zinc-900 block">Gadget Bazar</span>
-                <span className="text-[10px] text-zinc-400 block mt-0.5">Master Admin</span>
-              </div>
-              <ChevronDown size={12} className="text-zinc-400 hidden md:block" />
+            <div className="relative pl-1.5 sm:pl-2 border-l border-zinc-200">
+              <button 
+                onClick={() => {
+                  setProfileDropdownOpen(!profileDropdownOpen);
+                  setLangDropdownOpen(false);
+                  setMessagesDropdownOpen(false);
+                  setCartsDropdownOpen(false);
+                }}
+                className="flex items-center space-x-1.5 text-left border-0 bg-transparent hover:bg-zinc-50 rounded-xl p-1 -m-1 transition cursor-pointer select-none"
+              >
+                <div className="w-8 h-8 rounded-full bg-[#063b6d] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  GB
+                </div>
+                <div className="text-left hidden md:block leading-none">
+                  <span className="text-xs font-black text-zinc-900 block">Gadget Bazar</span>
+                  <span className="text-[9px] font-semibold text-zinc-400 block mt-0.5">Master Admin</span>
+                </div>
+                <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-3.5 w-56 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-2 border-b border-zinc-100 mb-1.5">
+                    <p className="text-xs font-extrabold text-zinc-800 leading-tight">Gadget Bazar Admin</p>
+                    <p className="text-[10px] font-bold text-zinc-400 mt-0.5">settlementregister@gmail.com</p>
+                  </div>
+
+                  <div className="space-y-0.5 px-1">
+                    <button 
+                      onClick={() => {
+                        setActiveTab('dashboard');
+                        setProfileDropdownOpen(false);
+                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "ড্যাশবোর্ডে আপনাকে স্বাগতম!" : "Switched to dashboard view" });
+                        window.dispatchEvent(event);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                    >
+                      <span>📊</span>
+                      <span>{language === 'bn' ? "ড্যাশবোর্ড ওভারভিউ" : "Dashboard Overview"}</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => {
+                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সেলার প্রোফাইল সেটিংস লোড হচ্ছে..." : "Loading Master Admin settings..." });
+                        window.dispatchEvent(event);
+                        setProfileDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                    >
+                      <span>⚙️</span>
+                      <span>{language === 'bn' ? "প্রোফাইল ও সেটিংস" : "Profile & Settings"}</span>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "লাইভ স্টোর ভিউ লোড হচ্ছে..." : "Redirection to live storefront..." });
+                        window.dispatchEvent(event);
+                        setProfileDropdownOpen(false);
+                        const shopBtn = document.querySelector('[id*="back-to-shop-button"]') || document.querySelector('button[id*="store"]');
+                        if (shopBtn) (shopBtn as HTMLButtonElement).click();
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-[#f58220] hover:bg-orange-50/50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                    >
+                      <span>🛒</span>
+                      <span>{language === 'bn' ? "লাইভ কাস্টমার স্টোর" : "Live Customer Store"}</span>
+                    </button>
+
+                    <div className="border-t border-zinc-100 my-1 pt-1">
+                      <button 
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সফলভাবে লগআউট করা হয়েছে!" : "Successfully logged out from session!" });
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-red-600 hover:bg-red-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                      >
+                        <span>🚪</span>
+                        <span>{language === 'bn' ? "লগ আউট করুন" : "Logout Session"}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
