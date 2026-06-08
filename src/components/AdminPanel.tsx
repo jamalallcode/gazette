@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Product, Order, Category, CartItem } from "../types";
 import POSManager from "./POSManager";
@@ -72,10 +72,34 @@ export default function AdminPanel({
   const [adminBellDropdownOpen, setAdminBellDropdownOpen] = useState(false);
   
   // Interactive state declarations for the top icons and selectors
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [messagesDropdownOpen, setMessagesDropdownOpen] = useState(false);
   const [cartsDropdownOpen, setCartsDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  // Refs for auto-closing on clicking outside
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const cartsContainerRef = useRef<HTMLDivElement>(null);
+  const profileContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (messagesDropdownOpen && messagesContainerRef.current && !messagesContainerRef.current.contains(target)) {
+        setMessagesDropdownOpen(false);
+      }
+      if (cartsDropdownOpen && cartsContainerRef.current && !cartsContainerRef.current.contains(target)) {
+        setCartsDropdownOpen(false);
+      }
+      if (profileDropdownOpen && profileContainerRef.current && !profileContainerRef.current.contains(target)) {
+        setProfileDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [messagesDropdownOpen, cartsDropdownOpen, profileDropdownOpen]);
 
   // State-driven interactive client messages
   const [clientInquiries, setClientInquiries] = useState([
@@ -2175,65 +2199,36 @@ export default function AdminPanel({
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-5 text-sm">
-            {/* Interactive Language Selection Dropdown */}
+            {/* Interactive Language Selection Button (Direct Toggle) */}
             <div className="relative">
               <button 
                 onClick={() => {
-                  setLangDropdownOpen(!langDropdownOpen);
+                  const nextLang = language === 'en' ? 'bn' : 'en';
+                  setLanguage(nextLang);
+                  const msg = nextLang === 'bn' ? "ভাষা পরিবর্তন করে বাংলায় করা হয়েছে!" : "Language switched to English!";
+                  const event = new CustomEvent("app-toast", { detail: msg });
+                  window.dispatchEvent(event);
+                  
+                  // Close other dropdowns
                   setMessagesDropdownOpen(false);
                   setCartsDropdownOpen(false);
                   setProfileDropdownOpen(false);
                 }}
                 className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center text-zinc-600 hover:text-[#063b6d]"
-                title={language === 'bn' ? "ভাষা পরিবর্তন করুন" : "Change Language"}
+                title={language === 'bn' ? "ভাষা সিলেক্ট করুন (ইংলিশ/বাংলা)" : "Toggle Language (English/Bangla)"}
               >
                 <Globe className="h-5 w-5" />
-                <span className="absolute -bottom-1 -right-1 text-[8px] bg-[#063b6d] text-white font-extrabold px-1 rounded-full uppercase scale-90 leading-none">
+                <span className="absolute -bottom-1 -right-1 text-[8px] bg-[#063b6d] text-white font-extrabold px-1.2 rounded-full uppercase scale-90 leading-none">
                   {language}
                 </span>
               </button>
-
-              {langDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-44 bg-white border border-zinc-200 rounded-2xl shadow-2xl py-1.5 z-[9999] animate-in fade-in slide-in-from-top-1 text-left font-sans">
-                  <div className="px-3.5 py-1 pb-1.5 border-b border-zinc-100 mb-1">
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                      {language === 'bn' ? "ভাষা নির্বাচন করুন" : "Select Language"}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setLanguage('en');
-                      setLangDropdownOpen(false);
-                      const event = new CustomEvent("app-toast", { detail: "Language switched to English!" });
-                      window.dispatchEvent(event);
-                    }}
-                    className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-zinc-50 border-0 bg-transparent cursor-pointer ${language === 'en' ? 'text-[#063b6d] bg-[#063b6d]/5' : 'text-zinc-700'}`}
-                  >
-                    <span className="flex items-center gap-2">🇺🇸 <span>English (US)</span></span>
-                    {language === 'en' && <Check size={12} className="text-[#063b6d]" />}
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setLanguage('bn');
-                      setLangDropdownOpen(false);
-                      const event = new CustomEvent("app-toast", { detail: "ভাষা পরিবর্তন করে বাংলায় করা হয়েছে!" });
-                      window.dispatchEvent(event);
-                    }}
-                    className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between hover:bg-zinc-50 border-0 bg-transparent cursor-pointer ${language === 'bn' ? 'text-[#063b6d] bg-[#063b6d]/5' : 'text-zinc-700'}`}
-                  >
-                    <span className="flex items-center gap-2">🇧🇩 <span>বাংলা (BD)</span></span>
-                    {language === 'bn' && <Check size={12} className="text-[#063b6d]" />}
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Interactive Messages Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={messagesContainerRef}>
               <button 
                 onClick={() => {
                   setMessagesDropdownOpen(!messagesDropdownOpen);
-                  setLangDropdownOpen(false);
                   setCartsDropdownOpen(false);
                   setProfileDropdownOpen(false);
                 }}
@@ -2321,11 +2316,10 @@ export default function AdminPanel({
             </div>
             
             {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={cartsContainerRef}>
               <button 
                 onClick={() => {
                   setCartsDropdownOpen(!cartsDropdownOpen);
-                  setLangDropdownOpen(false);
                   setMessagesDropdownOpen(false);
                   setProfileDropdownOpen(false);
                 }}
@@ -2515,11 +2509,10 @@ export default function AdminPanel({
             </div>
 
             {/* Profile badge */}
-            <div className="relative pl-1.5 sm:pl-2 border-l border-zinc-200">
+            <div className="relative pl-1.5 sm:pl-2 border-l border-zinc-200" ref={profileContainerRef}>
               <button 
                 onClick={() => {
                   setProfileDropdownOpen(!profileDropdownOpen);
-                  setLangDropdownOpen(false);
                   setMessagesDropdownOpen(false);
                   setCartsDropdownOpen(false);
                 }}
