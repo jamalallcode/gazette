@@ -155,16 +155,50 @@ export default function AdminPanel({
     return typeof window !== "undefined" ? window.innerWidth >= 1024 : true;
   });
 
+  const [stickyTop, setStickyTop] = useState(140);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    return typeof window !== "undefined" ? window.innerWidth >= 1024 : true;
+  });
+
   React.useEffect(() => {
+    const handleScroll = () => {
+      if (typeof window === "undefined" || window.innerWidth < 1024) return;
+      
+      const scrollY = window.scrollY;
+      const headerEl = document.getElementById("gadget-bazar-header");
+      if (headerEl) {
+        const headerRect = headerEl.getBoundingClientRect();
+        // Dynamic sticky top matching header height in viewport
+        const dynamicTop = Math.max(52, headerRect.bottom);
+        setStickyTop(dynamicTop);
+      } else {
+        const hasBanner = document.getElementById("dismiss-eid-banner") !== null;
+        const fallbackHeaderHeight = hasBanner ? 144 : 100;
+        setStickyTop(scrollY > 150 ? 52 : Math.max(52, fallbackHeaderHeight - scrollY));
+      }
+    };
+
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (!desktop) {
         setSidebarOpen(false);
       } else {
         setSidebarOpen(true);
       }
+      handleScroll();
     };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    
+    // Run initial offset positioning calculations
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const [ordersExpanded, setOrdersExpanded] = useState(false);
@@ -687,9 +721,13 @@ export default function AdminPanel({
 
       {/* LEFT SIDEBAR (NABIK BAZAR THEME) */}
       <aside 
-        className={`transition-all duration-300 bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:top-[52px] lg:min-h-[calc(100vh-52px)] lg:h-full self-stretch select-none ${
+        className={`transition-all duration-300 bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:h-full self-stretch select-none ${
           sidebarOpen ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none font-bold' : 'w-0 -translate-x-full lg:translate-x-0 lg:w-16'
         }`}
+        style={{
+          top: isDesktop ? `${stickyTop}px` : undefined,
+          minHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined
+        }}
         id="side-bar-navigation"
       >
         {/* Branding Title */}
