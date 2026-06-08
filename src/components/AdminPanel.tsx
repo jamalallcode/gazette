@@ -159,22 +159,42 @@ export default function AdminPanel({
   const [isDesktop, setIsDesktop] = useState(() => {
     return typeof window !== "undefined" ? window.innerWidth >= 1024 : true;
   });
+  const [isNavbarSticky, setIsNavbarSticky] = useState(() => {
+    return typeof window !== "undefined" ? window.scrollY > 150 : false;
+  });
+  const [isTransitioningTop, setIsTransitioningTop] = useState(false);
 
   React.useEffect(() => {
+    let prevSticky = typeof window !== "undefined" ? window.scrollY > 150 : false;
+    let transitionTimer: NodeJS.Timeout | null = null;
+
     const handleScroll = () => {
       if (typeof window === "undefined" || window.innerWidth < 1024) return;
       
       const scrollY = window.scrollY;
       const headerEl = document.getElementById("gadget-bazar-header");
+      
+      let computedTop = 140;
       if (headerEl) {
         const headerRect = headerEl.getBoundingClientRect();
-        // Dynamic sticky top matching header height in viewport
-        const dynamicTop = Math.max(52, headerRect.bottom);
-        setStickyTop(dynamicTop);
+        computedTop = Math.max(52, headerRect.bottom);
       } else {
         const hasBanner = document.getElementById("dismiss-eid-banner") !== null;
         const fallbackHeaderHeight = hasBanner ? 144 : 100;
-        setStickyTop(scrollY > 150 ? 52 : Math.max(52, fallbackHeaderHeight - scrollY));
+        computedTop = scrollY > 150 ? 52 : Math.max(52, fallbackHeaderHeight - scrollY);
+      }
+      setStickyTop(computedTop);
+
+      const currentSticky = scrollY > 150;
+      if (currentSticky !== prevSticky) {
+        prevSticky = currentSticky;
+        setIsNavbarSticky(currentSticky);
+        setIsTransitioningTop(true);
+        
+        if (transitionTimer) clearTimeout(transitionTimer);
+        transitionTimer = setTimeout(() => {
+          setIsTransitioningTop(false);
+        }, 800);
       }
     };
 
@@ -198,6 +218,7 @@ export default function AdminPanel({
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+      if (transitionTimer) clearTimeout(transitionTimer);
     };
   }, []);
 
@@ -721,12 +742,15 @@ export default function AdminPanel({
 
       {/* LEFT SIDEBAR (NABIK BAZAR THEME) */}
       <aside 
-        className={`transition-all duration-300 bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:h-full self-stretch select-none ${
+        className={`bg-[#063b6d] text-white flex flex-col shrink-0 custom-sidebar-scrollbar overflow-y-auto z-[1020] lg:z-30 fixed left-0 top-0 h-screen lg:sticky lg:h-full self-stretch select-none ${
           sidebarOpen ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none font-bold' : 'w-0 -translate-x-full lg:translate-x-0 lg:w-16'
         }`}
         style={{
           top: isDesktop ? `${stickyTop}px` : undefined,
-          minHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined
+          minHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
+          transition: isTransitioningTop 
+            ? 'top 700ms cubic-bezier(0.16, 1, 0.3, 1), min-height 700ms cubic-bezier(0.16, 1, 0.3, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
+            : 'width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         id="side-bar-navigation"
       >
