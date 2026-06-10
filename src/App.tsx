@@ -54,7 +54,10 @@ import {
   Volume2,
   Maximize2,
   Share2,
-  Eye
+  Eye,
+  Heart,
+  X,
+  Trash2
 } from "lucide-react";
 
 const HOME_VIDEOS = [
@@ -541,6 +544,35 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [currentTab, setCurrentTab] = useState<string>('shop');
+  const [activePolicyModal, setActivePolicyModal] = useState<'refund' | 'return' | 'cancel' | 'wishlist' | null>(null);
+  const [localWishlist, setLocalWishlist] = useState<any[]>(() => {
+    const saved = localStorage.getItem("gadget_bazar_local_wishlist");
+    if (saved) return JSON.parse(saved);
+    // Pre-seed some beautiful items as default
+    return [
+      {
+        id: "prod-1",
+        name: "Antec ATOM B550 Power Supply",
+        nameBn: "অ্যান্টেক এটম বি৫৫০ ৫৫০ওয়াট পিএসইউ",
+        priceBDT: 4200,
+        priceUSD: 35,
+        image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop&q=60"
+      },
+      {
+        id: "prod-2",
+        name: "Golden Field ATX Case",
+        nameBn: "গোল্ডেন ফিল্ড ১১৬ এটিএক্স কেসিং",
+        priceBDT: 1800,
+        priceUSD: 15,
+        image: "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=800&auto=format&fit=crop&q=60"
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("gadget_bazar_local_wishlist", JSON.stringify(localWishlist));
+  }, [localWishlist]);
+
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
   const [activePlayingVideoId, setActivePlayingVideoId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(() => {
@@ -2470,6 +2502,8 @@ export default function App() {
               setActiveTenant={setActiveTenant}
               unreadNotifications={unreadNotificationOrders}
               setUnreadNotifications={setUnreadNotificationOrders}
+              currentUser={currentUser}
+              setCurrentUser={setCurrentUser}
             />
           ) : (
             <AdminLogin
@@ -2544,7 +2578,41 @@ export default function App() {
               {[
                 "Profile Info", "Wish List", "Track Order", "Refund Policy", "Return Policy", "Cancellation Policy"
               ].map((link) => (
-                <a key={link} href={`#${link}`} className="text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline tracking-normal">{link}</a>
+                <button
+                  key={link}
+                  type="button"
+                  onClick={() => {
+                    if (link === "Profile Info") {
+                      if (currentUser) {
+                        setCurrentTab('orders');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        setCurrentTab('auth');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        const event = new CustomEvent("app-toast", { 
+                          detail: language === 'bn' 
+                            ? "প্রোফাইল দেখতে দয়া করে লগইন বা সাইন আপ করুন!" 
+                            : "Please login or register to view your profile!" 
+                        });
+                        window.dispatchEvent(event);
+                      }
+                    } else if (link === "Wish List") {
+                      setActivePolicyModal('wishlist');
+                    } else if (link === "Track Order") {
+                      setCurrentTab('live-tracking');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else if (link === "Refund Policy") {
+                      setActivePolicyModal('refund');
+                    } else if (link === "Return Policy") {
+                      setActivePolicyModal('return');
+                    } else if (link === "Cancellation Policy") {
+                      setActivePolicyModal('cancel');
+                    }
+                  }}
+                  className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline tracking-normal bg-transparent border-0 cursor-pointer p-0 block"
+                >
+                  {link}
+                </button>
               ))}
             </div>
 
@@ -2964,6 +3032,276 @@ export default function App() {
                 className="px-5 py-2.5 bg-zinc-850 hover:bg-zinc-950 border-0 text-white font-bold rounded-xl text-xs uppercase cursor-pointer transition shadow-md"
               >
                 Close Article
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 11. Policy and Wish List Viewer Modals */}
+      {activePolicyModal && (
+        <div 
+          className="fixed inset-0 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 z-[99999] animate-in fade-in duration-250"
+          onClick={() => setActivePolicyModal(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl relative border border-zinc-100 text-left font-sans animate-in zoom-in-95 duration-200 max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setActivePolicyModal(null)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-805 bg-zinc-100 hover:bg-zinc-200 rounded-full h-8 w-8 flex items-center justify-center border-0 cursor-pointer shadow-sm z-50 font-bold transition text-xs"
+            >
+              ✕
+            </button>
+
+            {/* Modal Header */}
+            <div className="p-5 border-b border-zinc-150 bg-gradient-to-r from-zinc-50 to-white flex items-center space-x-3">
+              {activePolicyModal === 'wishlist' && <Heart className="text-rose-500 fill-rose-500 stroke-[2.5px]" size={20} />}
+              {activePolicyModal !== 'wishlist' && <ShieldCheck className="text-orange-500" size={20} />}
+              <h3 className="text-base sm:text-lg font-black text-zinc-900 tracking-tight">
+                {activePolicyModal === 'wishlist' && (language === 'bn' ? "আমার পছন্দের উইশ লিস্ট" : "My Favorite Wish List")}
+                {activePolicyModal === 'refund' && (language === 'bn' ? "রিফান্ড ও পেমেন্ট পলিসি" : "Refund & Payment Policy")}
+                {activePolicyModal === 'return' && (language === 'bn' ? "৭ দিনের রিটার্ন ও রিপ্লেসমেন্ট পলিসি" : "7 Days Return & Replacement Policy")}
+                {activePolicyModal === 'cancel' && (language === 'bn' ? "অর্ডার বাতিলকরণ ও সংশোধন পলিসি" : "Order Cancellation & Modification Policy")}
+              </h3>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto flex-1 text-zinc-700 leading-relaxed text-xs sm:text-sm">
+              {activePolicyModal === 'wishlist' && (
+                <div className="space-y-4">
+                  <p className="text-[12px] text-zinc-500 font-semibold mb-2">
+                    {language === 'bn' 
+                      ? "আপনার পছন্দের নিচের প্রোডাক্টগুলো সংরক্ষণ করা হয়েছে। আপনি চাইলে সরাসরি এগুলো কার্টে যুক্ত করতে পারবেন।" 
+                      : "The items below have been kept in your bookmark container. Quickly buy or remove them."}
+                  </p>
+                  
+                  {localWishlist.length === 0 ? (
+                    <div className="text-center py-10 space-y-3">
+                      <div className="text-4xl">❤️</div>
+                      <p className="text-zinc-400 font-bold">
+                        {language === 'bn' ? "আপনার পছন্দের তালিকায় কিছুই নেই!" : "Your favorites tray is currently empty!"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-zinc-100 font-sans">
+                      {localWishlist.map((item) => {
+                        const productForCart: Product = {
+                          id: item.id,
+                          name: item.name,
+                          nameBn: item.nameBn || item.name,
+                          category: 'gadgets',
+                          description: item.name,
+                          descriptionBn: item.nameBn || item.name,
+                          priceBDT: item.priceBDT,
+                          priceUSD: item.priceUSD,
+                          image: item.image,
+                          rating: 5,
+                          reviewsCount: 12,
+                          stock: 20,
+                          features: [],
+                          featuresBn: []
+                        };
+
+                        return (
+                          <div key={item.id} className="py-3.5 flex items-center justify-between gap-3 animate-in fade-in duration-150">
+                            <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-lg border border-zinc-200 shadow-2xs flex-shrink-0" referrerPolicy="no-referrer" />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-zinc-800 text-xs sm:text-sm truncate leading-tight">
+                                {language === 'bn' ? item.nameBn : item.name}
+                              </h4>
+                              <p className="text-[#f58220] font-black text-xs mt-0.5">
+                                {currency === 'BDT' ? `৳${item.priceBDT}` : `$${item.priceUSD}`}
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-2 shrink-0 gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleAddToCart(productForCart);
+                                  window.dispatchEvent(new CustomEvent("app-toast", {
+                                    detail: language === 'bn' ? "কার্টে পণ্যটি যোগ করা হয়েছে!" : "Successfully added bookmarked product to cart!"
+                                  }));
+                                }}
+                                className="bg-orange-500 hover:bg-orange-605 text-white font-extrabold text-[10px] sm:text-xs px-3 py-1.5 rounded-lg cursor-pointer border-0 transition shadow-xs whitespace-nowrap"
+                              >
+                                {language === 'bn' ? 'কার্টে যুক্ত করুন' : 'Add to Cart'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = localWishlist.filter(w => w.id !== item.id);
+                                  setLocalWishlist(updated);
+                                  window.dispatchEvent(new CustomEvent("app-toast", {
+                                    detail: language === 'bn' ? "পছন্দের তালিকা থেকে বাদ দেওয়া হয়েছে" : "Removed item from favorites!"
+                                  }));
+                                }}
+                                className="text-zinc-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg border-0 bg-transparent cursor-pointer transition flex items-center justify-center whitespace-nowrap"
+                                title="Remove Bookmark"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activePolicyModal === 'refund' && (
+                <div className="space-y-4 font-sans text-xs sm:text-sm">
+                  <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-md">
+                    <p className="font-bold text-orange-800 uppercase text-[11px] tracking-wider mb-1">
+                      {language === 'bn' ? '১০০% রিফান্ড নিশ্চয়তা' : 'OUR REFUND PLEDGE'}
+                    </p>
+                    <p className="text-zinc-700 leading-relaxed text-[11px] sm:text-xs font-semibold">
+                      {language === 'bn' 
+                        ? 'আমরা প্রতিটি অর্ডারে নিরাপদ ও নির্ভরযোগ্য পেমেন্ট চ্যানেল এবং সহজ রিফান্ড পলিসি প্রদান করি।' 
+                        : 'We facilitate secure payments and hassle-free, guaranteed returns backed by authentic local standard gateways.'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 sm:pt-2">
+                      {language === 'bn' ? '১. টাকা ফেরত পাওয়ার নিয়মাবলী:' : '1. Refund Initiation & Turnaround Time'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'কোনো প্রোডাক্টের স্টক না থাকলে বা ত্রুটির কারণে অর্ডার ক্যান্সেল বা রিটার্ন হলে ৩ থেকে ৭টি কার্যদিবসের মধ্যে আপনার মূল পেমেন্ট মেথড (bKash/Nagad/Rocket/Bank Transfer) এ টাকা রিফান্ড বা ফেরত পাঠানো হয়।'
+                        : 'If an item becomes unavailable or orders fail due to strict merchant stock thresholds, complete refunds are processed directly back to bKash, Nagad, Rocket or card within 3 to 7 working days.'
+                      }
+                    </p>
+
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 pt-2">
+                      {language === 'bn' ? '২. পেমেন্ট গেটওয়ে চার্জ:' : '2. Transaction Fee Deductions'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'অফিসিয়াল রিফান্ডের ক্ষেত্রে কোনো বাড়তি কর বা অতিরিক্ত সার্ভিস চার্জ কাটা হয় না। সম্পূর্ণ অর্ডারকৃত টাকার মূল্য ফেরত পাওয়া যায়।'
+                        : 'No customer convenience fees are withheld for cancellations authorized directly by our merchant operations.'
+                      }
+                    </p>
+
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 pt-2">
+                      {language === 'bn' ? '৩. হেল্প ডেস্ক সাপোর্ট:' : '3. Immediate Resolution & Escalation'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'আপনার টাকা ফেরত সংক্রান্ত কোনো জটিলতা বা ধীরগতি অনূভূত হলে অনুগ্রহপূর্বক আমাদের হটলাইন (+৮৮০১৭৮৪৯০৫০৭৫) নম্বরে যোগাযোগ করুন।'
+                        : 'If you do not see your refund reflect in your digital wallet within the expected window, immediately call our finance support at +8801784905075.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activePolicyModal === 'return' && (
+                <div className="space-y-4 font-sans text-xs sm:text-sm">
+                  <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-md">
+                    <p className="font-bold text-emerald-800 uppercase text-[11px] tracking-wider mb-1">
+                      {language === 'bn' ? 'সহজ ৭ দিনের রিটার্ন গ্যারান্টি' : 'EASY 7-DAY RETURN POLICY'}
+                    </p>
+                    <p className="text-zinc-700 leading-relaxed text-[11px] sm:text-xs font-semibold">
+                      {language === 'bn'
+                        ? 'ক্রয়কৃত পণ্যে কারিগরি ত্রুটি দৃশ্যমান হলে ৭ দিনের মধ্যে কোনো অতিরিক্ত জিজ্ঞাসা ছাড়াই তা পরিবর্তন বা ফেরত নেওয়া হবে।'
+                        : 'Defective products, wrong deliveries, or damaged electronics are fully covered under our risk-free replacement agreement.'
+                      }
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1">
+                      {language === 'bn' ? '১. রিটার্ন যোগ্য পণ্য:' : '1. Acceptable Conditions'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'পণ্যটি চালুর সময় ফিজিক্যাল ড্যামেজ, মাদারবোর্ড ফল্ট, বা ছবিতে প্রদর্শিত মডেলের সাথে অসঙ্গতিপূর্ণ হলে তা সম্পূর্ণ অফিশিয়াল বক্সে অনুষঙ্গ সামগ্রী সহ রিটার্ন করতে পারবেন।'
+                        : 'Products must remain in their original factory package, containing all original box pieces, cables, and user manuals to authorize exchange.'
+                      }
+                    </p>
+
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 pt-2">
+                      {language === 'bn' ? '২. রিটার্ন করার পদ্ধতি:' : '2. How to File an Exchange'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'আপনার ইউজার প্যানেলের "My Consignments" সেকশন থেকে সরাসরি কাস্টমার রিলেশন ডিপার্টমেন্টে রিপোর্ট করুন অথবা অর্ডার রিসিট সহ লাইভ চ্যাটে আমাদের এজেন্টকে ছবি পাঠান।'
+                        : 'Go to your account dashboard under "My Consignments" to raise a complaint ticket, or seamlessly message our sales desk along with a short footage of unpacking.'
+                      }
+                    </p>
+
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 pt-2">
+                      {language === 'bn' ? '৩. কুরিয়ার চার্জ কে পরিশোধ করবে?' : '3. Courier Fee Coverage'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'ভুল পণ্য প্রেরিত হলে বা ফ্যাক্টরি ফল্ট থাকলে রিটার্নের কুরিয়ার ফি এবং ডেলিভারি খরচ সম্পূর্ণ গ্যাজেট বাজার টিম বা বিক্রেতা প্রতিষ্ঠান বহন করে।'
+                        : 'If we accidentally delivered a faulty or mismatched variant, we arrange free door-step pickup, covering 100% of courier fees.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activePolicyModal === 'cancel' && (
+                <div className="space-y-4 font-sans text-xs sm:text-sm">
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
+                    <p className="font-bold text-red-800 uppercase text-[11px] tracking-wider mb-1">
+                      {language === 'bn' ? 'অর্ডার সংশোধন ও বাতিল করন' : 'FREE ORDER CANCELLATION'}
+                    </p>
+                    <p className="text-zinc-700 leading-relaxed text-[11px] sm:text-xs font-semibold font-sans">
+                      {language === 'bn'
+                        ? 'শিপমেন্টের পূর্বে যেকোনো সময় সম্পূর্ণ বিনামূল্যে বা কোনো জরিমানা ব্যতিরেকে অর্ডারটি বাতিল করার আইনগত অধিকার রয়েছে।'
+                        : 'You retain full rights to alter details or cancel orders free of cost as long as the delivery dispatch status isn\'t marked shipped.'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1">
+                      {language === 'bn' ? '১. শিপমেন্টের পূর্ববর্তী বাতিলকরণ:' : '1. Cancellation Pre-Dispatch'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs font-sans">
+                      {language === 'bn'
+                        ? 'অর্ডারটি যদি "placed" বা "processing" অবস্থায় থেকে থাকে, তবে আপনি আপনার অর্ডার হিস্টোরি প্যানেল থেকে কিংবা সরাসরি আমাদের হটলাইনে ফোন দিয়ে অর্ডারটি সাথে সাথে বাতিল করে দিতে পারেন।'
+                        : 'If the active consignment status is listed as "placed" or "processing", click "Cancel Order" on your invoice page or voice-call our representative.'
+                      }
+                    </p>
+
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 pt-2 font-sans">
+                      {language === 'bn' ? '২. কুরিয়ার হ্যান্ডওভার এর পর বাতিলকরণ:' : '2. Interception After Shipping'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'পণ্যটি যখন কুরিয়ার সার্ভিস কোম্পানিতে হস্তান্তর ("shipped" স্ট্যাটাস) হয়ে যায়, তখন ডেলিভারি এজেন্টের ফোনে কিংবা সরাসরি আপনার দরজায় পৌঁছার পর আপনি অর্ডারটি রিসিভ না করে ফেরত দিতে পারেন।'
+                        : 'Once marked "shipped", the product is handled by redx, pathao, or steady. For cash on delivery orders, you may request the logistics representative to return it if it\'s longer than expected.'
+                      }
+                    </p>
+
+                    <h4 className="font-extrabold text-zinc-850 text-xs sm:text-sm border-b pb-1 pt-2 font-sans">
+                      {language === 'bn' ? '৩. পরিবর্তন অথবা রি-অর্ডার:' : '3. Updating Consignment Data'}
+                    </h4>
+                    <p className="text-zinc-650 leading-relaxed text-xs">
+                      {language === 'bn'
+                        ? 'ফাস্ট ট্র্যাক শিপিং এর জন্য আপনার ফোন নাম্বার বা ঠিকানা সংশোধনের প্রয়োজন থাকলে দ্রুত আমাদের কাস্টমার চ্যাটে পিন করুন।'
+                        : 'For fast correction of telephone directories or destination coordinates without cancellation, chat instantly with our portal admin.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-zinc-50 border-t border-zinc-150 flex justify-end flex-shrink-0">
+              <button 
+                type="button"
+                onClick={() => setActivePolicyModal(null)}
+                className="px-5 py-2.5 bg-zinc-850 hover:bg-zinc-950 border-0 text-white font-bold rounded-xl text-xs uppercase cursor-pointer transition shadow-sm font-sans"
+              >
+                {language === 'bn' ? "বন্ধ করুন" : "Close Window"}
               </button>
             </div>
           </div>

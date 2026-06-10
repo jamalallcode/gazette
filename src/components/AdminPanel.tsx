@@ -31,6 +31,8 @@ interface AdminPanelProps {
   setActiveTenant: (tenant: TenantConfig) => void;
   unreadNotifications?: any[];
   setUnreadNotifications?: (orders: any[]) => void;
+  currentUser?: any;
+  setCurrentUser?: React.Dispatch<React.SetStateAction<any>>;
 }
 
 // Prepopulated static statistics from screenshots
@@ -65,11 +67,147 @@ export default function AdminPanel({
   activeTenant,
   setActiveTenant,
   unreadNotifications = [],
-  setUnreadNotifications
+  setUnreadNotifications,
+  currentUser,
+  setCurrentUser
 }: AdminPanelProps) {
   // Navigation inside panel
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [adminBellDropdownOpen, setAdminBellDropdownOpen] = useState(false);
+  
+  // Dynamic Subscribers State
+  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [loadingSubscribers, setLoadingSubscribers] = useState(false);
+
+  // Live Trial Sandbox State & FOMO Indicators
+  const [timeLeft, setTimeLeft] = useState<string>("02:00:00");
+  const [showActivationInput, setShowActivationInput] = useState(false);
+  const [licenseCode, setLicenseCode] = useState("");
+  const [isActivating, setIsActivating] = useState(false);
+
+  // Alert Overlays
+  const [show15MinAlert, setShow15MinAlert] = useState(false);
+  const [show5MinAlert, setShow5MinAlert] = useState(false);
+  const [alert15Fired, setAlert15Fired] = useState(false);
+  const [alert5Fired, setAlert5Fired] = useState(false);
+
+  useEffect(() => {
+    if (!currentUser?.is_demo_user || !currentUser?.expires_at) return;
+
+    const timer = setInterval(() => {
+      const expires = new Date(currentUser.expires_at).getTime();
+      const now = Date.now();
+      const diff = expires - now;
+
+      if (diff <= 0) {
+        clearInterval(timer);
+        setTimeLeft("00:00:00");
+        // Trigger auto-logout
+        if (setCurrentUser) {
+          const event = new CustomEvent("app-toast", { 
+            detail: language === 'bn' 
+              ? "ডেমো সেশনের মেয়াদ শেষ! আগের ডিফল্ট অবস্থায় ডাটা রিসেট হয়েছে।" 
+              : "Demo trial expired! Sandbox environments flushed and re-seeded." 
+          });
+          window.dispatchEvent(event);
+          setCurrentUser(null);
+        }
+        return;
+      }
+
+      // Compute hours, minutes, seconds
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const formatted = [
+        hrs.toString().padStart(2, '0'),
+        mins.toString().padStart(2, '0'),
+        secs.toString().padStart(2, '0')
+      ].join(":");
+
+      setTimeLeft(formatted);
+
+      // Trigger 15-minute alert
+      if (diff <= 15 * 60 * 1000 && !alert15Fired) {
+        setAlert15Fired(true);
+        setShow15MinAlert(true);
+      }
+
+      // Trigger 5-minute alert
+      if (diff <= 5 * 60 * 1000 && !alert5Fired) {
+        setAlert5Fired(true);
+        setShow5MinAlert(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [currentUser, alert15Fired, alert5Fired, language, setCurrentUser]);
+
+  const handleLicenseActivate = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!licenseCode || !licenseCode.trim()) {
+      const msg = language === 'bn' ? "দয়া করে একটি লাইসেন্স কোড লিখুন" : "Please enter a valid license code";
+      const event = new CustomEvent("app-toast", { detail: msg });
+      window.dispatchEvent(event);
+      return;
+    }
+
+    setIsActivating(true);
+    try {
+      const response = await fetch("/api/admin/activate-license", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: currentUser?.email,
+          licenseKey: licenseCode.trim()
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        // Upgrade current user
+        if (setCurrentUser && currentUser) {
+          setCurrentUser({
+            ...currentUser,
+            is_demo_user: false,
+            expires_at: undefined
+          });
+        }
+        const msg = language === 'bn' 
+          ? "অভিনন্দন! আপনার সাইটের স্থায়ী লাইসেন্স সক্রিয় হয়েছে ও ডেমো মোড বাতিল করা হয়েছে।" 
+          : "Congratulations! Professional lifetime license activated. Offline trial limits disabled.";
+        const event = new CustomEvent("app-toast", { detail: msg });
+        window.dispatchEvent(event);
+        setShowActivationInput(false);
+      } else {
+        const errorMsg = data.error || (language === 'bn' ? "ভুল লাইসেন্স কোড! আবার চেষ্টা করুন।" : "Activation failed! Please check your code.");
+        const event = new CustomEvent("app-toast", { detail: errorMsg });
+        window.dispatchEvent(event);
+      }
+    } catch (err) {
+      console.error(err);
+      const event = new CustomEvent("app-toast", { detail: "Network error occurred." });
+      window.dispatchEvent(event);
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'subscribers') {
+      setLoadingSubscribers(true);
+      fetch("/api/subscribers")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSubscribers(data);
+          }
+        })
+        .catch(err => console.error("[ADMIN TRIAL] Error fetching subscriber list:", err))
+        .finally(() => setLoadingSubscribers(false));
+    }
+  }, [activeTab]);
   
   // Interactive state declarations for the top icons and selectors
   const [messagesDropdownOpen, setMessagesDropdownOpen] = useState(false);
@@ -78,7 +216,7 @@ export default function AdminPanel({
 
   // Admin settings manager & security guard
   const [adminSettingsModalOpen, setAdminSettingsModalOpen] = useState(false);
-  const [adminSettingsTab, setAdminSettingsTab] = useState<'security' | 'database' | 'reseller'>('security');
+  const [adminSettingsTab, setAdminSettingsTab] = useState<'security' | 'database' | 'reseller' | 'language'>('security');
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
@@ -2242,6 +2380,64 @@ export default function AdminPanel({
         className="flex-1 flex flex-col min-w-0 overflow-y-auto"
       >
         
+        {currentUser?.is_demo_user && (
+          <div className="bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white py-2.5 px-4 text-xs font-bold font-sans flex flex-col md:flex-row items-center justify-between gap-3 border-b border-orange-700 shadow-md">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-white/20 px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider animate-pulse border border-white/25">
+                {language === 'bn' ? "ডেমো মোড" : "DEMO SANDBOX"}
+              </span>
+              <span className="text-[11.5px] font-semibold text-red-50">
+                {language === 'bn' ? "আপনি এখন একজন ফুল অ্যাক্টিভ অ্যাডমিন হিসেবে টেস্ট মুডে আছেন।" : "You are currently exploring all administrative live features under isolated Sandbox Mode."}
+              </span>
+              <span className="flex items-center gap-1 font-mono bg-black/35 px-3 py-1 rounded-full text-white font-extrabold border border-white/10 shrink-0 text-sm animate-pulse ml-2">
+                ⏱️ {timeLeft}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+              {!showActivationInput ? (
+                <button
+                  type="button"
+                  onClick={() => setShowActivationInput(true)}
+                  className="bg-white hover:bg-zinc-50 text-red-700 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition border-0 cursor-pointer text-zinc-950 shadow-sm"
+                >
+                  🚀 {language === 'bn' ? "কোড পেস্ট করে সাইটের মালিকানা নিজের করুন" : "Paste License Code to Claim Ownership"}
+                </button>
+              ) : (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleLicenseActivate();
+                  }} 
+                  className="flex items-center gap-1 bg-white/10 rounded-full p-0.5 pr-1 border border-white/25 animate-in fade-in zoom-in-95 duration-200"
+                >
+                  <input
+                    type="text"
+                    value={licenseCode}
+                    onChange={(e) => setLicenseCode(e.target.value)}
+                    placeholder={language === 'bn' ? "লাইসেন্স কোডটি লিখুন..." : "Enter Professional Key..."}
+                    className="bg-transparent text-white placeholder-zinc-300 text-xs font-mono font-bold border-0 outline-none focus:ring-0 pl-3.5 w-48 py-1 uppercase"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isActivating}
+                    className="bg-white hover:bg-zinc-100 disabled:opacity-50 text-red-700 font-extrabold text-[11px] px-3.5 py-1 rounded-full border-0 transition uppercase cursor-pointer"
+                  >
+                    {isActivating ? "Verifying..." : (language === 'bn' ? "সেভ করুন" : "Save Key")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowActivationInput(false)}
+                    className="text-white/70 hover:text-white bg-transparent border-0 cursor-pointer p-1"
+                  >
+                    ✕
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* TOP NAVBAR */}
         <header className="relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-1 sm:space-x-4">
@@ -2257,52 +2453,6 @@ export default function AdminPanel({
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-5 text-sm">
-            {/* Database Backup Trigger */}
-            <div className="relative">
-              <button 
-                onClick={() => {
-                  triggerSecWarning(
-                    language === 'bn' ? "ডাটাবেজ রিগ্রেশন ও ব্যাকআপ এক্সপোর্ট" : "Database Dump & SQL Backup Extraction",
-                    language === 'bn' 
-                      ? "আপনি কেন্দ্রীয় ডাটাবেজের সম্পূর্ণ SQL ব্যাকআপ, কাস্টমার রেজিস্ট্রি এবং অর্ডার লেজার ফাইল ডাউনলোড করার সিদ্ধান্ত নিয়েছেন।"
-                      : "Attempting to export high-priority transaction logs, active customer schemas, and the localized PostgreSQL system records."
-                  );
-                }}
-                className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center text-zinc-650 hover:text-red-600 group"
-                title={language === 'bn' ? "ডাটাবেজ ব্যাকআপ (SQL)" : "Download Database (SQL Backup)"}
-              >
-                <Database className="h-5 w-5" />
-                <span className="absolute -bottom-1 -right-1 text-[7px] bg-red-600 text-white font-black px-1.2 rounded-full uppercase scale-90 leading-none">
-                  db
-                </span>
-              </button>
-            </div>
-
-            {/* Interactive Language Selection Button (Direct Toggle) */}
-            <div className="relative">
-              <button 
-                onClick={() => {
-                  const nextLang = language === 'en' ? 'bn' : 'en';
-                  setLanguage(nextLang);
-                  const msg = nextLang === 'bn' ? "ভাষা পরিবর্তন করে বাংলায় করা হয়েছে!" : "Language switched to English!";
-                  const event = new CustomEvent("app-toast", { detail: msg });
-                  window.dispatchEvent(event);
-                  
-                  // Close other dropdowns
-                  setMessagesDropdownOpen(false);
-                  setCartsDropdownOpen(false);
-                  setProfileDropdownOpen(false);
-                }}
-                className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center text-zinc-600 hover:text-[#063b6d]"
-                title={language === 'bn' ? "ভাষা সিলেক্ট করুন (ইংলিশ/বাংলা)" : "Toggle Language (English/Bangla)"}
-              >
-                <Globe className="h-5 w-5" />
-                <span className="absolute -bottom-1 -right-1 text-[8px] bg-[#063b6d] text-white font-extrabold px-1.2 rounded-full uppercase scale-90 leading-none">
-                  {language}
-                </span>
-              </button>
-            </div>
-
             {/* Interactive Messages Dropdown */}
             <div className="sm:relative" ref={messagesContainerRef}>
               <button 
@@ -2667,6 +2817,9 @@ export default function AdminPanel({
                           setProfileDropdownOpen(false);
                           const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সফলভাবে লগআউট করা হয়েছে!" : "Successfully logged out from session!" });
                           window.dispatchEvent(event);
+                          if (setCurrentUser) {
+                            setCurrentUser(null);
+                          }
                         }}
                         className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-red-600 hover:bg-red-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
                       >
@@ -7838,20 +7991,25 @@ export default function AdminPanel({
               </div>
 
               <div className="bg-white border rounded-xl max-w-lg shadow-sm font-sans text-[12px] overflow-hidden">
-                <div className="bg-zinc-50 font-extrabold uppercase text-[10px] text-zinc-400 border-b p-3">Mailing entries list</div>
-                <div className="divide-y leading-normal">
-                  <div className="p-3 hover:bg-zinc-50/20 text-left">
-                    <strong className="block text-zinc-800 font-semibold">alaminchowdhury@gmail.com</strong>
-                    <span className="text-[10px] text-zinc-400 block mt-1 font-sans">Subscribed date: May 30, 2026 12:46:15Z</span>
-                  </div>
-                  <div className="p-3 hover:bg-zinc-50/20 text-left">
-                    <strong className="block text-zinc-800 font-semibold font-bold">client@ecommatrix.xyz</strong>
-                    <span className="text-[10px] text-zinc-400 block mt-1 font-sans">Subscribed date: May 29, 2026 11:20:00Z</span>
-                  </div>
-                  <div className="p-3 hover:bg-zinc-50/20 text-left">
-                    <strong className="block text-zinc-800 font-semibold font-bold block text-left">jamaluddinkh3424@gmail.com</strong>
-                    <span className="text-[10px] text-[#222222]/50 text-zinc-400 text-left block mt-1 font-sans">Subscribed date: May 28, 2026 09:15:30Z</span>
-                  </div>
+                <div className="bg-zinc-50 font-extrabold uppercase text-[10px] text-zinc-400 border-b p-3 flex justify-between items-center">
+                  <span>Mailing entries list</span>
+                  {loadingSubscribers && <span className="animate-pulse text-[9px] text-[#f58220] normal-case">Updating...</span>}
+                </div>
+                <div className="divide-y leading-normal max-h-[500px] overflow-y-auto">
+                  {subscribers.length === 0 ? (
+                    <div className="p-4 text-center text-zinc-400">
+                      {loadingSubscribers ? "Loading subscriber records..." : "No subscriber records found."}
+                    </div>
+                  ) : (
+                    subscribers.map((sub: any, idx: number) => (
+                      <div key={idx} className="p-3 hover:bg-zinc-50/20 text-left transition-colors">
+                        <strong className="block text-zinc-800 font-bold">{sub.email}</strong>
+                        <span className="text-[10px] text-zinc-400 block mt-1 font-sans">
+                          Subscribed date: {sub.date}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -8060,6 +8218,7 @@ export default function AdminPanel({
 
                 <div className="flex flex-col space-y-1">
                   {[
+                    { id: 'language', label: language === 'bn' ? "ভাষা পরিবর্তন" : "Language Settings", icon: Globe },
                     { id: 'security', label: language === 'bn' ? "নিরাপত্তা ও পাসওয়ার্ড" : "Security & Password", icon: ShieldCheck },
                     { id: 'database', label: language === 'bn' ? "সার্ভার ও ডাটাবেজ" : "Server & Database", icon: Database },
                     { id: 'reseller', label: language === 'bn' ? "লাইসেন্স ও ডোমেইন" : "License & Reseller", icon: Store },
@@ -8105,6 +8264,80 @@ export default function AdminPanel({
                 <X size={18} className="stroke-[2.5]" />
               </button>
               <div>
+                {adminSettingsTab === 'language' && (
+                  <div className="space-y-5 text-left animate-fadeIn">
+                    <div>
+                      <h4 className="text-base font-extrabold text-zinc-900 select-none block text-left font-sans">
+                        {language === 'bn' ? "সিস্টেম ভাষা পরিবর্তন" : "System Language Interface"}
+                      </h4>
+                      <p className="text-xs text-zinc-500 block text-left mt-1">
+                        {language === 'bn'
+                          ? "আপনার পোর্টালের ইন্টারফেস ভাষা পরিবর্তন করুন। এটি সমস্ত ড্যাশবোর্ড স্ক্রিন, রিয়েল-টাইম চার্ট এবং লেজার স্টেটমেন্ট পরিবর্তন করবে।"
+                          : "Configure your portal's display language. This affects all metrics, screens, activity logs, and system reports."
+                        }
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                      {/* Bangla Option */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLanguage('bn');
+                          const event = new CustomEvent("app-toast", { detail: "ভাষা পরিবর্তন করে বাংলায় করা হয়েছে!" });
+                          window.dispatchEvent(event);
+                        }}
+                        className={`p-5 rounded-2xl border-2 text-left cursor-pointer transition-all duration-200 flex flex-col justify-between h-32 relative ${
+                          language === 'bn'
+                            ? "border-[#063b6d] bg-blue-50/25"
+                            : "border-zinc-200 bg-white hover:border-zinc-350 hover:bg-zinc-50/50"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start w-full">
+                          <span className="text-2xl font-bold font-sans text-zinc-900 bg-zinc-100 rounded-lg p-1 px-2.5 leading-none">বা</span>
+                          {language === 'bn' && (
+                            <div className="bg-[#063b6d] text-white rounded-full p-1 self-start">
+                              <CheckCircle size={14} className="stroke-[2.5]" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-sm font-black text-zinc-900 block font-sans">বাংলা (Bengali)</div>
+                          <div className="text-[10px] text-zinc-500 block leading-tight">ড্যাশবোর্ড সামগ্রিক বাংলা সংস্করণে দেখুন।</div>
+                        </div>
+                      </button>
+
+                      {/* English Option */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLanguage('en');
+                          const event = new CustomEvent("app-toast", { detail: "Language switched to English!" });
+                          window.dispatchEvent(event);
+                        }}
+                        className={`p-5 rounded-2xl border-2 text-left cursor-pointer transition-all duration-200 flex flex-col justify-between h-32 relative ${
+                          language === 'en'
+                            ? "border-[#063b6d] bg-blue-50/25"
+                            : "border-zinc-200 bg-white hover:border-zinc-350 hover:bg-zinc-50/50"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start w-full">
+                          <span className="text-2xl font-black font-sans text-zinc-900 bg-zinc-100 rounded-lg p-1 px-2.5 leading-none">EN</span>
+                          {language === 'en' && (
+                            <div className="bg-[#063b6d] text-white rounded-full p-1 self-start">
+                              <CheckCircle size={14} className="stroke-[2.5]" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-sm font-black text-zinc-900 block font-sans">English (US)</div>
+                          <div className="text-[10px] text-zinc-500 block leading-tight">View primary master dashboard in English.</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {adminSettingsTab === 'security' && (
                   <div className="space-y-5 text-left animate-fadeIn">
                     <div>
@@ -8275,6 +8508,83 @@ export default function AdminPanel({
               </div>
             </div>
             
+          </div>
+        </div>
+      )}
+
+      {/* 15 Minutes Remaining Modal Alert */}
+      {show15MinAlert && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[200000] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-zinc-200 animate-in zoom-in-95 duration-200 text-center font-sans space-y-4">
+            <div className="flex justify-center">
+              <span className="text-4xl animate-bounce">⏱️</span>
+            </div>
+            <h3 className="text-lg font-black text-zinc-900 tracking-tight">
+              {language === 'bn' ? "ডেমো সেশন সতর্কতা!" : "Demo Trial Expiring!"}
+            </h3>
+            <p className="text-xs text-zinc-500 leading-relaxed font-semibold">
+              {language === 'bn'
+                ? "আপনার ডেমো সেশনের মেয়াদ আর মাত্র ১৫ মিনিট বাকি আছে! কোনো প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।"
+                : "Your live demo trial is active for only 15 minutes! Please save any custom configurations or verify features."
+              }
+            </p>
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                onClick={() => setShow15MinAlert(false)}
+                className="bg-[#f58220] hover:bg-[#e07216] text-white text-xs font-bold py-2.5 rounded-full border-0 cursor-pointer transition w-full"
+              >
+                {language === 'bn' ? "ঠিক আছে, বুঝতে পেরেছি" : "Got it, Thanks!"}
+              </button>
+              <a
+                href="https://wa.me/01784905075"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold py-2.5 rounded-full no-underline transition block text-center"
+              >
+                💬 {language === 'bn' ? "আমাদের সাথে যোগাযোগ করুন" : "WhatsApp Support"}
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5 Minutes Remaining Modal Alert with HEAVILY HIGHLIGHTED WhatsApp support button */}
+      {show5MinAlert && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs z-[210000] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-red-200 animate-in zoom-in-95 duration-200 text-center font-sans space-y-4 relative overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-1.5 bg-red-600 animate-pulse" />
+            <div className="flex justify-center">
+              <span className="text-4xl animate-ping absolute opacity-30">🔔</span>
+              <span className="text-4xl relative">🚨</span>
+            </div>
+            <h3 className="text-lg font-black text-red-600 tracking-tight">
+              {language === 'bn' ? "মহাগুরুত্বপূর্ণ ডেমো অ্যালার্ট!" : "Urgent: Only 5 Minutes Left!"}
+            </h3>
+            <p className="text-xs text-zinc-650 leading-relaxed font-bold">
+              {language === 'bn'
+                ? "আহ! মেয়াদ প্রায় শেষ! ৫ মিনিট পর সেশনের সমস্ত ডেটাবেজ রিসেট হবে এবং আপনার ওয়ান-টাইম ডেমো পাসওয়ার্ডটি নিষ্ক্রিয় হবে।"
+                : "Warning: Your live demo session ends in 5 minutes! After 00:00:00, all databases are automatically flushed back."
+              }
+            </p>
+            <div className="pt-1 select-none text-[11px] font-bold text-zinc-500 font-mono">
+              ⏱️ Time Remaining: <span className="text-red-600 font-black font-mono animate-pulse">{timeLeft}</span>
+            </div>
+            <div className="pt-3 flex flex-col gap-2">
+              <a
+                href="https://wa.me/01784905075"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-500 hover:bg-emerald-600 border border-emerald-400 text-white text-xs font-extrabold py-3 rounded-full no-underline transition block text-center shadow-lg animate-bounce"
+              >
+                💬 {language === 'bn' ? "আমাদের হোয়াটসঅ্যাপে কল/মেসেজ দিন" : "Chat/Call with Support (WhatsApp)"}
+              </a>
+              <button
+                onClick={() => setShow5MinAlert(false)}
+                className="bg-zinc-150 hover:bg-zinc-250 text-zinc-700 text-xs font-bold py-2.5 rounded-full border-0 cursor-pointer transition w-full"
+              >
+                {language === 'bn' ? "বন্ধ করুন" : "Close Notification"}
+              </button>
+            </div>
           </div>
         </div>
       )}

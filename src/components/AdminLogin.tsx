@@ -17,6 +17,7 @@ export default function AdminLogin({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loginMode, setLoginMode] = useState<'demo' | 'admin'>('demo'); // Default to Demo to showcase sandbox
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +28,11 @@ export default function AdminLogin({
 
     setLoading(true);
     try {
-      console.log("[ADMIN LOGIN] Initiating authentication request for:", email);
+      console.log("[ADMIN LOGIN] Initiating authentication request for:", email, "Mode:", loginMode);
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: email.trim(), password: password.trim() })
       });
 
       const responseText = await response.text();
@@ -49,7 +50,11 @@ export default function AdminLogin({
       }
 
       if (response.ok && data.success) {
-        triggerToast(language === 'bn' ? "এডমিন লগইন সফল হয়েছে!" : "Successfully verified! Welcome Administrator.");
+        if (data.user.is_demo_user) {
+          triggerToast(language === 'bn' ? "ডেমো স্যান্ডবক্স লগইন সফল! ২ ঘণ্টার সেশন শুরু হয়েছে।" : "Demo sandbox login successful! Your 2-hour trial has initiated.");
+        } else {
+          triggerToast(language === 'bn' ? "এডমিন লগইন সফল হয়েছে!" : "Successfully verified! Welcome Administrator.");
+        }
         onLoginSuccess(data.user);
       } else {
         triggerToast(data.error || (language === 'bn' ? "লগইন ব্যর্থ হয়েছে! সঠিক ইমেল এবং পাসওয়ার্ড ব্যবহার করুন।" : "Login failed! Please check your credentials."));
@@ -71,40 +76,93 @@ export default function AdminLogin({
       <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-10 shadow-xl border border-zinc-200 text-left z-10 relative">
         
         {/* Shield Icon styling */}
-        <div className="flex justify-center mb-5">
+        <div className="flex justify-center mb-4">
           <div className="bg-orange-50 p-3.5 rounded-full border border-orange-100 flex items-center justify-center text-orange-500 shadow-xs">
             <ShieldCheck size={32} className="stroke-[2.5px]" />
           </div>
         </div>
 
-        <h1 className="text-2xl font-black text-center text-zinc-900 tracking-tight select-none mb-2">
-          {language === 'bn' ? 'এডমিন পোর্টাল লগইন' : 'Merchant Administration'}
+        <h1 className="text-2xl font-black text-center text-zinc-900 tracking-tight select-none mb-1">
+          {language === 'bn' ? 'এডমিন পোর্টাল ও ডেমো গেটওয়ে' : 'Merchant Admin & Live Demo'}
         </h1>
-        <p className="text-xs text-center text-zinc-500 font-semibold mb-8 select-none leading-relaxed">
+        <p className="text-xs text-center text-zinc-500 font-semibold mb-6 select-none leading-relaxed">
           {language === 'bn' 
-            ? 'শুধুমাত্র অনুমোদিত গেজেট বাজার এডমিনদের জন্য সিক্রেট সেশন।' 
-            : 'Secure authentication window for authorized administrators only.'}
+            ? 'প্লাটফর্ম টেস্ট করার জন্য লাইভ স্যান্ডবক্স ডেমো বা অনুমোদিত মার্চেন্ট লগইন।' 
+            : 'Access live sandbox demo or log in with your merchant credentials.'}
         </p>
+
+        {/* Beautiful Elegant Tab Selectors */}
+        <div className="grid grid-cols-2 gap-1 p-1 bg-zinc-100 rounded-xl mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              setLoginMode('demo');
+              setPassword("demo123");
+            }}
+            className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
+              loginMode === 'demo' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
+            }`}
+          >
+            {language === 'bn' ? 'স্যান্ডবক্স ডেমো (Demo Site)' : 'Live Demo Sandbox'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setLoginMode('admin');
+              setPassword("");
+            }}
+            className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
+              loginMode === 'admin' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
+            }`}
+          >
+            {language === 'bn' ? 'মূল অ্যাডমিন (Main Admin)' : 'Authorized Merchant'}
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" id="admin-form-credentials-direct">
           
           {/* Helpful Demo Helper Notice */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-1 select-none">
-            <span className="text-[11px] font-extrabold text-amber-700 flex items-center gap-1">
-              <Sparkles size={11} className="fill-amber-600 inline" /> 
-              {language === 'bn' ? 'অনুমোদিত ডেমো ক্রেডেনশিয়াল:' : 'Authorized Demo Credentials:'}
-            </span>
-            <p className="text-[11.5px] font-bold text-zinc-700 font-mono pl-3.5">
-              Gmail: <span className="text-zinc-900 underline">jamaluddinkh3424@gmail.com</span>
-            </p>
-            <p className="text-[11.5px] font-bold text-zinc-700 font-mono pl-3.5">
-              Password: <span className="bg-zinc-100 px-1.5 rounded text-orange-700">admin123</span>
-            </p>
-          </div>
+          {loginMode === 'demo' ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-1.5 select-none animate-in fade-in zoom-in-95 duration-250">
+              <span className="text-[11px] font-extrabold text-amber-700 flex items-center gap-1">
+                <Sparkles size={11} className="fill-amber-600 inline text-amber-600" /> 
+                {language === 'bn' ? 'লাইভ স্যান্ডবক্স ডেমো লগইন তথ্য:' : 'Live Sandbox Demo Credentials:'}
+              </span>
+              <p className="text-[11px] text-zinc-600 font-medium leading-relaxed">
+                {language === 'bn' 
+                  ? 'আপনার নিজের আসল ইমেইল এবং আমাদের দেওয়া অস্থায়ী পাসওয়ার্ডটি ব্যবহার করে প্রবেশ করুন। এটি সম্পূর্ণ স্যান্ডবক্স মুডে চলবে।' 
+                  : 'Enter your custom real email address and the floating demo password to test full client+admin features.'}
+              </p>
+              <div className="pt-1 font-mono text-[11px] font-bold space-y-1">
+                <p className="text-zinc-700">
+                  Gmail: <span className="text-zinc-900 underline font-semibold">{language === 'bn' ? 'আপনার নিজস্ব আসল জিমেইল' : 'Your original personal email'}</span>
+                </p>
+                <p className="text-zinc-700">
+                  Password: <span className="bg-orange-50 px-1.5 py-0.5 rounded text-orange-700 font-bold border border-orange-100">demo123</span>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-3.5 space-y-1 select-none animate-in fade-in zoom-in-95 duration-250">
+              <span className="text-[11px] font-extrabold text-zinc-700 flex items-center gap-1">
+                <ShieldCheck size={11} className="text-zinc-600" /> 
+                {language === 'bn' ? 'মার্চেন্ট অ্যাডমিন ক্রেডেনশিয়াল:' : 'Merchant Admin Credentials:'}
+              </span>
+              <p className="text-[11.5px] font-bold text-zinc-700 font-mono pl-3.5">
+                Gmail: <span className="text-zinc-900 underline">jamaluddinkh3424@gmail.com</span>
+              </p>
+              <p className="text-[11.5px] font-bold text-zinc-700 font-mono pl-3.5">
+                Password: <span className="bg-zinc-200 px-1.5 rounded text-zinc-800">admin123</span>
+              </p>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <label className="block text-zinc-700 font-extrabold text-xs pl-1">
-              {language === 'bn' ? 'রেজিস্টার্ড জিমেইল (Gmail Address)' : 'Admin Gmail Address'}
+              {loginMode === 'demo' 
+                ? (language === 'bn' ? 'আপনার সচল ইমেইল (Your Business Email)' : 'Your Real Email Address')
+                : (language === 'bn' ? 'রেজিস্টার্ড মার্চেন্ট জিমেইল' : 'Admin Gmail Address')
+              }
             </label>
             <div className="relative">
               <input
@@ -112,7 +170,7 @@ export default function AdminLogin({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@gmail.com"
+                placeholder={loginMode === 'demo' ? "youraddress@gmail.com" : "name@gmail.com"}
                 className="rounded-full border border-zinc-200 pl-11 pr-5 py-3 w-full text-zinc-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition bg-white"
               />
               <Mail size={16} className="absolute left-4.5 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -121,7 +179,10 @@ export default function AdminLogin({
 
           <div className="space-y-1.5">
             <label className="block text-zinc-700 font-extrabold text-xs pl-1">
-              {language === 'bn' ? 'সিক্রেট পাসওয়ার্ড (Password)' : 'Secure Password'}
+              {loginMode === 'demo'
+                ? (language === 'bn' ? 'অস্থায়ী ডেমো পাসওয়ার্ড (Password)' : 'Floating Demo Password')
+                : (language === 'bn' ? 'সিক্রেট অ্যাডমিন পাসওয়ার্ড' : 'Secure Admin Password')
+              }
             </label>
             <div className="relative">
               <input
@@ -146,7 +207,12 @@ export default function AdminLogin({
                 <RefreshCw size={14} className="animate-spin text-white" />
               ) : (
                 <>
-                  <span>{language === 'bn' ? 'লগইন করুন' : 'Authorize & Login'}</span>
+                  <span>
+                    {loginMode === 'demo' 
+                      ? (language === 'bn' ? 'পরবর্তী ধাপে ডেমো ড্যাশবোর্ডে প্রবেশ করুন' : 'Next: Launch Free Sandbox') 
+                      : (language === 'bn' ? 'লগইন করুন' : 'Authorize & Login')
+                    }
+                  </span>
                   <LogIn size={13} />
                 </>
               )}

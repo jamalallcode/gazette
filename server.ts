@@ -94,7 +94,42 @@ app.get("/api/debug-server-logs", (req, res) => {
     }
   }
 
-  // Admin Authentication (Direct Login without OTP as requested)
+  // Simple JSON-file and In-memory Subscribers Database
+  const SUBSCRIBERS_FILE = path.join(process.cwd(), "subscribers_database.json");
+  
+  let cachedSubscribers: any[] = [];
+  const defaultSubscribers = [
+    { email: "alaminchowdhury@gmail.com", date: "May 30, 2026 12:46:15Z" },
+    { email: "client@ecommatrix.xyz", date: "May 29, 2026 11:20:00Z" },
+    { email: "jamaluddinkh3424@gmail.com", date: "May 28, 2026 09:15:30Z" }
+  ];
+
+  try {
+    if (fs.existsSync(SUBSCRIBERS_FILE)) {
+      cachedSubscribers = JSON.parse(fs.readFileSync(SUBSCRIBERS_FILE, "utf-8"));
+    } else {
+      cachedSubscribers = defaultSubscribers;
+      fs.writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(defaultSubscribers, null, 2), "utf-8");
+    }
+  } catch (e) {
+    console.error("Error pre-loading subscribers database:", e);
+    cachedSubscribers = defaultSubscribers;
+  }
+
+  function readSubscribersFromDisk() {
+    return cachedSubscribers;
+  }
+
+  function writeSubscribersToDisk(subscribersList: any[]) {
+    cachedSubscribers = subscribersList;
+    try {
+      fs.writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribersList, null, 2), "utf-8");
+    } catch (e) {
+      console.error("Error writing subscribers to disk:", e);
+    }
+  }
+
+  // Admin Authentication (Direct Login or Float/Demo Login with Auto-Subscription)
   app.post("/api/admin/login", (req, res) => {
     try {
       const { email, password } = req.body;
@@ -106,9 +141,44 @@ app.get("/api/debug-server-logs", (req, res) => {
       }
 
       const cleanEmail = email.trim().toLowerCase();
+      const cleanPass = password.trim();
+
+      // Check if this is a Demo Login / Sandbox Login
+      if (cleanPass === "demo123") {
+        logDiagnostic(`[ADMIN DEMO LOGIN MATCHED] Logging in demo sandbox user: ${cleanEmail}`);
+        
+        // Lead Generation step: Auto-register email to subscribers database
+        const currentSubs = readSubscribersFromDisk();
+        const alreadySubscribed = currentSubs.some((s: any) => s.email === cleanEmail);
+        if (!alreadySubscribed) {
+          const newSub = {
+            email: cleanEmail,
+            date: new Date().toLocaleString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) + " " + new Date().toLocaleTimeString("en-US", { hour12: false }) + " UTC"
+          };
+          currentSubs.unshift(newSub);
+          writeSubscribersToDisk(currentSubs);
+          logDiagnostic(`[DEMO AUTOSUBSCRIBE] Automatically subscribed: ${cleanEmail}`);
+        }
+
+        // Set expires_at to 2 hours from now for Session Countdown integration
+        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+
+        return res.json({
+          success: true,
+          user: {
+            firstName: "Demo Admin",
+            lastName: "Guest",
+            email: cleanEmail,
+            role: "admin",
+            phone: "+8801700000000",
+            is_demo_user: true,
+            expires_at: expiresAt
+          }
+        });
+      }
       
       // Explicit authorization check for specified Admin accounts
-      if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && password === "admin123") {
+      if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && cleanPass === "admin123") {
         logDiagnostic(`[ADMIN LOGIN SUCCESS] Direct administrator login matched for: ${cleanEmail}`);
         return res.json({ 
           success: true, 
@@ -123,12 +193,67 @@ app.get("/api/debug-server-logs", (req, res) => {
       } else {
         logDiagnostic(`[ADMIN LOGIN FAILURE] Invalid credentials for: ${cleanEmail}`);
         return res.status(401).json({ 
-          error: "Incorrect Gmail or password! Only designated Admin addresses can log in." 
+          error: "Incorrect Gmail or password! Only designated Admin addresses or the Demo password can log in." 
         });
       }
     } catch (routeErr: any) {
       logDiagnostic(`[ADMIN LOGIN EXCEPTION]: ${routeErr?.message || routeErr}`);
       return res.status(500).json({ error: "Authentication system issue occurred: " + routeErr?.message });
+    }
+  });
+
+  // License activation for Sandbox Promotion to Dedicated Lifetime Instance
+  app.post("/api/admin/activate-license", (req, res) => {
+    try {
+      const { email, licenseKey } = req.body;
+      const cleanKey = licenseKey ? licenseKey.trim().toUpperCase() : "";
+      
+      const VALID_KEYS = ["LICENSE-GBAZAR-2026", "GB-PRO-ACTIVE", "ECOM-MATRIX-KEY"];
+      
+      if (VALID_KEYS.includes(cleanKey)) {
+        logDiagnostic(`[LICENSE SUCCESS] Valid license activation for: ${email}. Code matches: ${cleanKey}`);
+        return res.json({
+          success: true,
+          message: "License matches perfectly! System upgraded to Lifetime Professional Ownership."
+        });
+      } else {
+        logDiagnostic(`[LICENSE FAILURE] Invalid license key attempt: '${cleanKey}' for account: ${email}`);
+        return res.status(400).json({
+          error: "Invalid license code! Please paste a valid ownership key (e.g. GB-PRO-ACTIVE)."
+        });
+      }
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Newsletter Routes
+  app.get("/api/subscribers", (req, res) => {
+    res.json(readSubscribersFromDisk());
+  });
+
+  app.post("/api/subscribers", (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email || !email.trim()) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      const cleanEmail = email.trim().toLowerCase();
+      const currentSubs = readSubscribersFromDisk();
+      const alreadySubscribed = currentSubs.some((s: any) => s.email === cleanEmail);
+      if (!alreadySubscribed) {
+        const newSub = {
+          email: cleanEmail,
+          date: new Date().toLocaleString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) + " " + new Date().toLocaleTimeString("en-US", { hour12: false }) + " UTC"
+        };
+        currentSubs.unshift(newSub);
+        writeSubscribersToDisk(currentSubs);
+        logDiagnostic(`[SUBSCRIBE] Saved new subscriber email: ${cleanEmail}`);
+      }
+      return res.json({ success: true });
+    } catch (err: any) {
+      console.error("Error subscribing:", err);
+      return res.status(500).json({ error: "Subscription failure: " + err.message });
     }
   });
 
@@ -439,13 +564,25 @@ Only include IDs inside suggestedProductIds that literally exist in the database
     const PORT = 3000;
 
     // Vite Integration for Dev / Prod
-    if (process.env.NODE_ENV !== "production") {
-      const { createServer } = await import("vite");
-      const vite = await createServer({
-        server: { middlewareMode: true },
-        appType: "spa",
-      });
-      app.use(vite.middlewares);
+    const isBundled = typeof __filename !== "undefined" && (__filename.endsWith("server.cjs") || __filename.includes("dist"));
+    const isProduction = process.env.NODE_ENV === "production" || isBundled || !fs.existsSync(path.join(process.cwd(), "node_modules", "vite"));
+
+    if (!isProduction) {
+      try {
+        const { createServer } = await import("vite");
+        const vite = await createServer({
+          server: { middlewareMode: true },
+          appType: "spa",
+        });
+        app.use(vite.middlewares);
+      } catch (err) {
+        console.warn("Vite failed to import in development mode, falling back to static dist server", err);
+        const distPath = path.join(process.cwd(), "dist");
+        app.use(express.static(distPath));
+        app.get("*", (req, res) => {
+          res.sendFile(path.join(distPath, "index.html"));
+        });
+      }
     } else {
       const distPath = path.join(process.cwd(), "dist");
       app.use(express.static(distPath));
