@@ -8269,7 +8269,7 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <div className="relative flex-1 bg-white p-6 md:p-8 flex flex-col justify-between overflow-y-auto">
+            <div className="relative flex-1 min-w-0 bg-white p-4 md:p-6 flex flex-col justify-between overflow-y-auto">
               <button
                 type="button"
                 onClick={() => {
@@ -8520,7 +8520,7 @@ export default function AdminPanel({
                     </div>
 
                     {/* Integrated Custom License Order & Simulated Transaction Gateway Manager */}
-                    <div className="border border-zinc-200 bg-white rounded-xl p-4 space-y-3 font-sans mt-3.5">
+                    <div className="mt-3.5 w-full min-w-0">
                       <LicenseOrderManager language={language} />
                     </div>
 
