@@ -15,12 +15,14 @@ export default function AdminLogin({
   triggerToast
 }: AdminLoginProps) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("demo123");
   const [loading, setLoading] = useState(false);
   const [loginMode, setLoginMode] = useState<'demo' | 'admin'>('demo'); // Default to Demo to showcase sandbox
   const [showMainCreds, setShowMainCreds] = useState(false);
   const [pinInput, setPinInput] = useState("");
   const [showPinPrompt, setShowPinPrompt] = useState(false);
+  const [showAdminTabOption, setShowAdminTabOption] = useState(false);
+  const [shieldClickCount, setShieldClickCount] = useState(0);
 
   const handleVerifyPin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,9 +94,16 @@ export default function AdminLogin({
         {/* Shield Icon styling */}
         <div className="flex justify-center mb-4">
           <div className="bg-orange-50 p-3.5 rounded-full border border-orange-100 flex items-center justify-center text-orange-500 shadow-xs cursor-pointer select-none" onClick={() => {
-            // Secret shortcut: triple clicking opens it directly
-            setShowMainCreds(true);
-            triggerToast(language === 'bn' ? "মাস্টার লক বাইপাস করা হয়েছে!" : "Master bypass active!");
+            const nextCount = shieldClickCount + 1;
+            setShieldClickCount(nextCount);
+            if (nextCount >= 5) {
+              setShowAdminTabOption(true);
+              setShowMainCreds(true);
+              setLoginMode('admin');
+              triggerToast(language === 'bn' ? "এডমিন কনসোল সক্রিয় হয়েছে!" : "Master bypass active!");
+            } else if (nextCount === 3) {
+              triggerToast(language === 'bn' ? "গোপন সংযোগ পরীক্ষা করা হচ্ছে..." : "Accessing backend routing...");
+            }
           }}>
             <ShieldCheck size={32} className="stroke-[2.5px]" />
           </div>
@@ -104,38 +113,40 @@ export default function AdminLogin({
           {language === 'bn' ? 'এডমিন পোর্টাল ও ডেমো গেটওয়ে' : 'Merchant Admin & Live Demo'}
         </h1>
         <p className="text-xs text-center text-zinc-500 font-semibold mb-6 select-none leading-relaxed">
-          {language === 'bn' 
-            ? 'প্লাটফর্ম টেস্ট করার জন্য লাইভ স্যান্ডবক্স ডেমো বা অনুমোদিত মার্চেন্ট লগইন।' 
-            : 'Access live sandbox demo or log in with your merchant credentials.'}
+          {showAdminTabOption 
+            ? (language === 'bn' ? 'প্লাটফর্ম টেস্ট করার জন্য লাইভ স্যান্ডবক্স ডেমো বা অনুমোদিত মার্চেন্ট লগইন।' : 'Access live sandbox demo or log in with your merchant credentials.')
+            : (language === 'bn' ? 'প্লাটফর্ম টেস্ট করার জন্য লাইভ স্যান্ডবক্স ডেমো গেটওয়ে।' : 'Access the live sandbox demo gateway to test the system.')}
         </p>
 
         {/* Beautiful Elegant Tab Selectors */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-zinc-100 rounded-xl mb-6">
-          <button
-            type="button"
-            onClick={() => {
-              setLoginMode('demo');
-              setPassword("demo123");
-            }}
-            className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
-              loginMode === 'demo' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
-            }`}
-          >
-            {language === 'bn' ? 'স্যান্ডবক্স ডেমো (Demo Site)' : 'Live Demo Sandbox'}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setLoginMode('admin');
-              setPassword("");
-            }}
-            className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
-              loginMode === 'admin' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
-            }`}
-          >
-            {language === 'bn' ? 'মূল অ্যাডমিন (Main Admin)' : 'Authorized Merchant'}
-          </button>
-        </div>
+        {showAdminTabOption && (
+          <div className="grid grid-cols-2 gap-1 p-1 bg-zinc-100 rounded-xl mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setLoginMode('demo');
+                setPassword("demo123");
+              }}
+              className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
+                loginMode === 'demo' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
+              }`}
+            >
+              {language === 'bn' ? 'স্যান্ডবক্স ডেমো (Demo Site)' : 'Live Demo Sandbox'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLoginMode('admin');
+                setPassword("");
+              }}
+              className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
+                loginMode === 'admin' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
+              }`}
+            >
+              {language === 'bn' ? 'মূল অ্যাডমিন (Main Admin)' : 'Authorized Merchant'}
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5" id="admin-form-credentials-direct">
           
