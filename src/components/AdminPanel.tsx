@@ -16,8 +16,10 @@ import {
   BarChart3, RefreshCw, Plus, Trash2, Edit, Printer, ArrowRight, Heart, FileText, 
   CreditCard, Truck, Settings, MessageSquare, Ticket, Percent, Star, ArrowUpRight,
   MessageCircle, BookOpen, Layers, Radio, Receipt, Megaphone, Bell, TrendingUp, DollarSign,
-  Code, Database, ShieldAlert, Server, DownloadCloud
+  Code, Database, ShieldAlert, Server, DownloadCloud, Copy
 } from "lucide-react";
+import { LicensePurchaseModal } from "./license-system/LicensePurchaseModal";
+import { LicenseOrderManager } from "./license-system/LicenseOrderManager";
 
 interface AdminPanelProps {
   products: Product[];
@@ -82,6 +84,7 @@ export default function AdminPanel({
   // Live Trial Sandbox State & FOMO Indicators
   const [timeLeft, setTimeLeft] = useState<string>("02:00:00");
   const [showActivationInput, setShowActivationInput] = useState(false);
+  const [isLicensePurchaseModalOpen, setIsLicensePurchaseModalOpen] = useState(false);
   const [licenseCode, setLicenseCode] = useState("");
   const [isActivating, setIsActivating] = useState(false);
 
@@ -2396,13 +2399,23 @@ export default function AdminPanel({
 
             <div className="flex items-center gap-2 w-full md:w-auto justify-end">
               {!showActivationInput ? (
-                <button
-                  type="button"
-                  onClick={() => setShowActivationInput(true)}
-                  className="bg-white hover:bg-zinc-50 text-red-700 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition border-0 cursor-pointer text-zinc-950 shadow-sm"
-                >
-                  🚀 {language === 'bn' ? "কোড পেস্ট করে সাইটের মালিকানা নিজের করুন" : "Paste License Code to Claim Ownership"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowActivationInput(true)}
+                    className="bg-white hover:bg-zinc-50 text-red-700 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition border-0 cursor-pointer text-zinc-950 shadow-sm"
+                  >
+                    🚀 {language === 'bn' ? "কোড পেস্ট করে সাইটের মালিকানা নিজের করুন" : "Paste License Code to Claim Ownership"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsLicensePurchaseModalOpen(true)}
+                    className="bg-zinc-950 hover:bg-zinc-900 text-white px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide border border-white/25 transition cursor-pointer shadow-sm flex items-center gap-1.5 shrink-0"
+                  >
+                    <span>🔑</span>
+                    <span>{language === 'bn' ? "কোড কিনুন" : "Buy Key"}</span>
+                  </button>
+                </div>
               ) : (
                 <form 
                   onSubmit={(e) => {
@@ -2416,7 +2429,7 @@ export default function AdminPanel({
                     value={licenseCode}
                     onChange={(e) => setLicenseCode(e.target.value)}
                     placeholder={language === 'bn' ? "লাইসেন্স কোডটি লিখুন..." : "Enter Professional Key..."}
-                    className="bg-transparent text-white placeholder-zinc-300 text-xs font-mono font-bold border-0 outline-none focus:ring-0 pl-3.5 w-48 py-1 uppercase"
+                    className="bg-transparent text-white placeholder-zinc-300 text-xs font-mono font-bold border-0 outline-none focus:ring-0 pl-3.5 w-40 py-1 uppercase font-semibold"
                   />
                   <button
                     type="submit"
@@ -2424,6 +2437,13 @@ export default function AdminPanel({
                     className="bg-white hover:bg-zinc-100 disabled:opacity-50 text-red-700 font-extrabold text-[11px] px-3.5 py-1 rounded-full border-0 transition uppercase cursor-pointer"
                   >
                     {isActivating ? "Verifying..." : (language === 'bn' ? "সেভ করুন" : "Save Key")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsLicensePurchaseModalOpen(true)}
+                    className="text-white hover:text-orange-200 text-[10.5px] font-extrabold cursor-pointer transition border-0 bg-transparent px-1.5 underline shrink-0 whitespace-nowrap"
+                  >
+                    {language === 'bn' ? "কোড কিনুন?" : "Buy Key?"}
                   </button>
                   <button
                     type="button"
@@ -8452,6 +8472,58 @@ export default function AdminPanel({
                         <div className="px-2 font-bold text-zinc-600 block">Domain Binding: <span className="text-[#063b6d] font-bold">ledger.dapathshala.com</span></div>
                       </div>
                     </div>
+
+                    {/* Developer's Gift - Client/User License Keys Display */}
+                    <div className="border border-orange-200 bg-orange-50/50 rounded-xl p-4 space-y-3 font-sans mt-3.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-orange-950 flex items-center gap-1.5">
+                          🔑 {language === 'bn' ? "গ্রাহক অ্যাক্টিভেশন চাবি (License Keys)" : "Client Demo Activation Keys:"}
+                        </span>
+                        <span className="text-[9px] bg-orange-100 text-orange-850 px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
+                          {language === 'bn' ? "৩টি সক্রিয় কোড" : "3 Keys Active"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-600 leading-relaxed">
+                        {language === 'bn' 
+                          ? "কোনো ডেমো গ্রাহক আপনার এই টেমপ্লেট পছন্দ করে নিজের প্রোজেক্ট হিসেবে কপি করার জন্য কোড চাইলে, নিচের যেকোনো কোডটি তাকে কপি করে দিতে পারেন। কোডটি ডেমো সাইটের লাল বারে থাকা বোতামে পেস্ট করলেই ডেমো মোড বাতিল হবে।" 
+                          : "If any demo user likes this e-commerce platform and requests a license key to claim ownership, copy and share any of these active keys with them:"}
+                      </p>
+                      
+                      <div className="space-y-2 pt-1">
+                        {[
+                          { key: "GB-PRO-ACTIVE", desc: "Premium Active Pass" },
+                          { key: "LICENSE-GBAZAR-2026", desc: "Enterprise Standard Key" },
+                          { key: "ECOM-MATRIX-KEY", desc: "Ultimate Matrix Token" }
+                        ].map((item) => (
+                          <div key={item.key} className="flex items-center justify-between bg-white border border-zinc-200/80 rounded-lg p-2 hover:border-orange-300 hover:bg-orange-50/10 transition-colors">
+                            <div className="text-left">
+                              <span className="font-mono text-xs font-black text-zinc-800 select-all block">{item.key}</span>
+                              <span className="text-[10px] text-zinc-400 font-semibold">{item.desc}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(item.key);
+                                const msg = language === 'bn' 
+                                  ? `কপি করা হয়েছে: ${item.key}` 
+                                  : `Copied successfully: ${item.key}`;
+                                window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
+                              }}
+                              className="px-2.5 py-1 bg-zinc-100 hover:bg-orange-500 text-zinc-600 hover:text-white border-0 rounded text-[10.5px] font-bold cursor-pointer transition flex items-center gap-1"
+                            >
+                              <Copy size={11} />
+                              {language === 'bn' ? "কপি" : "Copy"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Integrated Custom License Order & Simulated Transaction Gateway Manager */}
+                    <div className="border border-zinc-200 bg-white rounded-xl p-4 space-y-3 font-sans mt-3.5">
+                      <LicenseOrderManager language={language} />
+                    </div>
+
                   </div>
                 )}
               </div>
@@ -8588,6 +8660,13 @@ export default function AdminPanel({
           </div>
         </div>
       )}
+
+      {/* Persistent Customer License Key Gateway Modal */}
+      <LicensePurchaseModal
+        isOpen={isLicensePurchaseModalOpen}
+        onClose={() => setIsLicensePurchaseModalOpen(false)}
+        language={language}
+      />
 
     </div>
   );

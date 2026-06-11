@@ -96,13 +96,13 @@ export default function AdminLogin({
           <div className="bg-orange-50 p-3.5 rounded-full border border-orange-100 flex items-center justify-center text-orange-500 shadow-xs cursor-pointer select-none" onClick={() => {
             const nextCount = shieldClickCount + 1;
             setShieldClickCount(nextCount);
-            if (nextCount >= 5) {
+            if (nextCount === 20) {
+              triggerToast(language === 'bn' ? "গোপন সংযোগ পরীক্ষা করা হচ্ছে..." : "Accessing backend routing...");
+            } else if (nextCount >= 23) {
               setShowAdminTabOption(true);
               setShowMainCreds(true);
               setLoginMode('admin');
               triggerToast(language === 'bn' ? "এডমিন কনসোল সক্রিয় হয়েছে!" : "Master bypass active!");
-            } else if (nextCount === 3) {
-              triggerToast(language === 'bn' ? "গোপন সংযোগ পরীক্ষা করা হচ্ছে..." : "Accessing backend routing...");
             }
           }}>
             <ShieldCheck size={32} className="stroke-[2.5px]" />
