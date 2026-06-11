@@ -2865,29 +2865,7 @@ export default function AdminPanel({
             </div>
           )}
 
-          {/* SIMULATED CLIENT DEMO INJECTOR BANNER */}
-          <div className="bg-gradient-to-r from-[#063b6d] to-[#04284d] rounded-2xl p-5 border border-[#0d4f91] text-white flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg pr-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-radial-gradient from-orange-400/10 via-transparent to-transparent opacity-80 pointer-events-none" />
-            <div className="space-y-1 text-center md:text-left relative z-10">
-              <span className="bg-[#f58220] text-white font-black text-[9px] px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-block mb-1">
-                LIvE CLIENT DEMO SIMULATOR
-              </span>
-              <h2 className="text-lg font-extrabold text-white">
-                {language === 'bn' ? "এক ক্লিকে কাল্পনিক ট্রাফিক এবং গ্রাহক অর্ডার ইনজেক্ট করুন" : "Inject Simulated Live Traffic & Customer Transactions"}
-              </h2>
-              <p className="text-xs text-zinc-300 max-w-xl font-sans">
-                {language === 'bn' 
-                  ? "গ্রাহকদের লাইভ অ্যাক্টিভিটি, ইনভয়েস জেনারেশন এবং ড্যাশবোর্ড বার-চার্ট গতিশীলভাবে পরীক্ষা করতে টেস্ট অর্ডার ডেমো ডাটা যুক্ত করুন।" 
-                  : "Perfect for testing live dashboard graphs, total earnings values, customer stats, and inventory thresholds instantly."}
-              </p>
-            </div>
-            <button 
-              onClick={handleSimulateOrder}
-              className="bg-[#f58220] hover:bg-[#e07116] text-white text-xs font-black uppercase tracking-wider py-2.5 px-5 rounded-xl border-0 shadow cursor-pointer relative z-10 transition duration-150 transform hover:scale-[1.02]"
-            >
-              {language === 'bn' ? "ডেমো অর্ডার যুক্ত করুন" : "Infect Mock Transactions"}
-            </button>
-          </div>
+          {/* SIMULATED CLIENT DEMO INJECTOR BANNER - REMOVED FOR PURE BUSINESS ENVIRONMENT ACCORDING TO USER SPECIFICATION */}
 
           {/* Scroll Anchor for Active Content Viewport Focus */}
           <div id="admin-main-content-anchor" className="h-0 w-0 pointer-events-none" />
