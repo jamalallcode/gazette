@@ -178,7 +178,7 @@ app.get("/api/debug-server-logs", (req, res) => {
       }
       
       // Explicit authorization check for specified Admin accounts
-      if ((cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && cleanPass === "admin123") {
+      if ((cleanEmail === "settlementregister@gmail.com" || cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && cleanPass === "admin123") {
         logDiagnostic(`[ADMIN LOGIN SUCCESS] Direct administrator login matched for: ${cleanEmail}`);
         return res.json({ 
           success: true, 
@@ -312,6 +312,9 @@ app.get("/api/debug-server-logs", (req, res) => {
       // 2. Merge with client orders (update if status/courier changed)
       clientOrders.forEach((co: any) => {
         if (!co || !co.id) return;
+        // Skip/purge any demo orders from synchronizing or saving to database
+        if (co.id === "ORD-276564" || co.id === "ORD-102706") return;
+        
         const existing = orderMap[co.id];
         if (!existing) {
           orderMap[co.id] = co;

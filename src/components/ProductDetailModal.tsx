@@ -193,6 +193,35 @@ export default function ProductDetailModal({
   };
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews'>('overview');
   
+  const [reviews, setReviews] = useState<{reviewer: string; rating: number; text: string; date: string}[]>(() => {
+    if (!product) return [];
+    const saved = localStorage.getItem(`nabik_product_reviews_${product.id}`);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [newReviewer, setNewReviewer] = useState("");
+  const [newRating, setNewRating] = useState(5);
+  const [newReviewText, setNewReviewText] = useState("");
+
+  const handleAddReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product || !newReviewer.trim() || !newReviewText.trim()) return;
+    const newRev = {
+      reviewer: newReviewer,
+      rating: newRating,
+      text: newReviewText,
+      date: new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    };
+    const updatedReviews = [newRev, ...reviews];
+    setReviews(updatedReviews);
+    localStorage.setItem(`nabik_product_reviews_${product.id}`, JSON.stringify(updatedReviews));
+    setNewReviewer("");
+    setNewReviewText("");
+  };
+  
   // Custom clothing attributes state
   const [selectedColor, setSelectedColor] = useState<'blue' | 'grey'>('blue');
   const [selectedSize, setSelectedSize] = useState<'M' | 'L' | 'XL' | 'XXL'>('XL');
@@ -793,31 +822,85 @@ export default function ProductDetailModal({
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4 text-xs font-bold text-zinc-500">
-                  <div className="text-zinc-600 text-left mb-2 text-sm font-black">{language === 'bn' ? 'রিভিউ ও ফিডব্যাকসমূহ :' : 'Product Reviews :'}</div>
+                <div className="space-y-4 text-xs font-bold text-zinc-550">
+                  <div className="text-zinc-750 text-left mb-2 text-sm font-black">{language === 'bn' ? 'রিভিউ ও ফিডব্যাকসমূহ :' : 'Product Reviews :'}</div>
                   
-                  {/* Default sample reviews matching the visual picture */}
-                  <div className="border border-zinc-100 p-3.5 rounded-lg text-left space-y-1">
-                    <div className="flex items-center justify-between">
-                      <strong className="text-zinc-850">Md. Arif Hasan</strong>
-                      <span className="text-[10px] text-zinc-400">30 May, 2026</span>
+                  {reviews.length === 0 ? (
+                    <div className="p-5 text-center bg-zinc-50 rounded-lg border border-zinc-100 text-zinc-400 text-xs py-7 font-normal">
+                      {language === 'en' 
+                        ? "There are no customer reviews for this product yet. If you have purchased it, feel free to leave the first review below!"
+                        : "এই প্রোডাক্টটির জন্য এখনো কোনো কাস্টমার রিভিউ নেই। আপনি যদি এটি কিনে থাকেন তবে নিচে আমাদের সবার প্রথম রিভিউটি দিন!"}
                     </div>
-                    <div className="flex text-amber-500 gap-0.5">
-                      {[...Array(5)].map((_, i) => <Star key={i} size={9} className="fill-current stroke-none" />)}
+                  ) : (
+                    <div className="space-y-2.5">
+                      {reviews.map((rev, idx) => (
+                        <div key={idx} className="border border-zinc-100 p-3.5 rounded-lg text-left space-y-1 bg-white">
+                          <div className="flex items-center justify-between">
+                            <strong className="text-zinc-850">{rev.reviewer}</strong>
+                            <span className="text-[10px] text-zinc-400 font-normal">{rev.date}</span>
+                          </div>
+                          <div className="flex text-amber-500 gap-0.5">
+                            {[...Array(rev.rating || 5)].map((_, i) => <Star key={i} size={9} className="fill-current stroke-none" />)}
+                          </div>
+                          <p className="text-zinc-650 font-normal">{rev.text}</p>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-zinc-650 font-medium">দারুণ প্রোডাক্ট এবং কাপড় অনেক নরম। খুবই সন্তুষ্ট!</p>
-                  </div>
+                  )}
 
-                  <div className="border border-zinc-100 p-3.5 rounded-lg text-left space-y-1">
-                    <div className="flex items-center justify-between">
-                      <strong className="text-zinc-850">Shakil Ahmed</strong>
-                      <span className="text-[10px] text-zinc-400">14 May, 2026</span>
+                  {/* Add Product Review Form */}
+                  <form onSubmit={handleAddReview} className="border border-zinc-100/80 bg-zinc-50/50 p-4 rounded-xl text-xs space-y-3.5 mt-5">
+                    <div className="font-bold text-zinc-700 border-b border-zinc-100 pb-2 text-xs">
+                      {language === 'en' ? 'Write a Customer Review' : 'একটি কাস্টমার রিভিউ লিখুন'}
                     </div>
-                    <div className="flex text-amber-500 gap-0.5">
-                      {[...Array(5)].map((_, i) => <Star key={i} size={9} className="fill-current stroke-none" />)}
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div className="space-y-1 text-left">
+                        <label className="text-[10px] text-zinc-500 block">{language === 'en' ? 'Your Name' : 'আপনার নাম'}</label>
+                        <input
+                          type="text"
+                          required
+                          value={newReviewer}
+                          onChange={(e) => setNewReviewer(e.target.value)}
+                          placeholder={language === 'en' ? "e.g. Arif Ahmed" : "উদা: আরিফ আহমেদ"}
+                          className="w-full bg-white border border-zinc-200 text-zinc-800 px-3 py-2 rounded focus:outline-none focus:border-[#f58220] text-xs font-normal"
+                        />
+                      </div>
+                      <div className="space-y-1 text-left">
+                        <label className="text-[10px] text-zinc-500 block">{language === 'en' ? 'Rating' : 'রেট দিন'}</label>
+                        <select
+                          value={newRating}
+                          onChange={(e) => setNewRating(Number(e.target.value))}
+                          className="w-full bg-white border border-zinc-200 text-zinc-800 px-2 py-1.5 rounded focus:outline-none focus:border-[#f58220] text-xs font-normal"
+                        >
+                          <option value={5}>⭐⭐⭐⭐⭐ (5/5)</option>
+                          <option value={4}>⭐⭐⭐⭐ (4/5)</option>
+                          <option value={3}>⭐⭐⭐ (3/5)</option>
+                          <option value={2}>⭐⭐ (2/5)</option>
+                          <option value={1}>⭐ (1/5)</option>
+                        </select>
+                      </div>
                     </div>
-                    <p className="text-zinc-650 font-medium">Highly recommended seller! Delivered on target time.</p>
-                  </div>
+
+                    <div className="space-y-1 text-left">
+                      <label className="text-[10px] text-zinc-500 block">{language === 'en' ? 'Your Feedback' : 'আপনার মন্তব্য বা রিভিউ'}</label>
+                      <textarea
+                        required
+                        rows={2}
+                        value={newReviewText}
+                        onChange={(e) => setNewReviewText(e.target.value)}
+                        placeholder={language === 'en' ? "Tell us about your experience..." : "প্রোডাক্টটির মান বা আপনার অভিজ্ঞতা সম্পর্কে বিস্তারিত মন্তব্য লিখুন..."}
+                        className="w-full bg-white border border-zinc-200 text-zinc-800 px-3 py-2 rounded focus:outline-none focus:border-[#f58220] text-xs font-normal resize-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-[#f58220] hover:bg-orange-600 text-white font-bold py-2 rounded transition cursor-pointer border-0 text-[11px]"
+                    >
+                      {language === 'en' ? 'SUBMIT REVIEW' : 'রিভিউ পাবলিশ করুন'}
+                    </button>
+                  </form>
                 </div>
               )}
             </div>

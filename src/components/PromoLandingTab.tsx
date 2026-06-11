@@ -163,6 +163,34 @@ export default function PromoLandingTab({
 
   const pad = (num: number) => String(num).padStart(2, "0");
 
+  const [landingReviews, setLandingReviews] = useState<{reviewer: string; text: string; date: string; rating: number}[]>(() => {
+    const saved = localStorage.getItem("nabik_landing_feedback");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [feedbackName, setFeedbackName] = useState("");
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(5);
+
+  const handleAddFeedback = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackName.trim() || !feedbackText.trim()) return;
+    const newFb = {
+      reviewer: feedbackName,
+      text: feedbackText,
+      rating: feedbackRating,
+      date: new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    };
+    const updated = [newFb, ...landingReviews];
+    setLandingReviews(updated);
+    localStorage.setItem("nabik_landing_feedback", JSON.stringify(updated));
+    setFeedbackName("");
+    setFeedbackText("");
+  };
+
   return (
     <div className="space-y-12" id="promo-landing-container">
       
@@ -364,50 +392,92 @@ export default function PromoLandingTab({
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl space-y-5">
             <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-200 flex items-center space-x-2">
               <MessageSquare size={16} className="text-amber-500" />
-              <span>{language === 'en' ? 'Recent Facebook Feedback' : 'ক্রেতাদের সাম্প্রতিক ফেসবুক রিভিউ'}</span>
+              <span>{language === 'en' ? 'Customer Feedback' : 'ক্রেতাদের কাস্টমার রিভিউ ও কমেন্ট'}</span>
             </h3>
 
             <div className="space-y-4">
-              <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2.5">
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="h-6.5 w-6.5 rounded-full bg-amber-600 flex items-center justify-center text-zinc-950 font-bold select-none text-[10px]">
-                      রা
-                    </div>
-                    <strong className="text-zinc-200 font-semibold">রাশেদ চৌধুরী (ধানমন্ডি, ঢাকা)</strong>
-                  </div>
-                  <span className="text-emerald-500 font-mono text-[10px] font-bold">✔ Verified Buyer</span>
-                </div>
-                <div className="flex text-amber-500">
-                  <Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" />
-                </div>
-                <p className="text-[11.5px] text-zinc-300 font-light leading-relaxed">
+              {landingReviews.length === 0 ? (
+                <div className="p-5 text-center bg-zinc-950/40 rounded-xl border border-zinc-850/60 text-zinc-400 text-xs py-8">
                   {language === 'en' 
-                    ? "Sublime quality! Checked the package right in front of the pathao rider and paid on cash. Outstanding premium feel." 
-                    : "সত্যিই অসাধারণ কোয়ালিটি! ডেলিভারি ম্যানের সামনে প্যাকেট খুলে চেক করে তারপর টাকা দিয়েছি। অরিজিনাল প্রোডাক্ট, কোনো ত্রুটি নেই। ধন্যবাদ অরা!"}
-                </p>
-              </div>
-
-              <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2.5">
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="h-6.5 w-6.5 rounded-full bg-amber-600 flex items-center justify-center text-zinc-950 font-bold select-none text-[10px]">
-                      মি
+                    ? "No customer reviews yet. If you have purchased this product, be the first to share your valuable review or comment below!"
+                    : "এখনো কোনো কাস্টমার রিভিউ পাওয়া যায়নি। আপনি যদি আমাদের পণ্যটি কিনে থাকেন, তবে সবার প্রথম কাস্টমার রিভিউটি আপনিই নিচে যুক্ত করুন!"}
+                </div>
+              ) : (
+                landingReviews.map((rev, idx) => (
+                  <div key={idx} className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="h-6.5 w-6.5 rounded-full bg-amber-600 flex items-center justify-center text-zinc-950 font-black select-none text-[10px]">
+                          {rev.reviewer.slice(0, 2)}
+                        </div>
+                        <strong className="text-zinc-200 font-semibold">{rev.reviewer}</strong>
+                      </div>
+                      <span className="text-zinc-500 font-sans text-[9px]">{rev.date}</span>
                     </div>
-                    <strong className="text-zinc-200 font-semibold">মিনহাজুল ইসলাম (চট্টগ্রাম সদর)</strong>
+                    <div className="flex text-amber-500">
+                      {[...Array(rev.rating || 5)].map((_, i) => (
+                        <Star key={i} size={10} fill="currentColor" className="stroke-none" />
+                      ))}
+                    </div>
+                    <p className="text-[11.5px] text-zinc-300 font-light leading-relaxed">
+                      {rev.text}
+                    </p>
                   </div>
-                  <span className="text-emerald-500 font-mono text-[10px] font-bold">✔ Verified Buyer</span>
-                </div>
-                <div className="flex text-amber-500">
-                  <Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" /><Star size={11} fill="currentColor" />
-                </div>
-                <p className="text-[11.5px] text-zinc-300 font-light leading-relaxed">
-                  {language === 'en' 
-                    ? "Highly recommended. Delivery took only 2 days in CTG. Packaging was state of class and safe." 
-                    : "চিটাগং-এ ২ দিনের মধ্যে ডেলিভারি পেয়েছি। প্রোডাক্টের ফিনিশিং এবং লাক্সারি লুকটা দারুণ লেগেছে। যেমন দেখেছি ঠিক তেমনটাই পেয়েছি।"}
-                </p>
-              </div>
+                ))
+              )}
             </div>
+
+            {/* Submittable client form */}
+            <form onSubmit={handleAddFeedback} className="bg-zinc-950/40 border border-zinc-850/60 p-4 rounded-xl space-y-3 mt-4 text-xs">
+              <div className="font-bold text-zinc-350 pb-1.5 border-b border-zinc-900 text-xs flex items-center space-x-1">
+                <span className="text-amber-500">✦</span>
+                <span>{language === 'en' ? 'Share Your Authentic Review' : 'আপনার মূল্যবান কাস্টমার রিভিও লিখুন'}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-zinc-400 uppercase tracking-wider">{language === 'en' ? 'Your Name' : 'আপনার নাম'}</label>
+                  <input
+                    type="text"
+                    required
+                    value={feedbackName}
+                    onChange={(e) => setFeedbackName(e.target.value)}
+                    placeholder={language === 'en' ? "e.g. Robin Islam" : "উদা: রবিন ইসলাম"}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-500 text-xs placeholder-zinc-600"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-zinc-400 uppercase tracking-wider block">{language === 'en' ? 'Rating' : 'রেটিং দিন'}</label>
+                  <select
+                    value={feedbackRating}
+                    onChange={(e) => setFeedbackRating(Number(e.target.value))}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 px-2 py-1.5 rounded focus:outline-none focus:border-amber-500 text-xs"
+                  >
+                    <option value={5}>⭐⭐⭐⭐⭐ (5/5)</option>
+                    <option value={4}>⭐⭐⭐⭐ (4/5)</option>
+                    <option value={3}>⭐⭐⭐ (3/5)</option>
+                    <option value={2}>⭐⭐ (2/5)</option>
+                    <option value={1}>⭐ (1/5)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] text-zinc-400 uppercase tracking-wider">{language === 'en' ? 'Your Comment / Review' : 'আপনার মন্তব্য বা রিভিউটি লিখুন'}</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder={language === 'en' ? "Write your genuine experience with this product..." : "এই প্রোডাক্টটি নিয়ে আপনার আসল অভিজ্ঞতা বা মন্তব্য লিখুন..."}
+                  className="w-full bg-zinc-950 border border-zinc-800 text-zinc-200 px-3 py-2 rounded focus:outline-none focus:border-amber-500 text-xs placeholder-zinc-600 resize-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold uppercase py-2 rounded transition cursor-pointer border-0 text-[11px]"
+              >
+                {language === 'en' ? 'SUBMIT FEEDBACK' : 'রিভিউ সাবমিট করুন'}
+              </button>
+            </form>
           </div>
 
           {/* DYNAMIC FAQ SECTION TO SOLV COLD TRAFFIC */}

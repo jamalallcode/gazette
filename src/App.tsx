@@ -541,7 +541,16 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem("nabik_orders");
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        const parsed: Order[] = JSON.parse(saved);
+        // Clean out legacy demo order IDs
+        return parsed.filter((o: any) => o && o.id !== "ORD-276564" && o.id !== "ORD-102706");
+      } catch (_) {
+        return [];
+      }
+    }
+    return [];
   });
   const [currentTab, setCurrentTab] = useState<string>('shop');
   const [activePolicyModal, setActivePolicyModal] = useState<'refund' | 'return' | 'cancel' | 'wishlist' | null>(null);
@@ -2569,7 +2578,7 @@ export default function App() {
               <h4 className="text-xs font-black text-[#f58220] tracking-widest uppercase mb-1.5">{language === 'bn' ? 'বিশেষ ক্যাটাগরি' : 'SPECIAL'}</h4>
               <button onClick={() => setCurrentTab('shop')} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Shop Home</button>
               <button onClick={() => setCurrentTab('orders')} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">My Consignments</button>
-              <button onClick={() => { setVendorTab('list'); setShowVendorModal(true); }} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Vendor Directories</button>
+              {/* <button onClick={() => { setVendorTab('list'); setShowVendorModal(true); }} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Vendor Directories</button> */}
               <button onClick={() => setCurrentTab('admin')} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Admin Board</button>
             </div>
 

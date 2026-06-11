@@ -1605,7 +1605,7 @@ export default function AdminPanel({
               </>
             )}
 
-            {(!searchQuery || "vendor products".includes(searchQuery.toLowerCase())) && (
+            {false /* Disabled for Solo E-commerce setup according to owner intent */ && (!searchQuery || "vendor products".includes(searchQuery.toLowerCase())) && (
               <>
                 <button 
                   onClick={() => {
@@ -2080,7 +2080,7 @@ export default function AdminPanel({
               </>
             )}
 
-            {(!searchQuery || "sellers".includes(searchQuery.toLowerCase())) && (
+            {false /* Disabled for Solo E-commerce setup according to owner intent */ && (!searchQuery || "sellers".includes(searchQuery.toLowerCase())) && (
               <>
                 <button 
                   onClick={() => {
