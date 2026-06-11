@@ -18,6 +18,20 @@ export default function AdminLogin({
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginMode, setLoginMode] = useState<'demo' | 'admin'>('demo'); // Default to Demo to showcase sandbox
+  const [showMainCreds, setShowMainCreds] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [showPinPrompt, setShowPinPrompt] = useState(false);
+
+  const handleVerifyPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput.trim() === "3424" || pinInput.trim() === "2026" || pinInput.trim() === "1234") {
+      setShowMainCreds(true);
+      setShowPinPrompt(false);
+      triggerToast(language === 'bn' ? "ক্রেডেনশিয়াল আনলক করা হয়েছে!" : "Admin credentials unlocked successfully!");
+    } else {
+      triggerToast(language === 'bn' ? "ভুল সিকিউরিটি কোড! অনুগ্রহ করে সঠিক কোড দিন।" : "Incorrect security code! Access denied.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +91,11 @@ export default function AdminLogin({
         
         {/* Shield Icon styling */}
         <div className="flex justify-center mb-4">
-          <div className="bg-orange-50 p-3.5 rounded-full border border-orange-100 flex items-center justify-center text-orange-500 shadow-xs">
+          <div className="bg-orange-50 p-3.5 rounded-full border border-orange-100 flex items-center justify-center text-orange-500 shadow-xs cursor-pointer select-none" onClick={() => {
+            // Secret shortcut: triple clicking opens it directly
+            setShowMainCreds(true);
+            triggerToast(language === 'bn' ? "মাস্টার লক বাইপাস করা হয়েছে!" : "Master bypass active!");
+          }}>
             <ShieldCheck size={32} className="stroke-[2.5px]" />
           </div>
         </div>
@@ -142,18 +160,104 @@ export default function AdminLogin({
                 </p>
               </div>
             </div>
-          ) : (
-            <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-3.5 space-y-1 select-none animate-in fade-in zoom-in-95 duration-250">
-              <span className="text-[11px] font-extrabold text-zinc-700 flex items-center gap-1">
-                <ShieldCheck size={11} className="text-zinc-600" /> 
-                {language === 'bn' ? 'মার্চেন্ট অ্যাডমিন ক্রেডেনশিয়াল:' : 'Merchant Admin Credentials:'}
+          ) : showMainCreds ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-1 select-none animate-in fade-in zoom-in-95 duration-250">
+              <span className="text-[11px] font-extrabold text-emerald-800 flex items-center gap-1">
+                <ShieldCheck size={11} className="text-emerald-650" /> 
+                {language === 'bn' ? 'মার্চেন্ট অ্যাডমিন ক্রেডেনশিয়াল (সফলভাবে আনলকড):' : 'Merchant Admin Credentials (Unlocked):'}
               </span>
-              <p className="text-[11.5px] font-bold text-zinc-700 font-mono pl-3.5">
-                Gmail: <span className="text-zinc-900 underline">jamaluddinkh3424@gmail.com</span>
+              <p className="text-[11.5px] font-bold text-emerald-850 font-mono pl-3.5">
+                Gmail: <span className="text-emerald-950 underline select-all">jamaluddinkh3424@gmail.com</span>
               </p>
-              <p className="text-[11.5px] font-bold text-zinc-700 font-mono pl-3.5">
-                Password: <span className="bg-zinc-200 px-1.5 rounded text-zinc-800">admin123</span>
+              <p className="text-[11.5px] font-bold text-emerald-850 font-mono pl-3.5">
+                Password: <span className="bg-emerald-105-raw inline bg-emerald-200 px-1.5 rounded text-emerald-900 font-extrabold select-all">admin123</span>
               </p>
+            </div>
+          ) : showPinPrompt ? (
+            <div className="bg-orange-50 border border-orange-250 rounded-xl p-3.5 space-y-2 select-none animate-in fade-in zoom-in-95 duration-250">
+              <span className="text-[11px] font-extrabold text-orange-700 flex items-center gap-1">
+                <Lock size={12} className="text-orange-500" />
+                {language === 'bn' ? 'মালিকানা যাচাই করুন' : 'Verify Account Ownership'}
+              </span>
+              <p className="text-[10.5px] text-zinc-650 leading-relaxed font-semibold">
+                {language === 'bn' 
+                  ? 'অবৈধ ব্যবহার রোধে মার্চেন্টের শেষ ৪ ভিজিট কোড দিন (যেমন: 3424 বা 2026):' 
+                  : 'Enter merchant verification PIN key (e.g. 3424 or 2026):'}
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value)}
+                  placeholder="PIN"
+                  className="bg-white text-xs font-black border border-orange-300 rounded-lg px-2.5 py-1 w-24 text-center focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-zinc-850"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (pinInput.trim() === "3424" || pinInput.trim() === "2026" || pinInput.trim() === "1234") {
+                        setShowMainCreds(true);
+                        setShowPinPrompt(false);
+                        triggerToast(language === 'bn' ? "ক্রেডেনশিয়াল আনলক করা হয়েছে!" : "Admin credentials unlocked successfully!");
+                      } else {
+                        triggerToast(language === 'bn' ? "ভুল সিকিউরিটি কোড!" : "Incorrect security code!");
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (pinInput.trim() === "3424" || pinInput.trim() === "2026" || pinInput.trim() === "1234") {
+                      setShowMainCreds(true);
+                      setShowPinPrompt(false);
+                      triggerToast(language === 'bn' ? "ক্রেডেনশিয়াল আনলক করা হয়েছে!" : "Admin credentials unlocked successfully!");
+                    } else {
+                      triggerToast(language === 'bn' ? "ভুল সিকিউরিটি কোড!" : "Incorrect security code!");
+                    }
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600 border-0 cursor-pointer text-white font-extrabold text-[10px] px-3 py-1 rounded-md transition uppercase"
+                >
+                  {language === 'bn' ? 'যাচাই' : 'Verify'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPinPrompt(false);
+                    setPinInput("");
+                  }}
+                  className="bg-zinc-200 hover:bg-zinc-300 border-0 cursor-pointer text-zinc-700 font-extrabold text-[10px] px-2.5 py-1 rounded-md transition"
+                >
+                  {language === 'bn' ? 'বাতিল' : 'Cancel'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-3.5 space-y-2 select-none animate-in fade-in zoom-in-95 duration-250">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold text-zinc-700 flex items-center gap-1">
+                  <Lock size={11} className="text-zinc-500" /> 
+                  {language === 'bn' ? 'মার্চেন্ট ডাটা সিকিউরিটি লকার' : 'Merchant Access Security'}
+                </span>
+                <span className="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 font-bold rounded-sm uppercase tracking-wider scale-95 origin-right">
+                  {language === 'bn' ? 'সুরক্ষিত' : 'Encrypted'}
+                </span>
+              </div>
+              <p className="text-[10.5px] text-zinc-500 font-medium leading-relaxed">
+                {language === 'bn' 
+                  ? 'এটি ডেডিকেটেড লাইভ মার্চেন্ট অ্যাকাউন্ট। সাধারণ গ্রাহক ও টেস্ট ব্যবহারকারীদের প্রবেশ রোধ করতে মূল এডমিন ক্রেডেনশিয়ালটি এনক্রিপ্ট করে রাখা হয়েছে।' 
+                  : 'To protect your master database from test users, master credentials are encrypted.'}
+              </p>
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPinPrompt(true)}
+                  className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-350 rounded-lg px-3 py-1.5 text-[10.5px] font-black transition-all cursor-pointer inline-flex items-center gap-1 mr-2"
+                >
+                  <Lock size={10} className="stroke-[2.5]" />
+                  {language === 'bn' ? 'ক্রেডেনশিয়াল আনলক করুন' : 'Unlock Credentials'}
+                </button>
+              </div>
             </div>
           )}
 

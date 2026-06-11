@@ -555,6 +555,17 @@ Only include IDs inside suggestedProductIds that literally exist in the database
     });
   });
 
+  const isBundled = typeof __filename !== "undefined" && (__filename.endsWith("server.cjs") || __filename.includes("dist"));
+  const isProduction = process.env.NODE_ENV === "production" || !!process.env.VERCEL || isBundled || !fs.existsSync(path.join(process.cwd(), "node_modules", "vite"));
+
+  if (isProduction) {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  }
+
   async function startStandaloneServer() {
     if (process.env.VERCEL) {
       logDiagnostic("Vercel deployment environment detected. Skipping local server listener and Vite configuration.");
@@ -563,10 +574,7 @@ Only include IDs inside suggestedProductIds that literally exist in the database
 
     const PORT = 3000;
 
-    // Vite Integration for Dev / Prod
-    const isBundled = typeof __filename !== "undefined" && (__filename.endsWith("server.cjs") || __filename.includes("dist"));
-    const isProduction = process.env.NODE_ENV === "production" || isBundled || !fs.existsSync(path.join(process.cwd(), "node_modules", "vite"));
-
+    // Vite Integration for Dev Mode
     if (!isProduction) {
       try {
         const { createServer } = await import("vite");
@@ -583,12 +591,6 @@ Only include IDs inside suggestedProductIds that literally exist in the database
           res.sendFile(path.join(distPath, "index.html"));
         });
       }
-    } else {
-      const distPath = path.join(process.cwd(), "dist");
-      app.use(express.static(distPath));
-      app.get("*", (req, res) => {
-        res.sendFile(path.join(distPath, "index.html"));
-      });
     }
 
     app.listen(PORT, "0.0.0.0", () => {
