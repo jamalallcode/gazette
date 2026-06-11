@@ -2883,9 +2883,68 @@ export default function AdminPanel({
             <div className="space-y-6" id="overview-dashboard-panel">
               
               {/* Header Title block */}
-              <div className="text-left">
-                <h1 className="text-2xl font-black text-zinc-900 tracking-tight">Dashboard</h1>
-                <p className="text-xs text-zinc-400 font-semibold mt-0.5">Welcome message.</p>
+              <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-950 rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden ring-1 ring-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4" id="premium-dashboard-header">
+                {/* Decorative background visual accent element */}
+                <div className="absolute right-0 top-0 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+                <div className="absolute left-1/3 bottom-0 w-60 h-60 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none -mb-20" />
+                
+                {/* Text and Greeting details */}
+                <div className="space-y-2 relative z-10">
+                  <div className="flex items-center space-x-3">
+                    {/* Premium Badge for system */}
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/35">
+                      ✨ Premium Portal
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+                    <span className="text-xs text-zinc-400 font-mono font-bold tracking-wide">
+                      v3.82
+                    </span>
+                  </div>
+                  
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+                    {language === 'bn' ? "ড্যাশবোর্ড ওভারভিউ" : "Dashboard Overview"}{" "}
+                    <span className="animate-bounce inline-block">👋</span>
+                  </h1>
+                  
+                  <p className="text-sm text-zinc-300 font-medium max-w-xl leading-relaxed">
+                    {language === 'bn' 
+                      ? "স্বাগতম, গ্যাজেট বাজার! আপনার স্টোরের রিয়েল-টাইম ব্যবসায়িক অ্যানালিটিক্স এবং পারফরম্যান্স এখানে ট্র্যাক করুন।" 
+                      : "Welcome back, Gadget Bazar! Track your live business analytics, order flows, and overall performance."}
+                  </p>
+                </div>
+
+                {/* Performance Quick Summary / Right badge section */}
+                <div className="flex flex-wrap items-center gap-3 relative z-10">
+                  {/* Realtime status pulse card */}
+                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 flex items-center space-x-3 shadow-inner">
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest block leading-none">
+                        SYSTEM STATUS
+                      </span>
+                      <span className="text-xs font-extrabold text-zinc-100 font-mono leading-none block">
+                        ONLINE & SECURED
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Time & Date display pill */}
+                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 flex items-center space-x-2 shadow-inner">
+                    <span className="text-orange-400 text-lg">🗓️</span>
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest block leading-none">
+                        SESSION TIME
+                      </span>
+                      <span className="text-xs font-extrabold text-orange-300 font-mono leading-none block">
+                        11 JUN 2026
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Business Analytics Container */}
