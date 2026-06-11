@@ -8269,7 +8269,7 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <div className="relative flex-1 min-w-0 bg-white p-4 md:p-6 flex flex-col justify-between overflow-y-auto">
+            <div className="relative flex-1 min-w-0 bg-white flex flex-col h-full overflow-hidden">
               <button
                 type="button"
                 onClick={() => {
@@ -8278,12 +8278,12 @@ export default function AdminPanel({
                   setNewPass("");
                   setConfirmPass("");
                 }}
-                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-650 hover:bg-zinc-100 p-1.5 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center z-10"
+                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-650 hover:bg-zinc-100 p-1.5 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center z-30"
                 title={language === 'bn' ? 'বাতিল ও বন্ধ করুন' : 'Cancel & Close'}
               >
                 <X size={18} className="stroke-[2.5]" />
               </button>
-              <div>
+              <div className="flex-1 overflow-y-auto p-4 pr-12 md:p-6 md:pr-12">
                 {adminSettingsTab === 'language' && (
                   <div className="space-y-5 text-left animate-fadeIn">
                     <div>
@@ -8528,7 +8528,7 @@ export default function AdminPanel({
                 )}
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-6 border-t border-zinc-200 shrink-0 mt-4">
+              <div className="flex items-center justify-end space-x-3 p-4 md:px-6 md:py-3.5 border-t border-zinc-200 shrink-0 bg-zinc-50/50 z-10 w-full box-border">
                 <button
                   onClick={() => {
                     setAdminSettingsModalOpen(false);
