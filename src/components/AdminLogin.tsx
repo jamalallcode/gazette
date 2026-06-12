@@ -15,13 +15,13 @@ export default function AdminLogin({
   triggerToast
 }: AdminLoginProps) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("demo123");
+  const [password, setPassword] = useState("demoadmin123");
   const [loading, setLoading] = useState(false);
   const [loginMode, setLoginMode] = useState<'demo' | 'admin'>('demo'); // Default to Demo to showcase sandbox
   const [showMainCreds, setShowMainCreds] = useState(false);
   const [pinInput, setPinInput] = useState("");
   const [showPinPrompt, setShowPinPrompt] = useState(false);
-  const [showAdminTabOption, setShowAdminTabOption] = useState(false);
+  const [showAdminTabOption, setShowAdminTabOption] = useState(true); // Always let them switch modes
   const [shieldClickCount, setShieldClickCount] = useState(0);
 
   const handleVerifyPin = (e: React.FormEvent) => {
@@ -67,7 +67,7 @@ export default function AdminLogin({
 
       if (response.ok && data.success) {
         if (data.user.is_demo_user) {
-          triggerToast(language === 'bn' ? "ডেমো স্যান্ডবক্স লগইন সফল! ২ ঘণ্টার সেশন শুরু হয়েছে।" : "Demo sandbox login successful! Your 2-hour trial has initiated.");
+          triggerToast(language === 'bn' ? "ডেমো স্যান্ডবক্স লগইন সফল! ৩ দিনের সেশন শুরু হয়েছে।" : "Demo sandbox login successful! Your 3-day trial session has initiated.");
         } else {
           triggerToast(language === 'bn' ? "এডমিন লগইন সফল হয়েছে!" : "Successfully verified! Welcome Administrator.");
         }
@@ -125,7 +125,7 @@ export default function AdminLogin({
               type="button"
               onClick={() => {
                 setLoginMode('demo');
-                setPassword("demo123");
+                setPassword("demoadmin123");
               }}
               className={`py-2 text-center text-xs font-bold rounded-lg border-0 cursor-pointer transition ${
                 loginMode === 'demo' ? 'bg-[#f58220] text-white shadow-xs' : 'text-zinc-600 bg-transparent hover:text-zinc-900'
@@ -167,7 +167,7 @@ export default function AdminLogin({
                   Gmail: <span className="text-zinc-900 underline font-semibold">{language === 'bn' ? 'আপনার নিজস্ব আসল জিমেইল' : 'Your original personal email'}</span>
                 </p>
                 <p className="text-zinc-700">
-                  Password: <span className="bg-orange-50 px-1.5 py-0.5 rounded text-orange-700 font-bold border border-orange-100">demo123</span>
+                  Password: <span className="bg-orange-50 px-1.5 py-0.5 rounded text-orange-700 font-bold border border-orange-100">demoadmin123</span>
                 </p>
               </div>
             </div>

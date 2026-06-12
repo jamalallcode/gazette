@@ -206,6 +206,76 @@ export default function Navbar({
   const [passcodeInput, setPasscodeInput] = useState('');
   const [quickHubOpen, setQuickHubOpen] = useState(false);
 
+  // === DEMO SANDBOX AUTHORIZATION CONTROLLERS ===
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminLoginLoading, setAdminLoginLoading] = useState(false);
+  const [adminLoginError, setAdminLoginError] = useState("");
+  const [demoTimeLeft, setDemoTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (currentUser?.is_demo_user && currentUser?.expires_at) {
+      const updateTimer = () => {
+        const remaining = new Date(currentUser.expires_at).getTime() - Date.now();
+        if (remaining <= 0) {
+          setDemoTimeLeft("Expired");
+          if (setCurrentUser) {
+            setCurrentUser(null);
+            triggerToast("Demo session expired! Sandbox cleaned up.");
+          }
+        } else {
+          const days = Math.floor(remaining / (24 * 3600 * 1000));
+          const hours = Math.floor((remaining % (24 * 3600 * 1000)) / (3600 * 1000));
+          const minutes = Math.floor((remaining % (3600 * 1000)) / (60 * 1000));
+          const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+          setDemoTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        }
+      };
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, setCurrentUser]);
+
+  const handleAdminFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEmail.trim()) {
+      setAdminLoginError(language === 'bn' ? "দয়া করে আপনার আসল জিমেইল এড্রেস লিখুন" : "Please enter your real Gmail address");
+      return;
+    }
+    if (!adminPassword.trim()) {
+      setAdminLoginError(language === 'bn' ? "পাসওয়ার্ডটি লিখুন (যেমন: demoadmin123)" : "Please enter login password");
+      return;
+    }
+    setAdminLoginLoading(true);
+    setAdminLoginError("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: adminEmail, password: adminPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (setCurrentUser) {
+          setCurrentUser(data.user);
+        }
+        setAdminDropdownOpen(false);
+        setAdminEmail("");
+        setAdminPassword("");
+        triggerToast(language === 'bn' ? "সফলভাবে ডেমো স্যান্ডবক্স এডমিন অ্যাক্সেস পেয়েছেন!" : "Demo Sandbox Admin access activated!");
+        setCurrentTab("admin");
+      } else {
+        setAdminLoginError(data.error || (language === 'bn' ? "ভুল জিমেইল বা ডেমো পাসওয়ার্ড!" : "Incorrect Gmail or password. Please use demoadmin123"));
+      }
+    } catch (err: any) {
+      setAdminLoginError(language === 'bn' ? "নেটওয়ার্ক কানেকশন এরর" : "Network error. Try again.");
+    } finally {
+      setAdminLoginLoading(false);
+    }
+  };
+
   const [searchFocused, setSearchFocused] = useState(false);
   const [isHoveringSuggestions, setIsHoveringSuggestions] = useState(false);
 
@@ -610,6 +680,142 @@ export default function Navbar({
 
             {/* Right side: Clean action controls and Mobile menu toggle */}
             <div className="flex items-center space-x-1.5">
+
+              {/* ADVANCED ADMIN MOB DEMO BUTTON & REGISTRATION DROPDOWN */}
+              <div className="relative font-sans lg:hidden" id="mobile-admin-demo-dropdown">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminDropdownOpen(!adminDropdownOpen);
+                    setWishlistDropdownOpen(false);
+                    setBellDropdownOpen(false);
+                    setProfileDropdownOpen(false);
+                  }}
+                  className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider transition-all duration-200 border cursor-pointer select-none flex items-center gap-1 ${
+                    currentUser?.role === 'admin' 
+                      ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-700'
+                      : 'bg-zinc-200 hover:bg-zinc-300 border-zinc-305 text-zinc-900 font-bold'
+                  }`}
+                >
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${currentUser?.role === 'admin' ? 'bg-white' : 'bg-[#f58220]'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${currentUser?.role === 'admin' ? 'bg-emerald-300' : 'bg-[#f58220]'}`}></span>
+                  </span>
+                  A-DEMO
+                </button>
+
+                {adminDropdownOpen && (
+                  <div 
+                    className="absolute top-full right-[-40px] mt-2 w-72 bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-3.5 px-3.5 z-[99999] animate-in fade-in slide-in-from-top-3 duration-250 font-sans"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {currentUser?.role === 'admin' ? (
+                      <div className="space-y-3 text-left font-sans">
+                        <div className="pb-2 border-b border-zinc-100 flex items-center justify-between">
+                          <div>
+                            <p className="text-[9px] text-emerald-600 font-black uppercase tracking-wider font-mono">Sandbox Demo Admin</p>
+                            <p className="text-xs font-black text-zinc-900 truncate max-w-[150px] mt-0.5">{currentUser.email}</p>
+                          </div>
+                          <span className="p-1 bg-emerald-100 text-emerald-600 rounded text-xs">🚀</span>
+                        </div>
+
+                        {currentUser.is_demo_user ? (
+                          <div className="p-2.5 bg-zinc-50 border border-zinc-200 rounded-lg space-y-1">
+                            <span className="text-[9px] font-bold text-zinc-400 block uppercase">Trial Expires In:</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded inline-block font-mono">
+                                ⏱️ {demoTimeLeft || "calculating..."}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-2.5 bg-indigo-50 border border-indigo-200 rounded-lg">
+                            <span className="text-xs font-black text-indigo-700 block">👑 Owner Mode</span>
+                          </div>
+                        )}
+
+                        <div className="flex flex-col gap-1.5 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCurrentTab("admin");
+                              setAdminDropdownOpen(false);
+                            }}
+                            className="w-full py-1.5 bg-[#f58220] hover:bg-[#d66f15] text-white text-[11px] font-black rounded-lg border-0 cursor-pointer transition text-center"
+                          >
+                            {language === 'bn' ? "এডমিন প্যানেলে যান" : "Enter Admin Dashboard"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (setCurrentUser) setCurrentUser(null);
+                              setAdminDropdownOpen(false);
+                              triggerToast("Signed out");
+                            }}
+                            className="w-full py-1.5 bg-zinc-100 hover:bg-zinc-250 text-zinc-700 text-[11px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleAdminFormSubmit} className="space-y-3 text-left font-sans">
+                        <div className="pb-1 border-b border-zinc-100">
+                          <h4 className="text-[11px] font-black text-[#f58220] uppercase tracking-wider block">Demo Sandbox Login</h4>
+                          <p className="text-[9.5px] text-zinc-500 leading-relaxed mt-1 font-medium">
+                            {language === 'bn' 
+                              ? "আপনার আসল জিমেইল এড্রেস লিখুন এবং পাসওয়ার্ড demoadmin123 দিন।"
+                              : "Enter your real Gmail & demoadmin123 password."
+                            }
+                          </p>
+                        </div>
+
+                        {adminLoginError && (
+                          <div className="p-2 bg-red-50 border border-red-200 rounded text-[10px] text-red-655 font-semibold block leading-tight">
+                            {adminLoginError}
+                          </div>
+                        )}
+
+                        <div className="space-y-2">
+                          <div className="space-y-0.5 block text-left">
+                            <label className="text-[9px] uppercase font-black text-zinc-400 block text-left">Real Gmail Address</label>
+                            <input
+                              type="email"
+                              placeholder="example@gmail.com"
+                              value={adminEmail}
+                              onChange={(e) => setAdminEmail(e.target.value)}
+                              className="w-full px-2.5 py-1 text-xs text-zinc-800 bg-zinc-50 border border-zinc-250 rounded focus:outline-none focus:border-orange-600 font-sans"
+                              required
+                            />
+                          </div>
+
+                          <div className="space-y-0.5 block text-left">
+                            <label className="text-[9px] uppercase font-black text-zinc-400 block text-left">Password (demoadmin123)</label>
+                            <input
+                              type="password"
+                              placeholder="demoadmin123"
+                              value={adminPassword}
+                              onChange={(e) => setAdminPassword(e.target.value)}
+                              className="w-full px-2.5 py-1 text-xs text-zinc-800 bg-zinc-50 border border-zinc-250 rounded focus:outline-none focus:border-orange-600 font-sans"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={adminLoginLoading}
+                          className="w-full py-1.5 bg-zinc-950 hover:bg-zinc-900 text-white text-[11px] font-black rounded border-0 cursor-pointer transition flex items-center justify-center gap-1"
+                        >
+                          {adminLoginLoading && <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></span>}
+                          {language === 'bn' ? "এডমিনে প্রবেশ করুন" : "Enter Admin Panel"}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Admin Notification Bell */}
               {currentUser && currentUser.role === 'admin' && (
@@ -1121,7 +1327,145 @@ export default function Navbar({
 
               {/* Direct Inline Controls for Languages, Wishlists, Notifications, Profiles & Checkout Cart */}
               <div className="flex items-center space-x-2 shrink-0 animate-fade-in">
-                
+
+                {/* ADVANCED ADMIN DEKSTOP DEMO BUTTON & REGISTRATION DROPDOWN */}
+                <div className="relative font-sans hidden lg:block" id="desktop-admin-demo-dropdown">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminDropdownOpen(!adminDropdownOpen);
+                      setWishlistDropdownOpen(false);
+                      setBellDropdownOpen(false);
+                      setProfileDropdownOpen(false);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 border cursor-pointer select-none flex items-center gap-1.5 ${
+                      currentUser?.role === 'admin' 
+                        ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-700'
+                        : 'bg-[#1e293b]/10 hover:bg-[#1e293b]/20 border-zinc-300 text-zinc-900 font-bold'
+                    }`}
+                  >
+                    <span className="relative flex h-2 w-2">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${currentUser?.role === 'admin' ? 'bg-white' : 'bg-[#f58220]'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${currentUser?.role === 'admin' ? 'bg-emerald-250' : 'bg-[#f58220]'}`}></span>
+                    </span>
+                    ADMIN
+                  </button>
+
+                  {adminDropdownOpen && (
+                    <div 
+                      className="absolute top-full right-0 mt-2 w-80 bg-white text-zinc-800 rounded-2xl shadow-2xl border border-zinc-250 py-4 px-4 z-[99999] animate-in fade-in slide-in-from-top-4 duration-300 font-sans"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {currentUser?.role === 'admin' ? (
+                        <div className="space-y-4 text-left font-sans">
+                          <div className="pb-3 border-b border-zinc-100 flex items-center justify-between">
+                            <div>
+                              <p className="text-[10px] text-emerald-600 font-black uppercase tracking-wider font-mono">Active Sandbox Admin</p>
+                              <p className="text-xs font-black text-zinc-900 truncate max-w-[180px] mt-0.5">{currentUser.email}</p>
+                            </div>
+                            <span className="p-1.5 bg-emerald-100 text-emerald-600 rounded-xl text-xs">🚀</span>
+                          </div>
+
+                          {currentUser.is_demo_user ? (
+                            <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-xl space-y-1.5">
+                              <span className="text-[10px] font-bold text-zinc-400 block uppercase">Sandbox Trial Expires In:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-black text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded inline-block font-mono">
+                                  ⏱️ {demoTimeLeft || "calculating..."}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-zinc-400 block leading-tight font-medium">Automatic filesystem sweep deletes sandbox database after 3 days.</span>
+                            </div>
+                          ) : (
+                            <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
+                              <span className="text-xs font-black text-indigo-700 block">👑 Owner Account Mode</span>
+                              <span className="text-[10.5px] text-indigo-500 block leading-relaxed mt-1">Full, non-expiring master admin credentials loaded.</span>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab("admin");
+                                setAdminDropdownOpen(false);
+                              }}
+                              className="w-full py-2 bg-[#f58220] hover:bg-[#d66f15] text-white text-xs font-black rounded-xl border-0 cursor-pointer transition text-center animate-pulse"
+                            >
+                              {language === 'bn' ? "এডমিন ড্যাশবোর্ডে যান" : "Enter Admin Dashboard"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (setCurrentUser) setCurrentUser(null);
+                                setAdminDropdownOpen(false);
+                                triggerToast("Signed out from administration panel");
+                              }}
+                              className="w-full py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold rounded-xl border-0 cursor-pointer transition text-center"
+                            >
+                              {language === 'bn' ? "লগ আউট করুন" : "Sign Out Session"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleAdminFormSubmit} className="space-y-4 text-left font-sans">
+                          <div className="pb-2 border-b border-zinc-105/10">
+                            <h4 className="text-xs font-black text-[#f58220] uppercase tracking-wider block">Demo Sandbox Gateway</h4>
+                            <p className="text-[10.5px] text-zinc-500 leading-relaxed mt-1 font-medium">
+                              {language === 'bn' 
+                                ? "এখানে আপনার আসল জিমেইল এড্রেস লিখুন এবং পাসওয়ার্ড demoadmin123 দিন। সিস্টেম ডেমো ব্যবহারকারীর জন্য ৩ দিন স্থায়ী একটি পৃথক ডাটাবেজ তৈরি করে দিবে।"
+                                : "Submit your real Gmail address & demo credentials. This secures a dedicated sandbox space with fully isolated testing databases lasting 3 days."
+                              }
+                            </p>
+                          </div>
+
+                          {adminLoginError && (
+                            <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-[11px] text-red-600 font-semibold block leading-tight">
+                              ⚠️ {adminLoginError}
+                            </div>
+                          )}
+
+                          <div className="space-y-3">
+                            <div className="space-y-1 block text-left">
+                              <label className="text-[10px] uppercase font-black text-zinc-400 block text-left">Your Real Gmail ID</label>
+                              <input
+                                type="email"
+                                placeholder="example@gmail.com"
+                                value={adminEmail}
+                                onChange={(e) => setAdminEmail(e.target.value)}
+                                className="w-full px-3 py-1.5 text-xs text-zinc-800 bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-orange-600 font-sans"
+                                required
+                              />
+                            </div>
+
+                            <div className="space-y-1 block text-left">
+                              <label className="text-[10px] uppercase font-black text-zinc-400 block text-left">Demo Password (demoadmin123)</label>
+                              <input
+                                type="password"
+                                placeholder={language === 'bn' ? "পাসওয়ার্ড দিন..." : "Enter demoadmin123..."}
+                                value={adminPassword}
+                                onChange={(e) => setAdminPassword(e.target.value)}
+                                className="w-full px-3 py-1.5 text-xs text-zinc-800 bg-zinc-50 border border-zinc-300 rounded-lg focus:outline-none focus:border-orange-600 font-sans"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            disabled={adminLoginLoading}
+                            className="w-full py-2 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-black rounded-lg border-0 cursor-pointer transition flex items-center justify-center gap-1.5"
+                          >
+                            {adminLoginLoading && <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+                            {language === 'bn' ? "এডমিন স্যান্ডবক্সে প্রবেশ করুন" : "Authorized Demo Admin Login"}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* Premium Desktop Dark Mode Toggle Switch */}
                 <button
                   type="button"

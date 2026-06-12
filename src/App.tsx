@@ -663,9 +663,7 @@ export default function App() {
         const upgradedUser = {
           ...currentUser,
           is_demo_user: false,
-          expires_at: undefined,
-          firstName: "Admin",
-          lastName: "Owner"
+          expires_at: undefined
         };
         localStorage.setItem("nabik_current_user", JSON.stringify(upgradedUser));
         setCurrentUser(upgradedUser);
@@ -1250,7 +1248,7 @@ export default function App() {
                 value={demoActivationCode}
                 onChange={(e) => setDemoActivationCode(e.target.value)}
                 placeholder={language === 'bn' ? "লাইসেন্স কোড (যেমন: LICENSE-GBAZAR-2026)" : "Enter key (e.g. LICENSE-GBAZAR-2026)"}
-                className="bg-white/95 text-zinc-900 placeholder-zinc-500 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-60 md:w-56 tracking-tight border-0 shadow-sm"
+                className="bg-white text-zinc-900 placeholder-zinc-400 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-60 md:w-56 tracking-tight border border-zinc-200 shadow-sm"
               />
               <button
                 type="submit"

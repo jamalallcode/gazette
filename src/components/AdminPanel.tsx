@@ -185,9 +185,7 @@ export default function AdminPanel({
           setCurrentUser({
             ...currentUser,
             is_demo_user: false,
-            expires_at: undefined,
-            firstName: "Admin",
-            lastName: "Owner"
+            expires_at: undefined
           });
         }
         const msg = language === 'bn' 
@@ -2231,28 +2229,28 @@ export default function AdminPanel({
               </button>
             )}
 
-            {(!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
-              <button 
-                onClick={() => setActiveTab('reseller-hub')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition ${activeTab === 'reseller-hub' ? 'bg-[#f58220] text-white font-black' : 'text-zinc-250 text-zinc-100 hover:bg-[#0a457c] hover:text-white'}`}
-              >
-                <Globe size={15} className={activeTab === 'reseller-hub' ? 'text-white font-black animate-pulse' : 'text-zinc-300'} />
-                {sidebarOpen && <span>{language === 'bn' ? 'অনলাইনে সাইট বিক্রি' : 'Sell Sites Online'}</span>}
-              </button>
-            )}
-
-            {isResellerFeatureUnlocked() && (!searchQuery || "reseller panel".includes(searchQuery.toLowerCase()) || "রিসেলার প্যানেল".includes(searchQuery.toLowerCase())) && (
-              <button 
-                onClick={() => {
-                  const event = new CustomEvent("open-reseller-panel");
-                  window.dispatchEvent(event);
-                }}
-                className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition text-zinc-100 bg-amber-600/20 hover:bg-amber-650 hover:text-white cursor-pointer border-l-2 border-amber-500"
-              >
-                <Settings size={15} className="text-amber-400 animate-spin duration-[10s]" />
-                {sidebarOpen && <span>{language === 'bn' ? 'রিসেলার প্যানেল' : 'Reseller Panel'}</span>}
-              </button>
-            )}
+             {!currentUser?.is_demo_user && (!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
+               <button 
+                 onClick={() => setActiveTab('reseller-hub')}
+                 className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition ${activeTab === 'reseller-hub' ? 'bg-[#f58220] text-white font-black' : 'text-zinc-250 text-zinc-100 hover:bg-[#0a457c] hover:text-white'}`}
+               >
+                 <Globe size={15} className={activeTab === 'reseller-hub' ? 'text-white font-black animate-pulse' : 'text-zinc-300'} />
+                 {sidebarOpen && <span>{language === 'bn' ? 'অনলাইনে সাইট বিক্রি' : 'Sell Sites Online'}</span>}
+               </button>
+             )}
+ 
+             {!currentUser?.is_demo_user && isResellerFeatureUnlocked() && (!searchQuery || "reseller panel".includes(searchQuery.toLowerCase()) || "রিসেলার প্যানেল".includes(searchQuery.toLowerCase())) && (
+               <button 
+                 onClick={() => {
+                   const event = new CustomEvent("open-reseller-panel");
+                   window.dispatchEvent(event);
+                 }}
+                 className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition text-zinc-100 bg-amber-600/20 hover:bg-amber-650 hover:text-white cursor-pointer border-l-2 border-amber-500"
+               >
+                 <Settings size={15} className="text-amber-400 animate-spin duration-[10s]" />
+                 {sidebarOpen && <span>{language === 'bn' ? 'রিসেলার প্যানেল' : 'Reseller Panel'}</span>}
+               </button>
+             )}
           </div>
               </motion.div>
             )}
@@ -3379,132 +3377,134 @@ export default function AdminPanel({
               </div>
 
               {/* ONLINE SITE RESELLER & SELLING STUDIO (CORE BUSINESS MODEL GATEWAYS) */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4" id="dashboard-reseller-studio-portal">
-                <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                      <Globe size={14} className="animate-pulse" />
+              {!currentUser?.is_demo_user && (
+                <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4" id="dashboard-reseller-studio-portal">
+                  <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+                    <div className="flex items-center space-x-2">
+                      <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <Globe size={14} className="animate-pulse" />
+                      </div>
+                      <span className="font-bold text-sm text-zinc-800">
+                        {language === 'bn' ? "অনলাইন সাইট রিসেলার ও বিক্রয় হাব" : "Online Site Reseller & White-Label Sales"}
+                      </span>
                     </div>
-                    <span className="font-bold text-sm text-zinc-800">
-                      {language === 'bn' ? "অনলাইন সাইট রিসেলার ও বিক্রয় হাব" : "Online Site Reseller & White-Label Sales"}
+                    <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
+                      {language === 'bn' ? "প্রধান ব্যবসা প্ল্যান" : "Core Business Plan"}
                     </span>
                   </div>
-                  <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
-                    {language === 'bn' ? "প্রধান ব্যবসা প্ল্যান" : "Core Business Plan"}
-                  </span>
+
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    {language === 'bn' ? "আপনার গ্রাহকদের কাছে প্রি-কনফিগার করা অনলাইন ই-কমার্স সাইট তৈরি ও লাইসেন্স কী বিক্রির মূল অপশনসমূহ। নিচ থেকে যেকোনো মডিউল অ্যাক্টিভেট করুন:" : "Deploy pre-configured e-commerce websites, configure reseller pricing rules, issue license validation keys, and custom brand your clients' platforms:"}
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1.5">
+                    
+                    {/* Option 1: License Key & Code Generator */}
+                    <div className="p-4 bg-zinc-50 hover:bg-orange-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="p-1.5 bg-orange-100 text-[#f58220] rounded-lg text-xs block">🔑</span>
+                          <span className="text-[9px] text-orange-600 font-extrabold uppercase bg-orange-100/40 px-1.5 py-0.5 rounded">Active</span>
+                        </div>
+                        <strong className="block text-xs font-black text-zinc-900 pt-1">
+                          {language === 'bn' ? "লাইসেন্স কী ও কোড জেনারেটর" : "License Key & Portal Keys"}
+                        </strong>
+                        <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                          {language === 'bn' ? "গ্রাহকদের নতুন সাইট আনলক করতে ভ্যালিডেশন কী ইস্যু করুন।" : "Issue, manage, and track unique licenses to validate customer stores."}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setActiveTab('reseller-hub');
+                          const event = new CustomEvent("app-toast", { detail: "License Keys Portal Mounted" });
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full py-1.5 bg-[#1f4172] hover:bg-[#1a3861] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                      >
+                        {language === 'bn' ? "কী ম্যানেজ করুন" : "Manage Client Keys"}
+                      </button>
+                    </div>
+
+                    {/* Option 2: Packages & Subscription Tiers */}
+                    <div className="p-4 bg-zinc-50 hover:bg-emerald-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="p-1.5 bg-emerald-105 text-emerald-600 rounded-lg text-xs block">🛡️</span>
+                          <span className="text-[9px] text-emerald-600 font-extrabold uppercase bg-emerald-100/40 px-1.5 py-0.5 rounded">Pricing</span>
+                        </div>
+                        <strong className="block text-xs font-black text-zinc-900 pt-1">
+                          {language === 'bn' ? "প্যাকেজ ও রিসেলিং সাবস্ক্রিপশন" : "White-Label Subscription Tiers"}
+                        </strong>
+                        <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                          {language === 'bn' ? "অনলাইনে সাইট বিক্রির জন্য নিজস্ব মূল্য এবং ডোমেইন প্যাকেট সেট করুন।" : "Configure subscription rates, limits, and server-tier configurations."}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setActiveTab('reseller-hub');
+                          const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "মূল্যতালিকা কনফিগারেশন লোড হচ্ছে" : "Loading Price Configurator" });
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full py-1.5 bg-[#f58220] hover:bg-orange-600 text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                      >
+                        {language === 'bn' ? "প্যাকেজ রেট চেঞ্জ" : "Set Subscription Rates"}
+                      </button>
+                    </div>
+
+                    {/* Option 3: Branding & Store Custom themes */}
+                    <div className="p-4 bg-zinc-50 hover:bg-blue-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-xs block">✨</span>
+                          <span className="text-[9px] text-blue-600 font-extrabold uppercase bg-blue-105/40 px-1.5 py-0.5 rounded">Branding</span>
+                        </div>
+                        <strong className="block text-xs font-black text-zinc-900 pt-1">
+                          {language === 'bn' ? "ক্লাইন্ট সাইট থিম ও ব্র্যান্ডিং" : "Themes & Logo Styling"}
+                        </strong>
+                        <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                          {language === 'bn' ? "রিসেলারের সাব-স্টোরগুলোর লোগো, থিম ও ব্যানার ডিজাইন কাস্টমাইজ করুন।" : "Customize templates, layout presets, headers, and colors for sold sites."}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setAdminSettingsModalOpen(true);
+                          setAdminSettingsTab('reseller');
+                          setProfileDropdownOpen(false);
+                        }}
+                        className="w-full py-1.5 bg-[#063b6d] hover:bg-[#052b50] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                      >
+                        {language === 'bn' ? "থিম ও ব্র্যান্ডিং লোগো" : "Customize Branding"}
+                      </button>
+                    </div>
+
+                    {/* Option 4: Quick-Access Multi-Tenant Configuration Panel */}
+                    <div className="p-4 bg-zinc-50 hover:bg-purple-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="p-1.5 bg-purple-100 text-purple-600 rounded-lg text-xs block">⚙️</span>
+                          <span className="text-[9px] text-purple-600 font-extrabold uppercase bg-purple-100/40 px-1.5 py-0.5 rounded">Settings</span>
+                        </div>
+                        <strong className="block text-xs font-black text-zinc-900 pt-1">
+                          {language === 'bn' ? "রিসেলার ফুল কনফিগারেশন প্যানেল" : "White-Label Setup Panel"}
+                        </strong>
+                        <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                          {language === 'bn' ? "আপনার ব্রাউজার সেশনে স্পেশাল রিসেলার হাব সম্পূর্ণ কাস্টমাইজ করুন।" : "Modify validation keys, system domain names, and reseller networks."}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const event = new CustomEvent("open-reseller-panel");
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                      >
+                        {language === 'bn' ? "ডাইরেক্ট কনফিগ প্যানেল" : "Launch Configuration"}
+                      </button>
+                    </div>
+
+                  </div>
                 </div>
-
-                <p className="text-xs text-zinc-500 leading-relaxed">
-                  {language === 'bn' ? "আপনার গ্রাহকদের কাছে প্রি-কনফিগার করা অনলাইন ই-কমার্স সাইট তৈরি ও লাইসেন্স কী বিক্রির মূল অপশনসমূহ। নিচ থেকে যেকোনো মডিউল অ্যাক্টিভেট করুন:" : "Deploy pre-configured e-commerce websites, configure reseller pricing rules, issue license validation keys, and custom brand your clients' platforms:"}
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1.5">
-                  
-                  {/* Option 1: License Key & Code Generator */}
-                  <div className="p-4 bg-zinc-50 hover:bg-orange-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="p-1.5 bg-orange-100 text-[#f58220] rounded-lg text-xs block">🔑</span>
-                        <span className="text-[9px] text-orange-600 font-extrabold uppercase bg-orange-100/40 px-1.5 py-0.5 rounded">Active</span>
-                      </div>
-                      <strong className="block text-xs font-black text-zinc-900 pt-1">
-                        {language === 'bn' ? "লাইসেন্স কী ও কোড জেনারেটর" : "License Key & Portal Keys"}
-                      </strong>
-                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
-                        {language === 'bn' ? "গ্রাহকদের নতুন সাইট আনলক করতে ভ্যালিডেশন কী ইস্যু করুন।" : "Issue, manage, and track unique licenses to validate customer stores."}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        setActiveTab('reseller-hub');
-                        const event = new CustomEvent("app-toast", { detail: "License Keys Portal Mounted" });
-                        window.dispatchEvent(event);
-                      }}
-                      className="w-full py-1.5 bg-[#1f4172] hover:bg-[#1a3861] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
-                    >
-                      {language === 'bn' ? "কী ম্যানেজ করুন" : "Manage Client Keys"}
-                    </button>
-                  </div>
-
-                  {/* Option 2: Packages & Subscription Tiers */}
-                  <div className="p-4 bg-zinc-50 hover:bg-emerald-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="p-1.5 bg-emerald-105 text-emerald-600 rounded-lg text-xs block">🛡️</span>
-                        <span className="text-[9px] text-emerald-600 font-extrabold uppercase bg-emerald-100/40 px-1.5 py-0.5 rounded">Pricing</span>
-                      </div>
-                      <strong className="block text-xs font-black text-zinc-900 pt-1">
-                        {language === 'bn' ? "প্যাকেজ ও রিসেলিং সাবস্ক্রিপশন" : "White-Label Subscription Tiers"}
-                      </strong>
-                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
-                        {language === 'bn' ? "অনলাইনে সাইট বিক্রির জন্য নিজস্ব মূল্য এবং ডোমেইন প্যাকেট সেট করুন।" : "Configure subscription rates, limits, and server-tier configurations."}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        setActiveTab('reseller-hub');
-                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "মূল্যতালিকা কনফিগারেশন লোড হচ্ছে" : "Loading Price Configurator" });
-                        window.dispatchEvent(event);
-                      }}
-                      className="w-full py-1.5 bg-[#f58220] hover:bg-orange-600 text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
-                    >
-                      {language === 'bn' ? "প্যাকেজ রেট চেঞ্জ" : "Set Subscription Rates"}
-                    </button>
-                  </div>
-
-                  {/* Option 3: Branding & Store Custom themes */}
-                  <div className="p-4 bg-zinc-50 hover:bg-blue-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-xs block">✨</span>
-                        <span className="text-[9px] text-blue-600 font-extrabold uppercase bg-blue-105/40 px-1.5 py-0.5 rounded">Branding</span>
-                      </div>
-                      <strong className="block text-xs font-black text-zinc-900 pt-1">
-                        {language === 'bn' ? "ক্লাইন্ট সাইট থিম ও ব্র্যান্ডিং" : "Themes & Logo Styling"}
-                      </strong>
-                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
-                        {language === 'bn' ? "রিসেলারের সাব-স্টোরগুলোর লোগো, থিম ও ব্যানার ডিজাইন কাস্টমাইজ করুন।" : "Customize templates, layout presets, headers, and colors for sold sites."}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        setAdminSettingsModalOpen(true);
-                        setAdminSettingsTab('reseller');
-                        setProfileDropdownOpen(false);
-                      }}
-                      className="w-full py-1.5 bg-[#063b6d] hover:bg-[#052b50] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
-                    >
-                      {language === 'bn' ? "থিম ও ব্র্যান্ডিং লোগো" : "Customize Branding"}
-                    </button>
-                  </div>
-
-                  {/* Option 4: Quick-Access Multi-Tenant Configuration Panel */}
-                  <div className="p-4 bg-zinc-50 hover:bg-purple-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="p-1.5 bg-purple-100 text-purple-600 rounded-lg text-xs block">⚙️</span>
-                        <span className="text-[9px] text-purple-600 font-extrabold uppercase bg-purple-100/40 px-1.5 py-0.5 rounded">Settings</span>
-                      </div>
-                      <strong className="block text-xs font-black text-zinc-900 pt-1">
-                        {language === 'bn' ? "রিসেলার ফুল কনফিগারেশন প্যানেল" : "White-Label Setup Panel"}
-                      </strong>
-                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
-                        {language === 'bn' ? "আপনার ব্রাউজার সেশনে স্পেশাল রিসেলার হাব সম্পূর্ণ কাস্টমাইজ করুন।" : "Modify validation keys, system domain names, and reseller networks."}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        const event = new CustomEvent("open-reseller-panel");
-                        window.dispatchEvent(event);
-                      }}
-                      className="w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
-                    >
-                      {language === 'bn' ? "ডাইরেক্ট কনফিগ প্যানেল" : "Launch Configuration"}
-                    </button>
-                  </div>
-
-                </div>
-              </div>
+              )}
 
               {/* EARNING STATISTICS (RECHARTS BAR CHART REPLICATED IN PURE RICH RESPONSIVE CSS) */}
               <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4">
@@ -8823,7 +8823,9 @@ export default function AdminPanel({
                     { id: 'language', label: language === 'bn' ? "ভাষা পরিবর্তন" : "Language Settings", icon: Globe },
                     { id: 'security', label: language === 'bn' ? "নিরাপত্তা ও পাসওয়ার্ড" : "Security & Password", icon: ShieldCheck },
                     { id: 'database', label: language === 'bn' ? "সার্ভার ও ডাটাবেজ" : "Server & Database", icon: Database },
-                    { id: 'reseller', label: language === 'bn' ? "লাইসেন্স ও ডোমেইন" : "License & Reseller", icon: Store },
+                    ...(!currentUser?.is_demo_user ? [
+                      { id: 'reseller', label: language === 'bn' ? "লাইসেন্স ও ডোমেইন" : "License & Reseller", icon: Store }
+                    ] : []),
                   ].map((tab) => {
                     const Icon = tab.icon;
                     const isActive = adminSettingsTab === tab.id;

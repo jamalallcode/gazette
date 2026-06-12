@@ -129,6 +129,188 @@ app.get("/api/debug-server-logs", (req, res) => {
     }
   }
 
+  // === DURABLE CLOUD SHIELD: PERSISTENT AND SECURE DEMO ADMINISTRATOR ISOLATION LAYER ===
+  interface DemoUserRecord {
+    email: string;
+    createdAt: string;
+    expiresAt: string;
+  }
+
+  const DEMO_USERS_FILE = path.join(process.cwd(), "demousers_database.json");
+
+  function readDemoUsers(): DemoUserRecord[] {
+    try {
+      if (fs.existsSync(DEMO_USERS_FILE)) {
+        return JSON.parse(fs.readFileSync(DEMO_USERS_FILE, "utf-8"));
+      }
+    } catch (e) {
+      console.error("Error loading demo users:", e);
+    }
+    return [];
+  }
+
+  function writeDemoUsers(records: DemoUserRecord[]) {
+    try {
+      fs.writeFileSync(DEMO_USERS_FILE, JSON.stringify(records, null, 2), "utf-8");
+    } catch (e) {
+      console.error("Error saving demo users:", e);
+    }
+  }
+
+  function getSanitizedEmail(email: string): string {
+    return email.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
+  }
+
+  function getDemoOrdersFilePath(email: string): string {
+    const sanitized = getSanitizedEmail(email);
+    return path.join(process.cwd(), `orders_demo_${sanitized}.json`);
+  }
+
+  function getDemoSubscribersFilePath(email: string): string {
+    const sanitized = getSanitizedEmail(email);
+    return path.join(process.cwd(), `subscribers_demo_${sanitized}.json`);
+  }
+
+  function verifyAndCleanDemoUser(email: string): { isDemo: boolean; isExpired: boolean } {
+    const cleanEmail = email.trim().toLowerCase();
+    const records = readDemoUsers();
+    const index = records.findIndex(r => r.email === cleanEmail);
+    
+    if (index === -1) {
+      return { isDemo: false, isExpired: false };
+    }
+
+    const record = records[index];
+    const expiresTime = new Date(record.expiresAt).getTime();
+    const now = Date.now();
+
+    if (now > expiresTime) {
+      logDiagnostic(`[DEMO EXPIRED] Wiping 3-days expired sandbox files for: ${cleanEmail}`);
+      try {
+        const ordersPath = getDemoOrdersFilePath(cleanEmail);
+        if (fs.existsSync(ordersPath)) {
+          fs.unlinkSync(ordersPath);
+          logDiagnostic(`[DEMO CLEANUP] Order database wiped: ${ordersPath}`);
+        }
+        const subsPath = getDemoSubscribersFilePath(cleanEmail);
+        if (fs.existsSync(subsPath)) {
+          fs.unlinkSync(subsPath);
+          logDiagnostic(`[DEMO CLEANUP] Subscriber database wiped: ${subsPath}`);
+        }
+      } catch (err) {
+        console.error("Error cleaning demo directories:", err);
+      }
+
+      records.splice(index, 1);
+      writeDemoUsers(records);
+      return { isDemo: true, isExpired: true };
+    }
+
+    return { isDemo: true, isExpired: false };
+  }
+
+  function getOrdersForRequest(req: express.Request): any[] {
+    const demoEmail = req.headers["x-demo-user-email"];
+    if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
+      const cleanEmail = demoEmail.trim().toLowerCase();
+      const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
+      if (!isExpired) {
+        const demoPath = getDemoOrdersFilePath(cleanEmail);
+        if (fs.existsSync(demoPath)) {
+          try {
+            return JSON.parse(fs.readFileSync(demoPath, "utf-8"));
+          } catch (e) {
+            console.error("Error reading demo order book:", e);
+          }
+        } else {
+          const defaultOrders = readOrdersFromDisk();
+          const seededOrders = defaultOrders.map(o => ({
+            ...o,
+            id: `DEMO-${o.id.replace("ORD-", "")}`,
+          }));
+          try {
+            fs.writeFileSync(demoPath, JSON.stringify(seededOrders, null, 2), "utf-8");
+            logDiagnostic(`[DEMO SEED] Created & seeded isolated orders for user: ${cleanEmail}`);
+          } catch (wErr) {
+            console.error("Error seeding demo orders:", wErr);
+          }
+          return seededOrders;
+        }
+      }
+    }
+    return readOrdersFromDisk();
+  }
+
+  function writeOrdersForRequest(req: express.Request, ordersList: any[]) {
+    const demoEmail = req.headers["x-demo-user-email"];
+    if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
+      const cleanEmail = demoEmail.trim().toLowerCase();
+      const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
+      if (!isExpired) {
+        const demoPath = getDemoOrdersFilePath(cleanEmail);
+        try {
+          fs.writeFileSync(demoPath, JSON.stringify(ordersList, null, 2), "utf-8");
+          logDiagnostic(`[DEMO WRITE] Updated isolated order records for ${cleanEmail}. Total count: ${ordersList.length}`);
+        } catch (wErr) {
+          console.error("Error writing demo orders:", wErr);
+        }
+        return;
+      }
+    }
+    writeOrdersToDisk(ordersList);
+  }
+
+  function getSubscribersForRequest(req: express.Request): any[] {
+    const demoEmail = req.headers["x-demo-user-email"];
+    if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
+      const cleanEmail = demoEmail.trim().toLowerCase();
+      const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
+      if (!isExpired) {
+        const demoPath = getDemoSubscribersFilePath(cleanEmail);
+        if (fs.existsSync(demoPath)) {
+          try {
+            return JSON.parse(fs.readFileSync(demoPath, "utf-8"));
+          } catch (e) {
+            console.error("Error reading demo subscriber book:", e);
+          }
+        } else {
+          // Default demo subscribers
+          const defaultDemoSubs = [
+            { email: "user-review-friend@gmail.com", date: new Date().toLocaleString() },
+            { email: "guest-test@yahoo.com", date: new Date().toLocaleString() }
+          ];
+          try {
+            fs.writeFileSync(demoPath, JSON.stringify(defaultDemoSubs, null, 2), "utf-8");
+            logDiagnostic(`[DEMO SEED] Created isolated subscribers for user: ${cleanEmail}`);
+          } catch (wErr) {
+            console.error("Error seeding demo subscribers:", wErr);
+          }
+          return defaultDemoSubs;
+        }
+      }
+    }
+    return readSubscribersFromDisk();
+  }
+
+  function writeSubscribersForRequest(req: express.Request, subscribersList: any[]) {
+    const demoEmail = req.headers["x-demo-user-email"];
+    if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
+      const cleanEmail = demoEmail.trim().toLowerCase();
+      const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
+      if (!isExpired) {
+        const demoPath = getDemoSubscribersFilePath(cleanEmail);
+        try {
+          fs.writeFileSync(demoPath, JSON.stringify(subscribersList, null, 2), "utf-8");
+          logDiagnostic(`[DEMO WRITE] Updated isolated subscriber records for ${cleanEmail}`);
+        } catch (wErr) {
+          console.error("Error writing demo subscribers:", wErr);
+        }
+        return;
+      }
+    }
+    writeSubscribersToDisk(subscribersList);
+  }
+
   // Admin Authentication (Direct Login or Float/Demo Login with Auto-Subscription)
   app.post("/api/admin/login", (req, res) => {
     try {
@@ -144,24 +326,60 @@ app.get("/api/debug-server-logs", (req, res) => {
       const cleanPass = password.trim();
 
       // Check if this is a Demo Login / Sandbox Login
-      if (cleanPass === "demo123") {
+      if (cleanPass === "demo123" || cleanPass === "demoadmin123") {
         logDiagnostic(`[ADMIN DEMO LOGIN MATCHED] Logging in demo sandbox user: ${cleanEmail}`);
         
-        // Lead Generation step: Auto-register email to subscribers database
-        const currentSubs = readSubscribersFromDisk();
-        const alreadySubscribed = currentSubs.some((s: any) => s.email === cleanEmail);
+        // 3 days period configuration
+        const now = Date.now();
+        const duration = 3 * 24 * 60 * 60 * 1000; // 3 days
+        const expiresAt = new Date(now + duration).toISOString();
+
+        const records = readDemoUsers();
+        const existingIndex = records.findIndex(r => r.email === cleanEmail);
+        
+        if (existingIndex > -1) {
+          const existing = records[existingIndex];
+          if (new Date(existing.expiresAt).getTime() < now) {
+            // Already expired - delete previous database, start a fresh 3 days session of testing!
+            try {
+              const ordersPath = getDemoOrdersFilePath(cleanEmail);
+              if (fs.existsSync(ordersPath)) fs.unlinkSync(ordersPath);
+              const subsPath = getDemoSubscribersFilePath(cleanEmail);
+              if (fs.existsSync(subsPath)) fs.unlinkSync(subsPath);
+            } catch (ep) {}
+            
+            records[existingIndex] = {
+              email: cleanEmail,
+              createdAt: new Date().toISOString(),
+              expiresAt: expiresAt
+            };
+            logDiagnostic(`[DEMO TRIAL RESET] Resetting trial period to 3 days for returning user ${cleanEmail}`);
+          } else {
+            // Unexpired. Keep existing expiresAt so they cannot extend by logging in
+          }
+        } else {
+          // New record
+          records.push({
+            email: cleanEmail,
+            createdAt: new Date().toISOString(),
+            expiresAt: expiresAt
+          });
+          logDiagnostic(`[DEMO TRIAL NEW] Started new 3-days trial for user ${cleanEmail}`);
+        }
+        writeDemoUsers(records);
+
+        const activeRecord = records.find(r => r.email === cleanEmail)!;
+
+        // Auto-subscribe to parent subscriber list as well
+        const parentSubs = readSubscribersFromDisk();
+        const alreadySubscribed = parentSubs.some((s: any) => s.email === cleanEmail);
         if (!alreadySubscribed) {
-          const newSub = {
+          parentSubs.unshift({
             email: cleanEmail,
             date: new Date().toLocaleString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) + " " + new Date().toLocaleTimeString("en-US", { hour12: false }) + " UTC"
-          };
-          currentSubs.unshift(newSub);
-          writeSubscribersToDisk(currentSubs);
-          logDiagnostic(`[DEMO AUTOSUBSCRIBE] Automatically subscribed: ${cleanEmail}`);
+          });
+          writeSubscribersToDisk(parentSubs);
         }
-
-        // Set expires_at to 2 hours from now for Session Countdown integration
-        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
         return res.json({
           success: true,
@@ -172,7 +390,7 @@ app.get("/api/debug-server-logs", (req, res) => {
             role: "admin",
             phone: "+8801700000000",
             is_demo_user: true,
-            expires_at: expiresAt
+            expires_at: activeRecord.expiresAt
           }
         });
       }
@@ -229,7 +447,7 @@ app.get("/api/debug-server-logs", (req, res) => {
 
   // Newsletter Routes
   app.get("/api/subscribers", (req, res) => {
-    res.json(readSubscribersFromDisk());
+    res.json(getSubscribersForRequest(req));
   });
 
   app.post("/api/subscribers", (req, res) => {
@@ -239,7 +457,7 @@ app.get("/api/debug-server-logs", (req, res) => {
         return res.status(400).json({ error: "Email is required" });
       }
       const cleanEmail = email.trim().toLowerCase();
-      const currentSubs = readSubscribersFromDisk();
+      const currentSubs = getSubscribersForRequest(req);
       const alreadySubscribed = currentSubs.some((s: any) => s.email === cleanEmail);
       if (!alreadySubscribed) {
         const newSub = {
@@ -247,8 +465,8 @@ app.get("/api/debug-server-logs", (req, res) => {
           date: new Date().toLocaleString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) + " " + new Date().toLocaleTimeString("en-US", { hour12: false }) + " UTC"
         };
         currentSubs.unshift(newSub);
-        writeSubscribersToDisk(currentSubs);
-        logDiagnostic(`[SUBSCRIBE] Saved new subscriber email: ${cleanEmail}`);
+        writeSubscribersForRequest(req, currentSubs);
+        logDiagnostic(`[SUBSCRIBE] Saved subscriber email: ${cleanEmail}`);
       }
       return res.json({ success: true });
     } catch (err: any) {
@@ -258,7 +476,7 @@ app.get("/api/debug-server-logs", (req, res) => {
   });
 
   app.get("/api/orders", (req, res) => {
-    const orders = readOrdersFromDisk();
+    const orders = getOrdersForRequest(req);
     res.json(orders);
   });
 
@@ -272,12 +490,12 @@ app.get("/api/debug-server-logs", (req, res) => {
     }
 
     try {
-      const currentOrders = readOrdersFromDisk();
+      const currentOrders = getOrdersForRequest(req);
       const alreadyExists = currentOrders.some((o: any) => o.id === newOrder.id);
       
       if (!alreadyExists) {
         currentOrders.unshift(newOrder); // Add to beginning
-        writeOrdersToDisk(currentOrders);
+        writeOrdersForRequest(req, currentOrders);
         console.log(`[SERVER] Successfully added and saved new order ${newOrder.id}. Total orders: ${currentOrders.length}`);
       } else {
         console.log(`[SERVER] Order ${newOrder.id} already exists in database. Skipping duplicate append.`);
@@ -299,20 +517,20 @@ app.get("/api/debug-server-logs", (req, res) => {
     }
 
     try {
-      const serverOrders = readOrdersFromDisk();
+      const serverOrders = getOrdersForRequest(req);
       const orderMap: Record<string, any> = {};
 
       // 1. Load server-side orders
       serverOrders.forEach((o: any) => {
-        if (o && o.id) {
-          orderMap[o.id] = o;
-        }
+         if (o && o.id) {
+           orderMap[o.id] = o;
+         }
       });
 
       // 2. Merge with client orders (update if status/courier changed)
       clientOrders.forEach((co: any) => {
         if (!co || !co.id) return;
-        // Skip/purge any demo orders from synchronizing or saving to database
+        // Skip/purge any obsolete demo IDs in main sync
         if (co.id === "ORD-276564" || co.id === "ORD-102706") return;
         
         const existing = orderMap[co.id];
@@ -341,7 +559,7 @@ app.get("/api/debug-server-logs", (req, res) => {
         return timeB - timeA;
       });
 
-      writeOrdersToDisk(mergedOrders);
+      writeOrdersForRequest(req, mergedOrders);
       
       // Console diagnostic report to track remote/local sync exchanges
       if (clientOrders.length > 0 || serverOrders.length > 0) {
@@ -353,7 +571,7 @@ app.get("/api/debug-server-logs", (req, res) => {
       console.error("[SERVER ERROR] Exception during POST /api/orders/sync:", err);
       // Return server orders as a resilient backup rather than crashing the loop
       try {
-        return res.json(readOrdersFromDisk());
+        return res.json(getOrdersForRequest(req));
       } catch (_) {
         return res.status(500).json({ error: "Sync failed completely" });
       }
@@ -363,11 +581,11 @@ app.get("/api/debug-server-logs", (req, res) => {
   app.put("/api/orders/:id/status", (req, res) => {
     const orderId = req.params.id;
     const { status } = req.body;
-    const currentOrders = readOrdersFromDisk();
+    const currentOrders = getOrdersForRequest(req);
     const orderIndex = currentOrders.findIndex((o: any) => o.id === orderId);
     if (orderIndex > -1) {
       currentOrders[orderIndex].status = status;
-      writeOrdersToDisk(currentOrders);
+      writeOrdersForRequest(req, currentOrders);
       res.json({ success: true, order: currentOrders[orderIndex] });
     } else {
       res.status(404).json({ error: "Order not found" });
@@ -376,10 +594,10 @@ app.get("/api/debug-server-logs", (req, res) => {
 
   app.delete("/api/orders/:id", (req, res) => {
     const orderId = req.params.id;
-    const currentOrders = readOrdersFromDisk();
+    const currentOrders = getOrdersForRequest(req);
     const updatedOrders = currentOrders.filter((o: any) => o && o.id !== orderId);
     if (currentOrders.length !== updatedOrders.length) {
-      writeOrdersToDisk(updatedOrders);
+      writeOrdersForRequest(req, updatedOrders);
       console.log(`[SERVER] Order ${orderId} deleted successfully.`);
       res.json({ success: true, message: `Order ${orderId} deleted successfully from server disk` });
     } else {
