@@ -805,3 +805,11 @@ body {
   box-shadow: none !important;
 }
 
+/* Conditionally hide the brand text (GADGET BAZAR / PREMIUM STORE) on mobile if A-DEMO is present */
+@media (max-width: 1023px) {
+  #mobile-ribbon-header:has(#mobile-admin-demo-dropdown) .gazzette-brand-text {
+    display: none !important;
+  }
+}
+
+

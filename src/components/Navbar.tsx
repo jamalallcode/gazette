@@ -43,7 +43,7 @@ const GazzetteLogo = ({ isMobile = false, isDarkBg = false }: { isMobile?: boole
       </div>
       
       {/* Brand Text Styling */}
-      <div className="flex flex-col text-left justify-center">
+      <div className="flex flex-col text-left justify-center gazzette-brand-text">
         <span className={`font-sans font-black tracking-tight uppercase leading-none ${isDarkBg ? 'text-white' : 'text-zinc-900'} ${isMobile ? 'text-[16px]' : 'text-[18px]'} tracking-[0.03em]`}>
           Gadget Bazar
         </span>
