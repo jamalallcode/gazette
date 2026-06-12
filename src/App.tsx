@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { INITIAL_PRODUCTS } from "./data/products";
 import { Product, CartItem, Order } from "./types";
 import { triggerPixelEvent, getPixelSettings, injectPixelAndGtmScripts } from "./utils/pixelHelper";
@@ -589,6 +589,107 @@ export default function App() {
     return saved ? JSON.parse(saved) : null;
   });
 
+  // Client-side Demo Administrator Warning states & ticker engine
+  const [demoTimeLeft, setDemoTimeLeft] = useState<string>("02:00:00");
+  const [demoActivationCode, setDemoActivationCode] = useState<string>("");
+  const [isDemoActivating, setIsDemoActivating] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!currentUser?.is_demo_user || !currentUser?.expires_at) return;
+
+    const updateTimer = () => {
+      const expires = new Date(currentUser.expires_at).getTime();
+      const now = Date.now();
+      const diff = expires - now;
+
+      if (diff <= 0) {
+        setDemoTimeLeft("00:00:00");
+        // Trigger auto-logout
+        localStorage.removeItem("nabik_current_user");
+        if (setCurrentUser) {
+          setCurrentUser(null);
+        }
+        const event = new CustomEvent("app-toast", { 
+          detail: language === 'bn' 
+            ? "ডেমো সেশনের মেয়াদ শেষ! আগের ডিফল্ট অবস্থায় ডাটা রিসেট হয়েছে।" 
+            : "Demo trial expired! Sandbox environments flushed and re-seeded." 
+        });
+        window.dispatchEvent(event);
+        return;
+      }
+
+      // Compute hours, minutes, seconds
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const formatted = [
+        hrs.toString().padStart(2, '0'),
+        mins.toString().padStart(2, '0'),
+        secs.toString().padStart(2, '0')
+      ].join(":");
+
+      setDemoTimeLeft(formatted);
+    };
+
+    updateTimer();
+    const intervalId = setInterval(updateTimer, 1000);
+    return () => clearInterval(intervalId);
+  }, [currentUser, language]);
+
+  const handleActivateDemoLicense = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!demoActivationCode || !demoActivationCode.trim()) {
+      const msg = language === 'bn' ? "দয়া করে একটি লাইসেন্স কোড লিখুন" : "Please enter a valid license code";
+      const event = new CustomEvent("app-toast", { detail: msg });
+      window.dispatchEvent(event);
+      return;
+    }
+
+    setIsDemoActivating(true);
+    try {
+      const response = await fetch("/api/admin/activate-license", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: currentUser?.email,
+          licenseKey: demoActivationCode.trim()
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        // Upgrade current user
+        const upgradedUser = {
+          ...currentUser,
+          is_demo_user: false,
+          expires_at: undefined,
+          firstName: "Admin",
+          lastName: "Owner"
+        };
+        localStorage.setItem("nabik_current_user", JSON.stringify(upgradedUser));
+        setCurrentUser(upgradedUser);
+
+        const msg = language === 'bn' 
+          ? "অভিনন্দন! আপনার সাইটের স্থায়ী লাইসেন্স সক্রিয় হয়েছে ও ডেমো মোড বাতিল করা হয়েছে।" 
+          : "Congratulations! Professional lifetime license activated. Offline trial limits disabled.";
+        const event = new CustomEvent("app-toast", { detail: msg });
+        window.dispatchEvent(event);
+        setDemoActivationCode("");
+      } else {
+        const errorMsg = data.error || (language === 'bn' ? "ভুল লাইসেন্স কোড! আবার চেষ্টা করুন।" : "Activation failed! Please check your code.");
+        const event = new CustomEvent("app-toast", { detail: errorMsg });
+        window.dispatchEvent(event);
+      }
+    } catch (err) {
+      console.error(err);
+      const event = new CustomEvent("app-toast", { detail: "Network error occurred." });
+      window.dispatchEvent(event);
+    } finally {
+      setIsDemoActivating(false);
+    }
+  };
+
   useEffect(() => {
     localStorage.setItem("nabik_products", JSON.stringify(products));
   }, [products]);
@@ -1127,6 +1228,44 @@ export default function App() {
     <div className="min-h-screen bg-[#f8f9fa] text-zinc-800 flex flex-col font-sans" id="app-root-frame">
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-grow" id="boxed-app-container">
         
+        {/* Persistent Demo Administrator Warning Header Red Bar */}
+        {currentUser?.is_demo_user && (
+          <div className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white text-xs sm:text-sm py-2.5 px-4 rounded-b-xl shadow-lg border-b border-red-800 select-none z-50 flex flex-col md:flex-row items-center justify-between gap-3 font-sans transition-all mb-3 animate-in fade-in slide-in-from-top duration-300" id="demo-admin-red-bar">
+            {/* Left Col Info */}
+            <div className="flex items-center gap-2 flex-wrap justify-center text-center md:text-left select-none">
+              <span className="bg-white/20 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full animate-pulse uppercase tracking-wider">Demo Admin</span>
+              <span className="font-bold">
+                {language === 'bn' 
+                  ? "আপনি এখন একজন ডেমো এডমিন হিসেবে আছেন! আপনার স্যান্ডবক্স ট্রায়ালের সময় বাকি আছে:" 
+                  : "You are logged in as a Demo Admin! Remaining session time in your sandbox sessional trial:"}
+              </span>
+              <span className="bg-black/40 text-rose-300 font-mono font-black tracking-widest text-[13px] px-3 py-1 rounded-lg shadow-inner select-none animate-pulse">
+                ⏱️ {demoTimeLeft}
+              </span>
+            </div>
+            {/* Right Col Activation Input Action */}
+            <form onSubmit={handleActivateDemoLicense} className="flex items-center gap-1.5 w-full md:w-auto">
+              <input
+                type="text"
+                value={demoActivationCode}
+                onChange={(e) => setDemoActivationCode(e.target.value)}
+                placeholder={language === 'bn' ? "লাইসেন্স কোড (যেমন: LICENSE-GBAZAR-2026)" : "Enter key (e.g. LICENSE-GBAZAR-2026)"}
+                className="bg-white/95 text-zinc-900 placeholder-zinc-500 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-60 md:w-56 tracking-tight border-0 shadow-sm"
+              />
+              <button
+                type="submit"
+                disabled={isDemoActivating}
+                className="shrink-0 bg-yellow-500 hover:bg-yellow-600 active:scale-95 text-zinc-900 font-black text-xs px-4 py-1.5 rounded-lg border-0 cursor-pointer shadow-md transition flex items-center gap-1"
+              >
+                {isDemoActivating ? (
+                  <span className="h-3 w-3 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin inline-block" />
+                ) : null}
+                <span>{language === 'bn' ? "সক্রিয় করুন" : "Activate"}</span>
+              </button>
+            </form>
+          </div>
+        )}
+
         {/* 1. Nabik Bazar Branded Header */}
       <Navbar
         currentTab={currentTab}

@@ -185,7 +185,9 @@ export default function AdminPanel({
           setCurrentUser({
             ...currentUser,
             is_demo_user: false,
-            expires_at: undefined
+            expires_at: undefined,
+            firstName: "Admin",
+            lastName: "Owner"
           });
         }
         const msg = language === 'bn' 
