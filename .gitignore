@@ -6,3 +6,17 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# App Databases (Local JSON storage)
+demousers_database.json
+orders_database.json
+subscribers_database.json
+orders_demo_*.json
+subscribers_demo_*.json
+
+# Server Logs and Package Locks
+server_logs.txt
+package-lock.json
+reset.cjs
+reset.js
+verify_tree.cjs

@@ -2651,6 +2651,7 @@ export default function App() {
               setUnreadNotifications={setUnreadNotificationOrders}
               currentUser={currentUser}
               setCurrentUser={setCurrentUser}
+              setCurrentTab={setCurrentTab}
             />
           ) : (
             <AdminLogin

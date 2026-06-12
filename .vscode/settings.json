@@ -1,0 +1,20 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "package-lock.json": true,
+    "demousers_database.json": true,
+    "server_logs.txt": true,
+    "orders_database.json": true,
+    "subscribers_database.json": true,
+    "orders_demo_*.json": true,
+    "subscribers_demo_*.json": true,
+    "reset.cjs": true,
+    "reset.js": true,
+    "verify_tree.cjs": true
+  }
+}

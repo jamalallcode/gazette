@@ -35,6 +35,7 @@ interface AdminPanelProps {
   setUnreadNotifications?: (orders: any[]) => void;
   currentUser?: any;
   setCurrentUser?: React.Dispatch<React.SetStateAction<any>>;
+  setCurrentTab?: (tab: string) => void;
 }
 
 // Prepopulated static statistics from screenshots
@@ -71,7 +72,8 @@ export default function AdminPanel({
   unreadNotifications = [],
   setUnreadNotifications,
   currentUser,
-  setCurrentUser
+  setCurrentUser,
+  setCurrentTab
 }: AdminPanelProps) {
   // Navigation inside panel
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -114,6 +116,9 @@ export default function AdminPanel({
           });
           window.dispatchEvent(event);
           setCurrentUser(null);
+          if (setCurrentTab) {
+            setCurrentTab('shop');
+          }
         }
         return;
       }
@@ -2763,6 +2768,9 @@ export default function AdminPanel({
                           window.dispatchEvent(event);
                           if (setCurrentUser) {
                             setCurrentUser(null);
+                          }
+                          if (setCurrentTab) {
+                            setCurrentTab('shop');
                           }
                         }}
                         className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-red-600 hover:bg-red-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
