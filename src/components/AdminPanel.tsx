@@ -488,7 +488,6 @@ export default function AdminPanel({
     return typeof window !== "undefined" ? window.innerWidth >= 1024 : true;
   });
 
-  const [stickyTop, setStickyTop] = useState(140);
   const [isDesktop, setIsDesktop] = useState(() => {
     return typeof window !== "undefined" ? window.innerWidth >= 1024 : true;
   });
@@ -505,25 +504,6 @@ export default function AdminPanel({
       if (typeof window === "undefined" || window.innerWidth < 1024) return;
       
       const scrollY = window.scrollY;
-      const headerEl = document.getElementById("gadget-bazar-header");
-      
-      let computedTop = 140;
-      const isStickyMode = scrollY > 150;
-      
-      if (isStickyMode) {
-        computedTop = 52; // Sticky Navbar bottom offset
-      } else {
-        if (headerEl) {
-          const headerRect = headerEl.getBoundingClientRect();
-          computedTop = headerRect.bottom;
-        } else {
-          const hasBanner = document.getElementById("dismiss-eid-banner") !== null;
-          const fallbackHeaderHeight = hasBanner ? 144 : 100;
-          computedTop = fallbackHeaderHeight - scrollY;
-        }
-      }
-      setStickyTop(computedTop);
-
       const currentSticky = scrollY > 150;
       if (currentSticky !== prevSticky) {
         prevSticky = currentSticky;
@@ -1085,33 +1065,45 @@ export default function AdminPanel({
           sidebarOpen ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none font-bold' : 'w-0 -translate-x-full lg:translate-x-0 lg:w-16'
         }`}
         style={{
-          top: isDesktop ? `${stickyTop}px` : undefined,
-          height: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
-          maxHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
-          minHeight: isDesktop ? `calc(100vh - ${stickyTop}px)` : undefined,
+          top: isDesktop ? (isNavbarSticky ? '68px' : '-300px') : undefined,
+          marginTop: isDesktop ? (isNavbarSticky ? '0px' : '-5px') : undefined,
+          height: isDesktop ? (isNavbarSticky ? 'calc(100vh - 70px)' : 'calc(100vh - 35px)') : undefined,
+          maxHeight: isDesktop ? (isNavbarSticky ? 'calc(100vh - 70px)' : 'calc(100vh - 35px)') : undefined,
+          minHeight: isDesktop ? (isNavbarSticky ? 'calc(100vh - 70px)' : 'calc(100vh - 35px)') : undefined,
           transition: isTransitioningTop 
-            ? 'top 700ms cubic-bezier(0.16, 1, 0.3, 1), height 700ms cubic-bezier(0.16, 1, 0.3, 1), max-height 700ms cubic-bezier(0.16, 1, 0.3, 1), min-height 700ms cubic-bezier(0.16, 1, 0.3, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
+            ? 'top 700ms cubic-bezier(0.16, 1, 0.3, 1), margin-top 700ms cubic-bezier(0.16, 1, 0.3, 1), height 700ms cubic-bezier(0.16, 1, 0.3, 1), max-height 700ms cubic-bezier(0.16, 1, 0.3, 1), min-height 700ms cubic-bezier(0.16, 1, 0.3, 1), width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)' 
             : 'width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         id="side-bar-navigation"
       >
         {/* Branding Title */}
-        <div className="p-4 border-b border-[#0c4a85] flex items-center justify-between">
-          <div className="flex items-center space-x-2 truncate">
-            <div className="h-8 w-8 bg-[#f58220] rounded-lg flex items-center justify-center font-black text-white text-md">GB</div>
-            {sidebarOpen && (
-              <div className="text-left font-black tracking-wide leading-none">
-                <span className="text-[#f58220] text-[13px] block">GADGET</span>
-                <span className="text-white text-[11px] block text-opacity-80">BAZAR</span>
+        <div className={`p-4 border-b border-[#0c4a85] flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
+          {sidebarOpen ? (
+            <>
+              <div className="flex items-center space-x-2 truncate">
+                <div className="h-8 w-8 bg-[#f58220] rounded-lg flex items-center justify-center font-black text-white text-md">GB</div>
+                <div className="text-left font-black tracking-wide leading-none">
+                  <span className="text-[#f58220] text-[13px] block animate-fade-in">GADGET</span>
+                  <span className="text-white text-[11px] block text-opacity-80">BAZAR</span>
+                </div>
               </div>
-            )}
-          </div>
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-zinc-300 hover:text-white p-1 hover:bg-[#0c4a85] rounded cursor-pointer lg:hidden"
-          >
-            <X size={16} />
-          </button>
+              <button 
+                onClick={() => setSidebarOpen(false)}
+                className="text-zinc-350 hover:text-white p-1.5 hover:bg-[#0c4a85] rounded cursor-pointer transition-colors duration-150 flex items-center justify-center shrink-0 border-0 bg-transparent"
+                title="Collapse Sidebar"
+              >
+                <Menu size={18} />
+              </button>
+            </>
+          ) : (
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="text-zinc-350 hover:text-white p-2 hover:bg-[#0c4a85] rounded cursor-pointer transition-colors duration-150 flex items-center justify-center border-0 bg-transparent"
+              title="Expand Sidebar"
+            >
+              <Menu size={20} />
+            </button>
+          )}
         </div>
 
         {/* Sidebar Search */}
@@ -2320,6 +2312,16 @@ export default function AdminPanel({
               </button>
             )}
 
+            {(!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
+              <button 
+                onClick={() => setActiveTab('reseller-hub')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition ${activeTab === 'reseller-hub' ? 'bg-[#f58220] text-white font-black' : 'text-zinc-250 text-zinc-100 hover:bg-[#0a457c] hover:text-white'}`}
+              >
+                <Globe size={15} className={activeTab === 'reseller-hub' ? 'text-white font-black animate-pulse' : 'text-zinc-300'} />
+                {sidebarOpen && <span>{language === 'bn' ? 'অনলাইনে সাইট বিক্রি' : 'Sell Sites Online'}</span>}
+              </button>
+            )}
+
             {isResellerFeatureUnlocked() && (!searchQuery || "reseller panel".includes(searchQuery.toLowerCase()) || "রিসেলার প্যানেল".includes(searchQuery.toLowerCase())) && (
               <button 
                 onClick={() => {
@@ -2367,13 +2369,6 @@ export default function AdminPanel({
           )}
 
         </nav>
-
-        {/* Sidebar Info Footer */}
-        {sidebarOpen && (
-          <div className="p-3 bg-[#042d54] text-center text-[10px] text-zinc-400">
-            <span>Server: 🟢 Online Active</span>
-          </div>
-        )}
       </aside>
 
       {/* RIGHT WORKSPACE */}
@@ -2458,8 +2453,19 @@ export default function AdminPanel({
           </div>
         )}
 
+        {/* Floating Sidebar Trigger for Mobile/Tablets */}
+        {!sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="fixed top-3 left-3 z-[1000] p-2 bg-[#063b6d] text-white hover:bg-[#0c4a85] rounded-full shadow-lg border-0 cursor-pointer lg:hidden flex items-center justify-center transition duration-150 transform active:scale-95 animate-in fade-in"
+            title="Open Sidebar Menu"
+          >
+            <Menu size={18} />
+          </button>
+        )}
+
         {/* TOP NAVBAR */}
-        <header className="relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
+        <header className="hidden relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-1 sm:space-x-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -2474,7 +2480,19 @@ export default function AdminPanel({
 
           <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-5 text-sm">
             {/* Interactive Messages Dropdown */}
-            <div className="sm:relative" ref={messagesContainerRef}>
+            <div 
+              className="sm:relative" 
+              ref={messagesContainerRef}
+              onMouseEnter={() => {
+                setMessagesDropdownOpen(true);
+                setCartsDropdownOpen(false);
+                setProfileDropdownOpen(false);
+                setAdminBellDropdownOpen(false);
+              }}
+              onMouseLeave={() => {
+                setMessagesDropdownOpen(false);
+              }}
+            >
               <button 
                 onClick={() => {
                   setMessagesDropdownOpen(!messagesDropdownOpen);
@@ -2493,7 +2511,11 @@ export default function AdminPanel({
               </button>
 
               {messagesDropdownOpen && (
-                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div 
+                  className="absolute top-full left-4 right-4 sm:left-auto sm:right-0 pt-3 sm:pt-4 w-auto sm:w-80 max-w-none sm:max-w-[340px] z-[9999]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <Mail size={13} className="text-blue-600" />
@@ -2562,11 +2584,24 @@ export default function AdminPanel({
                     )}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
             
             {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
-            <div className="sm:relative" ref={cartsContainerRef}>
+            <div 
+              className="sm:relative" 
+              ref={cartsContainerRef}
+              onMouseEnter={() => {
+                setCartsDropdownOpen(true);
+                setMessagesDropdownOpen(false);
+                setProfileDropdownOpen(false);
+                setAdminBellDropdownOpen(false);
+              }}
+              onMouseLeave={() => {
+                setCartsDropdownOpen(false);
+              }}
+            >
               <button 
                 onClick={() => {
                   setCartsDropdownOpen(!cartsDropdownOpen);
@@ -2585,7 +2620,11 @@ export default function AdminPanel({
               </button>
 
               {cartsDropdownOpen && (
-                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-85 max-w-none sm:max-w-[340px] bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
+                <div 
+                  className="absolute top-full left-4 right-4 sm:left-auto sm:right-0 pt-3 sm:pt-4 w-auto sm:w-85 max-w-none sm:max-w-[340px] z-[9999]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-white border border-zinc-200 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-200">
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <ShoppingCart size={13} className="text-cyan-600" />
@@ -2657,8 +2696,9 @@ export default function AdminPanel({
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
             {/* Real-time Order Notification Bell on Admin Panel */}
             <div 
@@ -2855,7 +2895,7 @@ export default function AdminPanel({
         </header>
 
         {/* WORKSPACE CONTENT AREA */}
-        <main className="p-4 md:p-6 flex-1 space-y-6">
+        <main className="pl-4 pr-1 md:pl-6 md:pr-1 lg:pl-0 pb-4 md:pb-6 pt-0 sm:pt-0 md:pt-0 mt-[-8px] flex-1 space-y-4">
 
           {/* Success messages alerts */}
           {successMsg && (
@@ -2875,91 +2915,434 @@ export default function AdminPanel({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="space-y-6 text-left"
+            className="space-y-4 text-left"
           >
 
           {/* ============== TAB 1: DASHBOARD OVERVIEW ============== */}
           {activeTab === 'dashboard' && (
-            <div className="space-y-6" id="overview-dashboard-panel">
-              
-              {/* Header Title block */}
-              <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-950 rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden ring-1 ring-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4" id="premium-dashboard-header">
-                {/* Decorative background visual accent element */}
-                <div className="absolute right-0 top-0 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-                <div className="absolute left-1/3 bottom-0 w-60 h-60 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none -mb-20" />
-                
-                {/* Text and Greeting details */}
-                <div className="space-y-2 relative z-10">
-                  <div className="flex items-center space-x-3">
-                    {/* Premium Badge for system */}
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/35">
-                      ✨ Premium Portal
-                    </span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-                    <span className="text-xs text-zinc-400 font-mono font-bold tracking-wide">
-                      v3.82
-                    </span>
-                  </div>
-                  
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-                    {language === 'bn' ? "ড্যাশবোর্ড ওভারভিউ" : "Dashboard Overview"}{" "}
-                    <span className="animate-bounce inline-block">👋</span>
-                  </h1>
-                  
-                  <p className="text-sm text-zinc-300 font-medium max-w-xl leading-relaxed">
-                    {language === 'bn' 
-                      ? "স্বাগতম, গ্যাজেট বাজার! আপনার স্টোরের রিয়েল-টাইম ব্যবসায়িক অ্যানালিটিক্স এবং পারফরম্যান্স এখানে ট্র্যাক করুন।" 
-                      : "Welcome back, Gadget Bazar! Track your live business analytics, order flows, and overall performance."}
-                  </p>
-                </div>
+            <div className="space-y-4" id="overview-dashboard-panel">
 
-                {/* Performance Quick Summary / Right badge section */}
-                <div className="flex flex-wrap items-center gap-3 relative z-10">
-                  {/* Realtime status pulse card */}
-                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 flex items-center space-x-3 shadow-inner">
-                    <span className="relative flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                    </span>
-                    
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest block leading-none">
-                        SYSTEM STATUS
-                      </span>
-                      <span className="text-xs font-extrabold text-zinc-100 font-mono leading-none block">
-                        ONLINE & SECURED
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Time & Date display pill */}
-                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 flex items-center space-x-2 shadow-inner">
-                    <span className="text-orange-400 text-lg">🗓️</span>
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest block leading-none">
-                        SESSION TIME
-                      </span>
-                      <span className="text-xs font-extrabold text-orange-300 font-mono leading-none block">
-                        11 JUN 2026
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Business Analytics Container */}
               <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4 text-left">
-                <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-2 pb-2 border-b border-zinc-100">
                   <div className="flex items-center space-x-2">
                     <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
                       <BarChart3 size={14} />
                     </div>
-                    <span className="font-bold text-sm text-zinc-800">Business Analytics</span>
+                    <span className="font-black text-lg md:text-xl text-black dark:text-black uppercase tracking-wider" id="dash-board-title-label">DashBoard</span>
                   </div>
-                  <div className="text-xs text-zinc-500 bg-zinc-50 border border-zinc-200 rounded px-2 py-1 flex items-center space-x-1 select-none">
-                    <span>Overall statistics</span>
-                    <ChevronDown size={11} />
+
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-5 text-sm w-full sm:w-auto justify-end ml-auto">
+                    {/* Interactive Messages Dropdown */}
+                    <div 
+                      className="relative" 
+                      ref={messagesContainerRef}
+                      onMouseEnter={() => {
+                        setMessagesDropdownOpen(true);
+                        setCartsDropdownOpen(false);
+                        setProfileDropdownOpen(false);
+                        setAdminBellDropdownOpen(false);
+                      }}
+                      onMouseLeave={() => {
+                        setMessagesDropdownOpen(false);
+                      }}
+                    >
+                      <button 
+                        onClick={() => {
+                          setMessagesDropdownOpen(!messagesDropdownOpen);
+                          setCartsDropdownOpen(false);
+                          setProfileDropdownOpen(false);
+                          setAdminBellDropdownOpen(false);
+                        }}
+                        className="group relative p-2.5 bg-zinc-50 hover:bg-blue-50 dark:bg-zinc-800 dark:hover:bg-blue-950/40 rounded-full border border-zinc-150 dark:border-zinc-700 transition-all duration-305 ease-in-out cursor-pointer flex items-center justify-center shadow-xs hover:scale-110 active:scale-95"
+                        title={language === 'bn' ? "গ্রাহক বার্তা" : "Client Messages"}
+                      >
+                        <Mail className="text-zinc-500 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 h-5 w-5 transition-colors duration-300 ease-in-out" />
+                        {clientInquiries.filter(m => !m.resolved).length > 0 && (
+                          <span className="absolute top-0 right-0 bg-red-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse shadow-sm">
+                            {clientInquiries.filter(m => !m.resolved).length}
+                          </span>
+                        )}
+                      </button>
+
+                      {messagesDropdownOpen && (
+                        <div 
+                          className="absolute top-full right-0 pt-2 w-72 sm:w-80 z-[9999]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="bg-white dark:bg-[#151d2a] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans text-zinc-800 dark:text-zinc-200 animate-in fade-in slide-in-from-top-3 duration-250">
+                          <div className="flex justify-between items-center pb-2 border-b border-zinc-100 dark:border-zinc-800 mb-2.5">
+                            <span className="text-xs font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                              <Mail size={13} className="text-blue-600" />
+                              <span>{language === 'bn' ? `গ্রাহক বার্তা (${clientInquiries.filter(m => !m.resolved).length})` : `Inquiries (${clientInquiries.filter(m => !m.resolved).length})`}</span>
+                            </span>
+                            {clientInquiries.filter(m => !m.resolved).length > 0 && (
+                              <button 
+                                onClick={() => {
+                                  setClientInquiries(clientInquiries.map(m => ({ ...m, resolved: true })));
+                                  const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সব বার্তা সমাধান করা হয়েছে!" : "All messages resolved!" });
+                                  window.dispatchEvent(event);
+                                }}
+                                className="bg-transparent border-0 text-[10px] text-zinc-400 hover:text-blue-600 font-extrabold uppercase cursor-pointer"
+                              >
+                                {language === 'bn' ? "সব সমাধান" : "Resolve All"}
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 custom-sidebar-scrollbar">
+                            {clientInquiries.filter(m => !m.resolved).length === 0 ? (
+                              <div className="py-6 text-center text-zinc-400 space-y-1">
+                                <span className="text-lg">📬</span>
+                                <p className="text-[11px] font-bold">{language === 'bn' ? "কোনো নতুন বার্তা নেই" : "No new messages"}</p>
+                                <p className="text-[9px] text-zinc-500 max-w-[200px] mx-auto leading-normal">{language === 'bn' ? "সবগুলো গ্রাহক বার্তা সফলভাবে সমাধান করা হয়েছে।" : "All customer inquiries have been fully answered."}</p>
+                              </div>
+                            ) : (
+                              clientInquiries.filter(m => !m.resolved).map((msg) => (
+                                <div key={msg.id} className="bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700/80 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 space-y-2 transition duration-150 text-xs text-left">
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-6.5 h-6.5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black shrink-0">
+                                        {msg.avatar}
+                                      </div>
+                                      <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200">{msg.sender}</span>
+                                    </div>
+                                    <span className="text-[9px] font-bold text-zinc-400 font-mono bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded-sm shrink-0">
+                                      {language === 'bn' ? msg.timeBn : msg.timeEn}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-755 p-2 rounded-lg font-medium leading-relaxed">
+                                    {language === 'bn' ? msg.textBn : msg.textEn}
+                                  </p>
+                                  <div className="flex items-center justify-end gap-1.5 pt-0.5">
+                                    <a 
+                                      href={`https://wa.me/01784905075?text=${encodeURIComponent(`Dear ${msg.sender}, thank you for your query about: ${language === 'bn' ? msg.textBn : msg.textEn}`)}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2.5 py-1 font-bold no-underline"
+                                    >
+                                      💬 WhatsApp
+                                    </a>
+                                    <button 
+                                      onClick={() => {
+                                        setClientInquiries(clientInquiries.map(m => m.id === msg.id ? { ...m, resolved: true } : m));
+                                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "বার্তা সমাধান করা হয়েছে!" : "Message resolved successfully!" });
+                                        window.dispatchEvent(event);
+                                      }}
+                                      className="text-[10px] bg-zinc-200 dark:bg-zinc-700 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:text-zinc-300 text-zinc-700 rounded-lg px-2.5 py-1 font-bold cursor-pointer border-0 transition"
+                                    >
+                                      ✔️ {language === 'bn' ? 'সমাধান' : 'Resolve'}
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
+                    <div 
+                      className="relative" 
+                      ref={cartsContainerRef}
+                      onMouseEnter={() => {
+                        setCartsDropdownOpen(true);
+                        setMessagesDropdownOpen(false);
+                        setAdminBellDropdownOpen(false);
+                        setProfileDropdownOpen(false);
+                      }}
+                      onMouseLeave={() => setCartsDropdownOpen(false)}
+                    >
+                      <button 
+                        onClick={() => {
+                          setCartsDropdownOpen(!cartsDropdownOpen);
+                          setMessagesDropdownOpen(false);
+                          setProfileDropdownOpen(false);
+                          setAdminBellDropdownOpen(false);
+                        }}
+                        className="group relative p-2.5 bg-zinc-50 hover:bg-cyan-50 dark:bg-zinc-800 dark:hover:bg-cyan-950/40 rounded-full border border-zinc-150 dark:border-zinc-700 transition-all duration-355 ease-in-out cursor-pointer flex items-center justify-center shadow-xs hover:scale-110 active:scale-95"
+                        title="Abandoned Checkouts"
+                      >
+                        <ShoppingCart className="text-zinc-500 dark:text-zinc-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 h-5 w-5 transition-colors duration-300 ease-in-out" />
+                        {(52 - abandonedCarts.filter(c => c.status === 'recovered').length) > 0 && (
+                          <span className="absolute top-0 right-0 bg-cyan-600 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse shadow-sm">
+                            {52 - abandonedCarts.filter(c => c.status === 'recovered').length}
+                          </span>
+                        )}
+                      </button>
+
+                      {cartsDropdownOpen && (
+                        <div 
+                          className="absolute top-full right-0 pt-2 w-76 sm:w-85 z-[9999]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="bg-white dark:bg-[#151d2a] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans text-zinc-800 dark:text-zinc-200 animate-in fade-in slide-in-from-top-3 duration-250">
+                          <div className="flex justify-between items-center pb-2 border-b border-zinc-100 dark:border-zinc-800 mb-2.5">
+                            <span className="text-xs font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                              <ShoppingCart size={13} className="text-cyan-600" />
+                              <span>{language === 'bn' ? `পরিত্যক্ত কার্ট (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})` : `Abandoned Carts (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})`}</span>
+                            </span>
+                            <button 
+                              onClick={() => {
+                                const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সকল পরিত্যক্ত কার্ট প্রসেস করা হচ্ছে..." : "Processing recovery queues..." });
+                                window.dispatchEvent(event);
+                              }}
+                              className="bg-transparent border-0 text-[10px] text-zinc-400 hover:text-cyan-600 font-extrabold uppercase cursor-pointer"
+                            >
+                              {language === 'bn' ? "রিকভারি ট্র্যাকার" : "Recovery Sync"}
+                            </button>
+                          </div>
+
+                          <div className="max-h-72 overflow-y-auto space-y-2.5 pr-1 custom-sidebar-scrollbar">
+                            {abandonedCarts.filter(c => c.status !== 'recovered').map((cart) => {
+                              const totalText = currency === 'BDT' ? `৳${cart.total.toLocaleString()}` : `$${(cart.total / 120).toFixed(1)}`;
+                              return (
+                                <div key={cart.id} className="border border-zinc-200 dark:border-zinc-755 rounded-xl p-3 space-y-2 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-720 transition duration-150 text-xs">
+                                  <div className="flex justify-between items-start">
+                                    <div className="text-left">
+                                      <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200 block leading-tight">{cart.customer}</span>
+                                      <span className="text-[9.5px] font-bold text-zinc-400 font-mono block mt-0.5">{cart.phone} • {language === 'bn' ? cart.timeBn : cart.timeEn}</span>
+                                    </div>
+                                    <span className="text-xs font-black text-cyan-600 font-mono bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-100 dark:border-cyan-900 px-2 py-0.5 rounded-lg shrink-0">
+                                      {totalText}
+                                    </span>
+                                  </div>
+
+                                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-2 rounded-lg space-y-1">
+                                    <span className="text-[9.5px] uppercase font-black tracking-wider text-zinc-400 block">{language === 'bn' ? "আইটেমসমূহ:" : "Items Proposed:"}</span>
+                                    <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block truncate">{language === 'bn' ? cart.itemsBn : cart.itemsEn}</span>
+                                  </div>
+
+                                  <div className="flex justify-end gap-1.5 pt-0.5">
+                                    <button 
+                                      onClick={() => {
+                                        setAbandonedCarts(abandonedCarts.map(c => c.id === cart.id ? { ...c, status: "reminded" } : c));
+                                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? `সফলভাবে রিমাইন্ডার SMS পাঠানো হয়েছে ${cart.customer} কে!` : `Reminder notification SMS sent to ${cart.customer}!` });
+                                        window.dispatchEvent(event);
+                                      }}
+                                      className={`text-[10px] rounded-lg px-2.5 py-1 font-bold cursor-pointer border-0 transition ${cart.status === 'reminded' ? 'bg-[#063b6d] text-white' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
+                                    >
+                                      {cart.status === 'reminded' ? (language === 'bn' ? "🔔 রিমাইন্ডার প্রেরিত" : "🔔 Sent Again") : (language === 'bn' ? "📣 রিমাইন্ডার SMS" : "📣 Send SMS")}
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                        setAbandonedCarts(abandonedCarts.map(c => c.id === cart.id ? { ...c, status: "recovered" } : c));
+                                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? `কার্টটি সফলভাবে রিকভারড চিহ্নিত হয়েছে!` : `Cart marked as recovered successfully!` });
+                                        window.dispatchEvent(event);
+                                      }}
+                                      className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2.5 py-1 font-bold cursor-pointer border-0 transition"
+                                    >
+                                      🟢 {language === 'bn' ? 'রিকভারড' : 'Recovered'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+
+                            <div className="text-center py-2 border-t border-dashed border-zinc-150 dark:border-zinc-850 mt-2">
+                              <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wide">
+                                {language === 'bn' ? `+৪৮টি অবশিষ্ট পরিত্যক্ত সেশন ব্যাকগ্রাউন্ডে সংরক্ষিত` : `+48 older abandoned checkout logs archived`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Real-time Order Notification Bell on Admin Panel */}
+                    <div 
+                      className="relative" 
+                      ref={bellContainerRef}
+                      onMouseEnter={() => {
+                        setAdminBellDropdownOpen(true);
+                        setMessagesDropdownOpen(false);
+                        setCartsDropdownOpen(false);
+                        setProfileDropdownOpen(false);
+                      }}
+                      onMouseLeave={() => setAdminBellDropdownOpen(false)}
+                    >
+                      <button 
+                        onClick={() => {
+                          setAdminBellDropdownOpen(!adminBellDropdownOpen);
+                          setMessagesDropdownOpen(false);
+                          setCartsDropdownOpen(false);
+                          setProfileDropdownOpen(false);
+                        }}
+                        className="group relative p-2.5 bg-zinc-50 hover:bg-orange-50 dark:bg-zinc-800 dark:hover:bg-orange-950/40 rounded-full border border-zinc-150 dark:border-zinc-700 transition-all duration-305 ease-in-out cursor-pointer flex items-center justify-center shadow-xs hover:scale-110 active:scale-95"
+                        title="Alert Notification Center"
+                      >
+                        <Bell size={20} className={`${unreadNotifications.length > 0 ? "text-[#f58220] animate-bounce" : "text-zinc-500 dark:text-zinc-400 group-hover:text-[#f58220]"} stroke-[2.2px] transition-colors duration-305 ease-in-out`} />
+                        {unreadNotifications.length > 0 && (
+                          <span className="absolute top-0 right-0 bg-red-650 text-white font-extrabold text-[9px] h-4 w-4 rounded-full flex items-center justify-center shadow animate-pulse">
+                            {unreadNotifications.length}
+                          </span>
+                        )}
+                      </button>
+
+                      {adminBellDropdownOpen && (
+                        <div 
+                          className="absolute top-full right-0 pt-2 w-72 sm:w-80 z-[9990]" 
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="bg-white dark:bg-[#151d2a] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans text-zinc-800 dark:text-zinc-200 animate-in fade-in slide-in-from-top-3 duration-250">
+                          <div className="flex justify-between items-center pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                            <span className="text-xs font-black text-zinc-800 dark:text-white tracking-tight flex items-center gap-1.5">
+                              <Bell size={13} className="text-[#f58220]" />
+                              <span>{language === 'bn' ? `রিয়েল-টাইম নোটিফিকেশন (${unreadNotifications.length})` : `Live Alerts (${unreadNotifications.length})`}</span>
+                            </span>
+                            {unreadNotifications.length > 0 && (
+                              <button 
+                                onClick={() => setUnreadNotifications && setUnreadNotifications([])}
+                                className="bg-transparent border-0 text-[10px] text-zinc-500 hover:text-[#f58220] font-black uppercase cursor-pointer"
+                              >
+                                {language === 'bn' ? "সব পঠিত" : "Clear All"}
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1">
+                            {unreadNotifications.length === 0 ? (
+                              <div className="py-6 text-center space-y-1.5 text-zinc-400">
+                                <span className="text-xl font-bold">🔔</span>
+                                <p className="text-[11px] font-bold">
+                                  {language === 'bn' ? "নতুন কোনো অনলাইন অর্ডার নেই" : "No new online orders right now"}
+                                </p>
+                                <p className="text-[9px] text-zinc-400 max-w-[200px] mx-auto leading-relaxed">
+                                  {language === 'bn' ? "গ্রাহকেরা অর্ডার করলে এইখানে সাথে সাথে অ্যালার্ট বাজবে।" : "New client orders will trigger live auditory alert bells here."}
+                                </p>
+                              </div>
+                            ) : (
+                              unreadNotifications.map((order: any) => {
+                                const orderAmt = currency === 'BDT' ? `৳${order.totalBDT.toLocaleString()}` : `$${order.totalUSD}`;
+                                return (
+                                  <div key={order.id} className="bg-amber-50/80 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl p-3 space-y-2.5 transition">
+                                    <div className="flex justify-between items-start gap-1">
+                                      <div className="text-left space-y-0.5">
+                                        <strong className="text-xs text-zinc-900 dark:text-white block font-sans truncate max-w-[140px]">{order.customerInfo.name}</strong>
+                                        <span className="text-[9.5px] text-zinc-400 font-mono block">{order.id} | {order.date}</span>
+                                      </div>
+                                      <span className="text-xs font-black font-mono text-[#f58220] shrink-0">{orderAmt}</span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-[10.5px]">
+                                      <span className="text-zinc-500 truncate max-w-[124px] font-mono font-semibold">{order.customerInfo.phone}</span>
+                                      <div className="flex items-center gap-1.5 font-bold">
+                                        <a 
+                                          href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu Alaikum, I am the admin. I received your order ${order.id} and am checking to confirm it!`)}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded px-2 py-1 text-[9px] font-black uppercase whitespace-nowrap no-underline flex items-center justify-center cursor-pointer border-0"
+                                          title="Contact on WhatsApp"
+                                        >
+                                          💬 WhatsApp
+                                        </a>
+
+                                        <button
+                                          onClick={() => {
+                                            setSelectedInvoiceOrder(order);
+                                            setIsInvoiceModalOpen(true);
+                                          }}
+                                          className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded px-2 py-1 text-[9px] cursor-pointer font-black uppercase border-0 flex items-center justify-center"
+                                        >
+                                          Invoice 🖨️
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                    {adminBellDropdownOpen && (
+                      <div 
+                        className="absolute top-full right-0 pt-2 w-72 sm:w-80 z-[9990]" 
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="bg-white dark:bg-[#151d2a] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans text-zinc-800 dark:text-zinc-200 animate-in fade-in slide-in-from-top-3 duration-250">
+                          <div className="flex justify-between items-center pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                            <span className="text-xs font-black text-zinc-800 dark:text-white tracking-tight flex items-center gap-1.5">
+                              <Bell size={13} className="text-[#f58220]" />
+                              <span>{language === 'bn' ? `রিয়েল-টাইম নোটিফিকেশন (${unreadNotifications.length})` : `Live Alerts (${unreadNotifications.length})`}</span>
+                            </span>
+                            {unreadNotifications.length > 0 && (
+                              <button 
+                                onClick={() => setUnreadNotifications && setUnreadNotifications([])}
+                                className="bg-transparent border-0 text-[10px] text-zinc-500 hover:text-[#f58220] font-black uppercase cursor-pointer"
+                              >
+                                {language === 'bn' ? "সব পঠিত" : "Clear All"}
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1">
+                            {unreadNotifications.length === 0 ? (
+                              <div className="py-6 text-center space-y-1.5 text-zinc-400">
+                                <span className="text-xl font-bold">🔔</span>
+                                <p className="text-[11px] font-bold">
+                                  {language === 'bn' ? "নতুন কোনো অনলাইন অর্ডার নেই" : "No new online orders right now"}
+                                </p>
+                                <p className="text-[9px] text-zinc-400 max-w-[200px] mx-auto leading-relaxed">
+                                  {language === 'bn' ? "গ্রাহকেরা অর্ডার করলে এইখানে সাথে সাথে অ্যালার্ট বাজবে।" : "New client orders will trigger live auditory alert bells here."}
+                                </p>
+                              </div>
+                            ) : (
+                              unreadNotifications.map((order: any) => {
+                                const orderAmt = currency === 'BDT' ? `৳${order.totalBDT.toLocaleString()}` : `$${order.totalUSD}`;
+                                return (
+                                  <div key={order.id} className="bg-amber-50/80 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl p-3 space-y-2.5 transition">
+                                    <div className="flex justify-between items-start gap-1">
+                                      <div className="text-left space-y-0.5">
+                                        <strong className="text-xs text-zinc-900 dark:text-white block font-sans truncate max-w-[140px]">{order.customerInfo.name}</strong>
+                                        <span className="text-[9.5px] text-zinc-400 font-mono block">{order.id} | {order.date}</span>
+                                      </div>
+                                      <span className="text-xs font-black font-mono text-[#f58220] shrink-0">{orderAmt}</span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-[10.5px]">
+                                      <span className="text-zinc-500 truncate max-w-[124px] font-mono font-semibold">{order.customerInfo.phone}</span>
+                                      <div className="flex items-center gap-1.5 font-bold">
+                                        <a 
+                                          href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu Alaikum, I am the admin. I received your order ${order.id} and am checking to confirm it!`)}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded px-2 py-1 text-[9px] font-black uppercase whitespace-nowrap no-underline flex items-center justify-center cursor-pointer border-0"
+                                          title="Contact on WhatsApp"
+                                        >
+                                          💬 WhatsApp
+                                        </a>
+
+                                        <button
+                                          onClick={() => {
+                                            setSelectedInvoiceOrder(order);
+                                            setIsInvoiceModalOpen(true);
+                                          }}
+                                          className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded px-2 py-1 text-[9px] cursor-pointer font-black uppercase border-0 flex items-center justify-center"
+                                        >
+                                          Invoice 🖨️
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+
+                </div>
                 </div>
 
                 {/* 4 PRIMARY STATISTICS BOXES */}
@@ -3008,28 +3391,26 @@ export default function AdminPanel({
                 {/* 8 GRID STATUS CARDS PLOTTED WITH PIXEL PRECISION */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
                   {[
-                    { label: "Pending", val: stats.pending, bg: "bg-[#fffbf2] border-[#fdecd5]", txt: "text-zinc-700", bullet: "bg-amber-500", valClr: "text-[#1f4172]" },
-                    { label: "Confirmed", val: stats.confirmed, bg: "bg-[#f5fcf8] border-[#daf2e3]", txt: "text-zinc-700", bullet: "bg-green-500", valClr: "text-[#1f4172]" },
-                    { label: "Packaging", val: stats.packaging, bg: "bg-[#fef7f6] border-[#fbdcd0]", txt: "text-zinc-700", bullet: "bg-red-400", valClr: "text-red-500" },
-                    { label: "Out for delivery", val: stats.outForDelivery, bg: "bg-[#f5fbfc] border-[#daf0f5]", txt: "text-zinc-700", bullet: "bg-cyan-500", valClr: "text-emerald-600" },
-                    { label: "Delivered", val: stats.delivered, bg: "bg-[#f5fcf8] border-[#daf2e3]", txt: "text-zinc-700", bullet: "bg-[#f58220]", valClr: "text-blue-700" },
-                    { label: "Canceled", val: stats.canceled, bg: "bg-[#fdf9f9] border-[#fbd4d4]", txt: "text-zinc-700", bullet: "bg-zinc-400", valClr: "text-red-500" },
-                    { label: "Returned", val: stats.returned, bg: "bg-[#fcf8fb] border-[#f2daeb]", txt: "text-[#d1007b]", bullet: "bg-[#fa42aa]", valClr: "text-[#1f4172]" },
-                    { label: "Failed to delivery", val: stats.failed, bg: "bg-[#fffcfc] border-[#fbd4d4]", txt: "text-zinc-700", bullet: "bg-red-500", valClr: "text-red-600" }
+                    { label: "Pending", val: stats.pending, bg: "bg-[#fffbf2] border-[#fdecd5] dark:bg-amber-950/20 dark:border-amber-900/30", txt: "text-black dark:text-black", bullet: "bg-amber-500", valClr: "text-[#1f4172] dark:text-amber-400" },
+                    { label: "Confirmed", val: stats.confirmed, bg: "bg-[#f5fcf8] border-[#daf2e3] dark:bg-emerald-950/20 dark:border-emerald-900/30", txt: "text-black dark:text-black", bullet: "bg-green-500", valClr: "text-[#1f4172] dark:text-emerald-400" },
+                    { label: "Packaging", val: stats.packaging, bg: "bg-[#fef7f6] border-[#fbdcd0] dark:bg-orange-950/20 dark:border-orange-900/30", txt: "text-black dark:text-black", bullet: "bg-red-400", valClr: "text-red-500 dark:text-orange-400" },
+                    { label: "Out for delivery", val: stats.outForDelivery, bg: "bg-[#f5fbfc] border-[#daf0f5] dark:bg-cyan-950/20 dark:border-cyan-900/30", txt: "text-black dark:text-black", bullet: "bg-cyan-500", valClr: "text-emerald-600 dark:text-cyan-400" },
+                    { label: "Delivered", val: stats.delivered, bg: "bg-[#f5fcf8] border-[#daf2e3] dark:bg-green-950/20 dark:border-green-900/30", txt: "text-black dark:text-black", bullet: "bg-[#10b981]", valClr: "text-blue-700 dark:text-green-400" },
+                    { label: "Canceled", val: stats.canceled, bg: "bg-[#fdf9f9] border-[#fbd4d4] dark:bg-zinc-900/50 dark:border-zinc-800", txt: "text-black dark:text-black", bullet: "bg-zinc-400", valClr: "text-red-500 dark:text-zinc-400" },
+                    { label: "Returned", val: stats.returned, bg: "bg-[#fcf8fb] border-[#f2daeb] dark:bg-pink-950/20 dark:border-pink-900/30", txt: "text-black dark:text-black", bullet: "bg-[#fa42aa]", valClr: "text-[#1f4172] dark:text-pink-400" },
+                    { label: "Failed to delivery", val: stats.failed, bg: "bg-[#fffcfc] border-[#fbd4d4] dark:bg-rose-950/20 dark:border-rose-900/30", txt: "text-black dark:text-black", bullet: "bg-red-500", valClr: "text-red-650 dark:text-rose-400" }
                   ].map((sub, i) => (
                     <div key={i} className={`flex items-center justify-between px-3.5 py-3 ${sub.bg} border rounded-lg shadow-2xs`}>
                       <div className="flex items-center space-x-2">
                         <span className={`h-2 w-2 rounded-full ${sub.bullet}`} />
-                        <span className={`text-[11.5px] font-bold ${sub.txt}`}>{sub.label}</span>
+                        <span className={`text-[11.5px] font-black ${sub.txt}`}>{sub.label}</span>
                       </div>
                       <strong className={`text-sm font-black font-sans ${sub.valClr}`}>{sub.val}</strong>
                     </div>
                   ))}
                 </div>
 
-              </div>
-
-              {/* ADMIN WALLET LAYOUT CONTRASTS */}
+                {/* ADMIN WALLET LAYOUT CONTRASTS */}
               <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4">
                 <div className="flex items-center space-x-2 pb-1 border-b border-zinc-100">
                   <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
@@ -3416,6 +3797,24 @@ export default function AdminPanel({
                                   >
                                     <Printer size={11} />
                                     <span>{language === 'bn' ? "ইনভয়েস" : "Invoice"}</span>
+                                  </button>
+                                  <button 
+                                    onClick={async () => {
+                                      if (!window.confirm(`Are you sure you want to permanently delete order ${order.id}?`)) return;
+                                      try {
+                                        await fetch(`/api/orders/${order.id}`, { method: "DELETE" });
+                                      } catch(e) {}
+                                      const updatedOrders = orders.filter(o => o.id !== order.id);
+                                      setOrders(updatedOrders);
+                                      localStorage.setItem("nabik_orders", JSON.stringify(updatedOrders));
+                                      setSuccessMsg(`Permanently deleted order ${order.id}.`);
+                                      setTimeout(() => setSuccessMsg(""), 3050);
+                                    }}
+                                    className="bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:text-white px-2 py-1.5 rounded cursor-pointer text-rose-600 font-bold text-[9.5px] uppercase flex items-center justify-center space-x-1 transition shadow-sm shrink-0"
+                                    title="Delete Order Permanently"
+                                  >
+                                    <Trash2 size={11} />
+                                    <span>{language === 'bn' ? "মুছে ফেলুন" : "Delete"}</span>
                                   </button>
                                 </div>
                               </td>
@@ -8068,6 +8467,132 @@ export default function AdminPanel({
                     ))
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============== TAB: RESELLER HUB ============== */}
+          {activeTab === 'reseller-hub' && (
+            <div className="space-y-6 text-left font-sans" id="sell-sites-online-panel">
+              <div className="bg-gradient-to-r from-[#063b6d] to-[#0a457c] text-white rounded-2xl p-6 shadow-md border border-zinc-850">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] bg-amber-500 text-zinc-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      {language === 'bn' ? "হোয়াইট-লেবেল ই-কমার্স ডিলিং" : "SaaS White-Label Portal"}
+                    </span>
+                    <h1 className="text-xl font-extrabold text-white tracking-tight mt-1.5 flex items-center gap-2">
+                       💼 {language === 'bn' ? "অনলাইনে সাইট বিক্রি ও লাইসেন্স প্যানেল" : "White-Label Site Retail & Licensing"}
+                    </h1>
+                    <p className="text-xs text-zinc-200 leading-relaxed max-w-xl">
+                      {language === 'bn'
+                        ? "আপনার তৈরি করা গেজেট বাজার পোর্টালটি লাইভ ডেমো বা স্থায়ীভাবে অনাবৃত করে যেকোনো ক্লায়েন্টের সাথে চুক্তি স্থাপন করুন। গ্রাহকের অর্ডারের বিবরণ, সংক্রিয় কোড ডিস্ট্রিবিউশন এবং হোয়াটসঅ্যাপ সার্ভিস গেটওয়ে এখান থেকেই তদারকি করুন।"
+                        : "Turn this e-commerce software into private-labeled SaaS instances. Pitch custom branding presets to potential clients, configure White-label parameters, and manage active licenses."
+                      }
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const event = new CustomEvent("open-reseller-panel");
+                      window.dispatchEvent(event);
+                    }}
+                    className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black rounded-xl text-xs uppercase tracking-wide cursor-pointer transition shadow-sm border-0 shrink-0 flex items-center justify-center gap-1.5"
+                  >
+                    <span>⚙️</span>
+                    <span>{language === 'bn' ? 'রিসেলার থিম প্যানেল মেলুন' : 'Open Reseller Theme panel'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid with statistics and keys */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Active License keys */}
+                <div className="bg-white border rounded-2xl p-5 border-orange-200 bg-orange-50/15 shadow-sm text-left">
+                  <span className="text-[10px] uppercase text-orange-600 font-extrabold tracking-wider block">
+                    {language === 'bn' ? "গ্রাহক অ্যাক্টিভেশন চাবি" : "Client Activation Keys"}
+                  </span>
+                  <p className="text-xs text-zinc-500 mt-1 block">
+                    {language === 'bn' 
+                      ? "আপনার ক্লায়েন্টকে ডেমো মোড বাতিল করে চিরস্থায়ী করতে নিচের চাবিগুলো হস্তান্তর করুন:" 
+                      : "Provide these master keys to upgrade client sandbox stores into permanent paid licenses:"}
+                  </p>
+                  
+                  <div className="space-y-2.5 mt-3.5 block">
+                    {[
+                      { key: "GB-PRO-ACTIVE", desc: language === 'bn' ? "প্রিমিয়াম প্রো অ্যাক্টিভ" : "Premium Pro Active" },
+                      { key: "LICENSE-GBAZAR-2026", desc: language === 'bn' ? "এন্টারপ্রাইজ স্ট্যান্ডার্ড" : "Enterprise Standard" },
+                      { key: "ECOM-MATRIX-KEY", desc: language === 'bn' ? "আল্টিমেট ম্যাট্রিক্স চাবি" : "Ultimate Matrix Token" }
+                    ].map((item) => (
+                      <div key={item.key} className="flex items-center justify-between bg-white border border-zinc-200 rounded-xl p-2.5 hover:border-orange-300 hover:bg-orange-50/30 transition-colors">
+                        <div className="min-w-0">
+                          <span className="font-mono text-xs font-black text-zinc-800 select-all block truncate">{item.key}</span>
+                          <span className="text-[9.5px] text-zinc-400 font-bold block">{item.desc}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.key);
+                            const msg = language === 'bn' 
+                              ? `কপি করা হয়েছে: ${item.key}` 
+                              : `Copied: ${item.key}`;
+                            window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
+                          }}
+                          className="px-2 py-1 bg-zinc-50 hover:bg-orange-500 text-zinc-600 hover:text-white border-0 rounded text-[10px] font-black cursor-pointer transition shrink-0 flex items-center gap-1"
+                        >
+                          <Copy size={10} />
+                          {language === 'bn' ? "কপি" : "Copy"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Whitespace configuration parameters / quick presets */}
+                <div className="bg-white border rounded-2xl p-5 shadow-sm text-left col-span-2 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-zinc-900 block leading-tight">{language === 'bn' ? "হোয়াইট-লেবেল স্ট্যাটাস কনসোল" : "Private-Label Parameters"}</h3>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">{language === 'bn' ? "লাইভ রি-ব্র্যান্ডিং এবং ইন্টিগ্রেশন প্যারামিটার মনিটর" : "Monitor live white-label metrics & theme configuration assets"}</p>
+                    </div>
+                    <span className="text-[9.5px] bg-[#e6f4ea] text-[#137333] border border-[#1b8043]/15 font-black px-2 py-0.5 rounded">
+                      🟢 {language === 'bn' ? "সক্রিয় সেশন" : "Session Active"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+                    <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "চলতি স্টোর আইডি" : "Active Tenant"}</span>
+                      <strong className="text-xs text-zinc-800 font-black block mt-1 truncate">{activeTenant.id}</strong>
+                    </div>
+                    <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "স্টোর শিরোনাম" : "Brand Name"}</span>
+                      <strong className="text-xs text-zinc-800 font-black block mt-1 truncate">{language === 'bn' ? activeTenant.shopNameBn : activeTenant.shopName}</strong>
+                    </div>
+                    <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block col-span-2 md:col-span-1">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "প্যালেট কালার" : "Primary Palette"}</span>
+                      <strong className="text-xs text-zinc-800 font-black block mt-1 flex items-center gap-1.5">
+                        <span className="h-3 w-3 rounded-full border border-zinc-300 inline-block shrink-0" style={{ backgroundColor: activeTenant.primaryColor }} />
+                        <span className="font-mono text-[11px] font-semibold">{activeTenant.primaryColor}</span>
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Guide list */}
+                  <div className="bg-blue-50/30 border border-blue-150 p-3.5 rounded-xl text-xs text-zinc-600 leading-relaxed block text-left">
+                    <strong className="text-[#063b6d] block mb-1">📢 {language === 'bn' ? "মাস্টার ডোমেইন হোস্টিং ও উইথড্রয়াল পিরিয়ড:" : "Deployment & Sandbox Rules:"}</strong>
+                    {language === 'bn'
+                      ? "পদ্ধতিগত নিরাপত্তা রক্ষার জন্য আমরা ১০ এবং ১৫ মিনিটের দুটি ডেমো সতর্কীকরণ সংকেত ডোমেইন এ যুক্ত করেছি। আপনার ক্লায়েন্ট কোনো কোড সক্রিয় না করেই সাইটটির সমস্ত ড্যাশবোর্ড এবং POS ফিচার টেবিলে রিয়েল-টাইম পরীক্ষা করতে পারবে।"
+                      : "For sandbox evaluation purposes, simulated time-limits and alert triggers are pre-configured. Once your client satisfies licensing terms, share their preferred key to unblock all session expirations permanently."
+                    }
+                  </div>
+                </div>
+
+              </div>
+
+              {/* The Live licensing orders tracker component */}
+              <div className="w-full">
+                <LicenseOrderManager language={language} />
               </div>
             </div>
           )}

@@ -1125,8 +1125,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-zinc-800 flex flex-col font-sans" id="app-root-frame">
-      
-      {/* 1. Nabik Bazar Branded Header */}
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-grow" id="boxed-app-container">
+        
+        {/* 1. Nabik Bazar Branded Header */}
       <Navbar
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
@@ -1174,7 +1175,7 @@ export default function App() {
       />
 
       {/* Main Container Layout */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-6">
+      <main className={`flex-grow w-full pb-6 ${currentTab === 'admin' ? 'pt-0' : 'pt-3'}`}>
         
         {/* Receipt Success Screen Frame */}
         {placedOrderReceipt && (
@@ -1260,14 +1261,14 @@ export default function App() {
               
               {/* Category list sidebar navigation */}
               <div 
-                className="hidden lg:block lg:col-span-1 bg-white rounded-xl border border-zinc-205 border-zinc-200 shadow-sm w-full relative lg:h-[350px]" 
+                className="hidden lg:block lg:col-span-1 bg-[#031531] rounded-xl border border-white/10 shadow-lg w-full relative lg:h-[350px]" 
                 onMouseLeave={() => { 
                   setHoveredCategory(null); 
                   setHoveredSubcategory(null); 
                 }}
                 id="category-sidebar-nav"
               >
-                <div className="divide-y divide-zinc-200 lg:h-full lg:flex lg:flex-col lg:justify-between py-0 rounded-xl overflow-hidden font-sans">
+                <div className="divide-y divide-white/10 lg:h-full lg:flex lg:flex-col lg:justify-between py-0 rounded-xl overflow-hidden font-sans">
                   {[
                     { id: "tshirt", name: "T-Shirt", filterQuery: "T-Shirt", icon: "👕", hasChevron: true },
                     { id: "laptop", name: "Laptop & Notebooks", filterQuery: "Laptop", icon: "💻", hasChevron: true },
@@ -1310,8 +1311,8 @@ export default function App() {
                         }}
                         className={`w-full text-left px-5 py-[9px] lg:py-0 lg:flex-1 text-[12.5px] font-bold transition duration-150 flex items-center justify-between cursor-pointer border-0 group/cat ${
                           isSelected || isHovered
-                            ? "bg-orange-50 text-orange-600 font-extrabold" 
-                            : "text-zinc-700 bg-white hover:bg-zinc-50 hover:text-[#f58220]"
+                            ? "bg-[#f58220] text-white font-extrabold" 
+                            : "text-zinc-200 bg-transparent hover:bg-white/5 hover:text-[#f58220]"
                         }`}
                         id={`sidebar-cat-${cat.id}`}
                       >
@@ -1325,8 +1326,8 @@ export default function App() {
                             size={12} 
                             className={`transition-all duration-300 stroke-[3] ${
                               isSelected || isHovered
-                                ? "text-orange-600 translate-x-0.5"
-                                : "text-zinc-350 group-hover/cat:text-[#f58220] group-hover/cat:translate-x-0.5"
+                                ? "text-white translate-x-0.5"
+                                : "text-zinc-400 group-hover/cat:text-[#f58220] group-hover/cat:translate-x-0.5"
                             }`}
                           />
                         ) : (
@@ -2575,11 +2576,22 @@ export default function App() {
             </div>
 
             <div className="md:col-span-2 flex flex-col space-y-2">
-              <h4 className="text-xs font-black text-[#f58220] tracking-widest uppercase mb-1.5">{language === 'bn' ? 'বিশেষ ক্যাটাগরি' : 'SPECIAL'}</h4>
-              <button onClick={() => setCurrentTab('shop')} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Shop Home</button>
-              <button onClick={() => setCurrentTab('orders')} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">My Consignments</button>
-              {/* <button onClick={() => { setVendorTab('list'); setShowVendorModal(true); }} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Vendor Directories</button> */}
-              <button onClick={() => setCurrentTab('admin')} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Admin Board</button>
+              <h4 className="text-xs font-black text-[#f58220] tracking-widest uppercase mb-1.5">Special Links</h4>
+              <button onClick={() => { setCurrentTab('shop'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Shop Home</button>
+              <button onClick={() => { setCurrentTab('orders'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">My Consignments</button>
+              <button onClick={() => { setCurrentTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0">Admin Board</button>
+              <button 
+                onClick={() => { setCurrentTab('live-tracking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0"
+              >
+                Live Consignment Tracker
+              </button>
+              <button 
+                onClick={() => { setCurrentTab('ai-advisor'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                className="text-left text-[11px] font-semibold text-zinc-100 hover:text-orange-300 hover:underline bg-transparent border-0 cursor-pointer p-0"
+              >
+                AI Shopping Advisor
+              </button>
             </div>
 
             <div className="md:col-span-3 flex flex-col space-y-2">
@@ -3330,6 +3342,7 @@ export default function App() {
         />
       )}
 
+      </div>
     </div>
   );
 }

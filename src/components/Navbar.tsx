@@ -549,16 +549,16 @@ export default function Navbar({
   return (
     <header className="w-full flex flex-col font-sans text-zinc-805" id="gadget-bazar-header">
       
-      {/* 1. Maroon/Red Top Offer Banner */}
+      {/* 1. Mint/Green Top Offer Banner */}
       {showEidBanner && activeTenant?.enableDiscountedProducts && (
-        <div className="order-5 mt-2 -mb-1 bg-gradient-to-r from-[#3e0b0c] via-[#511111] to-[#3e0b0c] text-white text-xs py-1 px-4 select-none relative transition-all duration-300 border-b border-red-950/40">
+        <div className="order-5 mt-2 -mb-1 bg-gradient-to-r from-[#064e3b] via-[#047857] to-[#064e3b] text-white text-xs py-1 px-4 select-none relative transition-all duration-300 border-b border-green-950/40">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Left aligned fixed premium ribbon badge */}
             <div className="flex items-center space-x-2 shrink-0 z-10 mr-4">
-              <span className="inline-flex items-center bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 text-white text-[11px] font-black tracking-widest px-3 py-1 rounded-lg shadow-[0_0_12px_rgba(245,130,32,0.4)] border border-amber-400/30">
+              <span className="inline-flex items-center bg-gradient-to-r from-emerald-650 from-emerald-600 via-teal-505 via-teal-500 to-green-505 to-green-500 text-white text-[11px] font-black tracking-widest px-3 py-1 rounded-lg shadow-[0_0_12px_rgba(16,185,129,0.4)] border border-green-400/30">
                 <span className="relative flex h-2 w-2 mr-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-85"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-100"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-100"></span>
                 </span>
                 {language === 'bn' ? "অফার 🔥" : "OFFER 🔥"}
               </span>
@@ -567,7 +567,7 @@ export default function Navbar({
             {/* Premium center scrolling marquee container */}
             <div className="flex-1 overflow-hidden relative h-[18px] flex items-center pr-4 [mask-image:linear-gradient(to_right,transparent_0%,white_6%,white_94%,transparent_100%)]">
               <div className="w-full">
-                <span className="premium-marquee font-medium text-xs md:text-xs tracking-wide text-zinc-100 hover:text-amber-300 transition-colors duration-150 cursor-pointer">
+                <span className="premium-marquee font-medium text-xs md:text-xs tracking-wide text-zinc-100 hover:text-green-300 transition-colors duration-150 cursor-pointer">
                   {announcementText}
                 </span>
               </div>
@@ -577,7 +577,7 @@ export default function Navbar({
             <button 
               type="button"
               onClick={() => setShowEidBanner(false)}
-              className="shrink-0 hover:text-orange-400 font-bold bg-[#380b0c]/80 hover:bg-[#200506] border-0 text-white rounded-md w-5 h-5 flex items-center justify-center transition cursor-pointer z-10 text-[10px] ml-1"
+              className="shrink-0 hover:text-green-300 font-bold bg-[#063e2f]/80 hover:bg-[#032219] border-0 text-white rounded-md w-5 h-5 flex items-center justify-center transition cursor-pointer z-10 text-[10px] ml-1"
               id="dismiss-eid-banner"
             >
               ✕
@@ -898,14 +898,14 @@ export default function Navbar({
 
       </div>
 
-      {/* 4. Navigation Menu Bar: White code categories trigger + Orange Navigation strip */}
+      {/* 4. Navigation Menu Bar: White code categories trigger + Soothing Light Green Navigation strip */}
       {isSticky && (
         <div className="order-3 h-[44px] hidden lg:block" />
       )}
       <div 
-        className={`order-3 bg-[#f58220] text-black hidden lg:block transition-all duration-300 ease-in-out ${
+        className={`order-3 bg-[#f0fdf4] text-emerald-950 hidden lg:block transition-all duration-300 ease-in-out border-b border-green-100 ${
           isSticky 
-            ? "fixed top-0 left-0 right-0 z-50 shadow-xl bg-[#f58220]/95 backdrop-blur-md border-b border-orange-600/20 py-1" 
+            ? "fixed top-0 left-0 right-0 max-w-7xl mx-auto z-50 shadow-xl bg-[#f0fdf4]/95 backdrop-blur-md border-b border-green-200 py-1" 
             : "relative shadow-md py-0"
         }`} 
         id="sticky-header-menu"
@@ -926,7 +926,7 @@ export default function Navbar({
                 <GazzetteLogo isMobile={false} isDarkBg={true} />
               </div>
 
-              {/* Horizontal menu bar - solid black/dark text on vibrant orange canvas strip */}
+              {/* Horizontal menu bar - solid black/dark text on vibrant green canvas strip */}
               <div className="flex items-center pl-2">
                 {(activeTenant?.menuItems || DEFAULT_MENU_ITEMS).filter(item => item.enabled && !["seller_zone", "blog", "video", "track_order"].includes(item.id)).map((item) => {
                   const hasDropdown = item.dropdownType && item.dropdownType !== 'none';
@@ -943,7 +943,7 @@ export default function Navbar({
                       <button
                         type="button"
                         onClick={() => handleMenuItemClick(item)}
-                        className={`px-4 text-[13.5px] font-bold text-black hover:bg-[#e06c09] hover:text-white transition-all duration-300 flex items-center space-x-1 border-0 bg-transparent select-none cursor-pointer ${
+                        className={`px-4 text-[13.5px] font-bold text-emerald-900 hover:bg-[#10b981] hover:text-white transition-all duration-300 flex items-center space-x-1 border-0 bg-transparent select-none cursor-pointer ${
                           isSticky ? "py-2" : "py-3"
                         }`}
                       >
@@ -983,7 +983,7 @@ export default function Navbar({
                                   key={dpItem.id}
                                   type="button"
                                   onClick={() => handleDropdownItemClick(dpItem)}
-                                  className="w-full text-left px-5 py-2.5 text-xs font-bold text-zinc-700 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                                  className="w-full text-left px-5 py-2.5 text-xs font-bold text-zinc-700 hover:bg-green-50 hover:text-[#10b981] transition border-0 bg-transparent cursor-pointer"
                                 >
                                   {dpItem.label}
                                 </button>
@@ -1023,7 +1023,7 @@ export default function Navbar({
                     onClick={() => {
                       setCurrentTab('shop');
                     }}
-                    className="bg-[#e06c09] hover:bg-orange-700 text-white h-full px-4 transition cursor-pointer shrink-0 border-0 flex items-center justify-center rounded-r-lg"
+                    className="bg-[#10b981] hover:bg-[#059669] text-white h-full px-4 transition cursor-pointer shrink-0 border-0 flex items-center justify-center rounded-r-lg"
                   >
                     <Search size={14} className="stroke-[3px]" />
                   </button>

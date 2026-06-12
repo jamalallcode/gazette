@@ -26,9 +26,9 @@ export const PREMIUM_THEMES: PremiumTheme[] = [
     shopNameBn: "গেজেট বাজার",
     tagline: "Shop Smart, Live Better",
     taglineBn: "স্মার্ট শপিং, সেরা জীবন",
-    primaryColor: "#f58220",
-    hoverColor: "#e06c09",
-    bgLightColor: "#fff7ed",
+    primaryColor: "#10b981",
+    hoverColor: "#059669",
+    bgLightColor: "#f0fdf4",
     icon: "🛒",
     badge: "Popular"
   },

@@ -374,6 +374,19 @@ app.get("/api/debug-server-logs", (req, res) => {
     }
   });
 
+  app.delete("/api/orders/:id", (req, res) => {
+    const orderId = req.params.id;
+    const currentOrders = readOrdersFromDisk();
+    const updatedOrders = currentOrders.filter((o: any) => o && o.id !== orderId);
+    if (currentOrders.length !== updatedOrders.length) {
+      writeOrdersToDisk(updatedOrders);
+      console.log(`[SERVER] Order ${orderId} deleted successfully.`);
+      res.json({ success: true, message: `Order ${orderId} deleted successfully from server disk` });
+    } else {
+      res.status(404).json({ error: "Order not found" });
+    }
+  });
+
   // Server-side Gemini API route proxy
   app.post("/api/chat", async (req, res) => {
     const { message, history = [], products = [], image } = req.body;

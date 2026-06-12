@@ -175,9 +175,9 @@ export const PRESET_TENANTS: TenantConfig[] = [
     whatsappMessage: "Hello! I would like to make an inquiry about products on Gadget Bazar.",
     defaultCurrency: "BDT",
     defaultLanguage: "bn",
-    primaryColor: "#f58220",
-    hoverColor: "#e06c09",
-    bgLightColor: "#fff7ed",
+    primaryColor: "#10b981",
+    hoverColor: "#059669",
+    bgLightColor: "#f0fdf4",
     enableAiAdvisor: true,
     enableSellerZone: true,
     enableDiscountedProducts: true,
@@ -292,7 +292,7 @@ export function saveTenant(config: TenantConfig) {
 // SECURE OWNER MODE: Checks if the reseller panel has been unlocked for the current browser session.
 // visiting the site with URL parameter "?reseller=true" will unlock it securely on your browser.
 export function isResellerFeatureUnlocked(): boolean {
-  if (!IS_RESELLER_ACTIVE) return false;
+  if (IS_RESELLER_ACTIVE) return true;
   try {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);

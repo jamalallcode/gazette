@@ -2,10 +2,10 @@
 @import "tailwindcss";
 
 :root {
-  --brand-color: #f58220;
-  --brand-hover: #e06c09;
-  --brand-light: #fff7ed;
-  --brand-shadow: rgba(245, 130, 32, 0.2);
+  --brand-color: #10b981; /* Primary soothing emerald green */
+  --brand-hover: #059669; /* Darker soothing green */
+  --brand-light: #f0fdf4; /* Pale mint comforting background */
+  --brand-shadow: rgba(16, 185, 129, 0.15);
 }
 
 @theme {
@@ -13,6 +13,20 @@
   --color-brand-hover: var(--brand-hover);
   --color-brand-light: var(--brand-light);
   --color-brand-shadow: var(--brand-shadow);
+  
+  /* Map orange theme colors to refreshing eyes-friendly greens */
+  --color-orange-50: #f0fdf4;
+  --color-orange-100: #dcfce7;
+  --color-orange-200: #bbf7d0;
+  --color-orange-300: #86efac;
+  --color-orange-400: #4ade80;
+  --color-orange-500: #10b981;
+  --color-orange-600: #059669;
+  --color-orange-700: #047857;
+  --color-orange-800: #065f46;
+  --color-orange-900: #064e3b;
+  --color-orange-950: #022c22;
+
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Cinzel", ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -21,7 +35,7 @@
 /* Luxury custom ambient styling attributes */
 body {
   font-family: var(--font-sans);
-  background-color: #f0f2f5; /* Light blue-gray background matching Gadget Bazar */
+  background-color: #fafdfb; /* Extremely soothing, relaxing off-white/green background */
   color: #1f2937; /* zinc-800 */
 }
 
@@ -67,19 +81,14 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Sleek custom scrollbars specifically for dynamic sidebar */
+/* Sleek custom scrollbars specifically for dynamic sidebar - hidden per user request */
 .custom-sidebar-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  display: none !important;
+  width: 0px !important;
 }
-.custom-sidebar-scrollbar::-webkit-scrollbar-track {
-  background: #042d54;
-}
-.custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(245, 130, 32, 0.45);
-  border-radius: 4px;
-}
-.custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 130, 32, 0.85);
+.custom-sidebar-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
 }
 
 /* Premium Ultra Elite Dark Mode Overrides */
@@ -227,6 +236,97 @@ body {
   color: #f8fafc !important;
 }
 
+/* Premium Menu Bar Custom Brand Styling */
+#sticky-header-menu,
+[id="sticky-header-menu"] {
+  background-color: #05725e !important; /* Premium brand green, perfectly matching the sidebar */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+#sticky-header-menu button,
+#sticky-header-menu a,
+#sticky-header-menu span:not(.font-sans),
+#sticky-header-menu select {
+  color: #ffffff !important;
+}
+
+#sticky-header-menu svg {
+  color: #ffffff !important;
+}
+
+#sticky-header-menu button:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+/* Premium Dropdown Styles for `#sticky-header-menu` to prevent transparent bleed-through and styling inheritance bugs */
+#sticky-header-menu .absolute div {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+#sticky-header-menu .absolute .bg-white,
+#sticky-header-menu .absolute [class*="bg-white"],
+#sticky-header-menu .absolute div[class*="bg-white"] {
+  background-color: #ffffff !important;
+}
+
+#sticky-header-menu .absolute button,
+#sticky-header-menu .absolute a,
+#sticky-header-menu .absolute span,
+#sticky-header-menu .absolute select,
+#sticky-header-menu .absolute input {
+  color: #374151 !important;
+  background-color: transparent !important;
+}
+
+/* Ensure dropdown wrapper borders and shadow are high-end (no harsh/ugly dark borders) */
+#sticky-header-menu .absolute div[class*="rounded"] {
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 8px 20px -6px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Specific typography overrides for dropdown items */
+#sticky-header-menu .absolute p.text-zinc-400,
+#sticky-header-menu .absolute span.text-zinc-400 {
+  color: #9ca3af !important;
+}
+
+#sticky-header-menu .absolute p.text-zinc-900,
+#sticky-header-menu .absolute span.text-zinc-900,
+#sticky-header-menu .absolute div.text-zinc-900 {
+  color: #111827 !important;
+}
+
+#sticky-header-menu .absolute svg {
+  color: #6b7280 !important;
+}
+
+#sticky-header-menu .absolute .text-\[\#f58220\] svg {
+  color: #f58220 !important;
+}
+
+/* Specific button state hover styles */
+#sticky-header-menu .absolute button:hover,
+#sticky-header-menu .absolute a:hover {
+  background-color: #f3f4f6 !important;
+  color: #f58220 !important;
+}
+
+#sticky-header-menu .absolute button.text-[#f58220]:hover {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+}
+
+#sticky-header-menu .absolute button.text-rose-500 {
+  color: #f43f5e !important;
+}
+
+#sticky-header-menu .absolute button.text-rose-500:hover {
+  background-color: #fef2f2 !important;
+  color: #e11d48 !important;
+}
+
 /* Premium Menu Bar Dark Mode Overrides */
 .dark #sticky-header-menu {
   background-color: #1a2333 !important;
@@ -281,6 +381,147 @@ body {
   color: #f1f5f9 !important;
 }
 
+/* Premium Dropdown Styles for `#mobile-ribbon-header` to prevent transparent bleed-through and styling inheritance bugs */
+#mobile-ribbon-header .absolute div {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+#mobile-ribbon-header .absolute .bg-white,
+#mobile-ribbon-header .absolute [class*="bg-white"],
+#mobile-ribbon-header .absolute div[class*="bg-white"] {
+  background-color: #ffffff !important;
+}
+
+#mobile-ribbon-header .absolute button,
+#mobile-ribbon-header .absolute a,
+#mobile-ribbon-header .absolute span,
+#mobile-ribbon-header .absolute select,
+#mobile-ribbon-header .absolute input {
+  color: #374151 !important;
+  background-color: transparent !important;
+}
+
+/* Ensure dropdown wrapper borders and shadow are high-end (no harsh/ugly dark borders) */
+#mobile-ribbon-header .absolute div[class*="rounded"] {
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 8px 20px -6px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Specific typography overrides for dropdown items */
+#mobile-ribbon-header .absolute p.text-zinc-400,
+#mobile-ribbon-header .absolute span.text-zinc-400 {
+  color: #9ca3af !important;
+}
+
+#mobile-ribbon-header .absolute p.text-zinc-900,
+#mobile-ribbon-header .absolute span.text-zinc-900,
+#mobile-ribbon-header .absolute div.text-zinc-900 {
+  color: #111827 !important;
+}
+
+#mobile-ribbon-header .absolute svg {
+  color: #6b7280 !important;
+}
+
+#mobile-ribbon-header .absolute .text-\[\#f58220\] svg {
+  color: #f58220 !important;
+}
+
+/* Specific button state hover styles */
+#mobile-ribbon-header .absolute button:hover,
+#mobile-ribbon-header .absolute a:hover {
+  background-color: #f3f4f6 !important;
+  color: #f58220 !important;
+}
+
+#mobile-ribbon-header .absolute button.text-[#f58220]:hover {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+}
+
+#mobile-ribbon-header .absolute button.text-rose-500 {
+  color: #f43f5e !important;
+}
+
+#mobile-ribbon-header .absolute button.text-rose-500:hover {
+  background-color: #fef2f2 !important;
+  color: #e11d48 !important;
+}
+
+/* Dark Mode overrides for dropdowns under `#sticky-header-menu` and `#mobile-ribbon-header` */
+.dark #sticky-header-menu .absolute div,
+.dark #mobile-ribbon-header .absolute div {
+  background-color: #151d2a !important;
+  color: #e2e8f0 !important;
+}
+
+.dark #sticky-header-menu .absolute .bg-white,
+.dark #sticky-header-menu .absolute [class*="bg-white"],
+.dark #sticky-header-menu .absolute div[class*="bg-white"],
+.dark #mobile-ribbon-header .absolute .bg-white,
+.dark #mobile-ribbon-header .absolute [class*="bg-white"],
+.dark #mobile-ribbon-header .absolute div[class*="bg-white"] {
+  background-color: #151d2a !important;
+}
+
+.dark #sticky-header-menu .absolute button,
+.dark #sticky-header-menu .absolute a,
+.dark #sticky-header-menu .absolute span,
+.dark #mobile-ribbon-header .absolute button,
+.dark #mobile-ribbon-header .absolute a,
+.dark #mobile-ribbon-header .absolute span {
+  color: #cbd5e1 !important;
+  background-color: transparent !important;
+}
+
+.dark #sticky-header-menu .absolute div[class*="rounded"],
+.dark #mobile-ribbon-header .absolute div[class*="rounded"] {
+  border: 1px solid #283752 !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark #sticky-header-menu .absolute p.text-zinc-900,
+.dark #sticky-header-menu .absolute span.text-zinc-900,
+.dark #sticky-header-menu .absolute div.text-zinc-900,
+.dark #mobile-ribbon-header .absolute p.text-zinc-900,
+.dark #mobile-ribbon-header .absolute span.text-zinc-900,
+.dark #mobile-ribbon-header .absolute div.text-zinc-900 {
+  color: #ffffff !important;
+}
+
+.dark #sticky-header-menu .absolute p.text-zinc-400,
+.dark #sticky-header-menu .absolute span.text-zinc-400,
+.dark #mobile-ribbon-header .absolute p.text-zinc-400,
+.dark #mobile-ribbon-header .absolute span.text-zinc-400 {
+  color: #94a3b8 !important;
+}
+
+.dark #sticky-header-menu .absolute button:hover,
+.dark #sticky-header-menu .absolute a:hover,
+.dark #mobile-ribbon-header .absolute button:hover,
+.dark #mobile-ribbon-header .absolute a:hover {
+  background-color: #243042 !important;
+  color: #f58220 !important;
+}
+
+.dark #sticky-header-menu .absolute button.text-[#f58220]:hover,
+.dark #mobile-ribbon-header .absolute button.text-[#f58220]:hover {
+  background-color: rgba(245, 130, 32, 0.15) !important;
+  color: #ff9d4d !important;
+}
+
+.dark #sticky-header-menu .absolute button.text-rose-500:hover,
+.dark #mobile-ribbon-header .absolute button.text-rose-500:hover {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+.dark #sticky-header-menu .absolute svg,
+.dark #mobile-ribbon-header .absolute svg {
+  color: #94a3b8 !important;
+}
+
 /* Premium Dynamic Scrolling Marquee Configuration */
 @keyframes marquee-scrolling-reverse {
   0% {
@@ -301,3 +542,249 @@ body {
 .premium-marquee:hover {
   animation-play-state: paused;
 }
+
+/* ========================================== */
+/*   PREMIUM ADMIN PANEL BENTO CARD LAYOUT   */
+/* ========================================== */
+
+@media (min-width: 1024px) {
+  #master-admin-root {
+    padding: 16px 0px !important;
+    gap: 16px !important;
+    background-color: transparent !important;
+    min-height: calc(100vh - 140px) !important;
+    margin-top: 0px !important;
+  }
+}
+
+/* Float sidebar container with beautiful continuous light green background */
+#side-bar-navigation {
+  background-color: #05725e !important; /* Premium unified deep green matching the menu bar */
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.dark #side-bar-navigation {
+  background-color: #1a2333 !important; /* Clean matching dark mode background */
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  border: none !important;
+}
+
+/* Admin panel branding header and borders */
+#side-bar-navigation div[class*="border-[#0c4a85]"],
+#side-bar-navigation div[class*="border-b"],
+#side-bar-navigation div,
+.dark #side-bar-navigation div[class*="border-[#0c4a85]"],
+.dark #side-bar-navigation div[class*="border-b"],
+.dark #side-bar-navigation div {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+#side-bar-navigation > div:first-child,
+.dark #side-bar-navigation > div:first-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+#side-bar-navigation span {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+/* Force all text inside the sidebar to stay white and fully visible */
+#side-bar-navigation span[class*="text-white"],
+#side-bar-navigation span[class*="text-zinc"],
+#side-bar-navigation div,
+.dark #side-bar-navigation span[class*="text-white"],
+.dark #side-bar-navigation div {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Search bar wrapper bg inside green theme */
+#side-bar-navigation div[class*="bg-[#05325d]"],
+.dark #side-bar-navigation div[class*="bg-[#05325d]"] {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+#side-bar-navigation input,
+.dark #side-bar-navigation input {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+#side-bar-navigation input::placeholder,
+.dark #side-bar-navigation input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Category headers (e.g. Order Management, User Management, etc.) */
+#side-bar-navigation span[class*="text-[#a1c2ff]"],
+.dark #side-bar-navigation span[class*="text-[#a1c2ff]"] {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+}
+
+/* Customize buttons inside Sidebar - completely flat with white text */
+#side-bar-navigation nav button,
+.dark #side-bar-navigation nav button {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  transition: all 0.15s ease-in-out !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#side-bar-navigation nav button:hover,
+.dark #side-bar-navigation nav button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+/* Active navigation item with clean white indicator block / border highlight */
+#side-bar-navigation nav button[class*="bg-[#f58220]"],
+#side-bar-navigation nav button[class*="bg-[#0a457c]"]:not([class*="hover:bg-"]),
+.dark #side-bar-navigation nav button[class*="bg-[#f58220]"],
+.dark #side-bar-navigation nav button[class*="bg-[#0a457c]"]:not([class*="hover:bg-"]) {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border-left: 3.5px solid #ffffff !important;
+  border-top-left-radius: 0px !important;
+  border-bottom-left-radius: 0px !important;
+}
+
+#side-bar-navigation nav button[class*="bg-[#f58220]"] svg,
+#side-bar-navigation nav button[class*="bg-[#0a457c]"] svg {
+  color: #ffffff !important;
+}
+
+/* Submenu / Nested items active matching */
+#side-bar-navigation nav button[class*="active"],
+.dark #side-bar-navigation nav button[class*="active"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+/* Left side icons styling in dynamic sidebar */
+#side-bar-navigation nav button svg,
+.dark #side-bar-navigation nav button svg {
+  color: rgba(255, 255, 255, 0.85) !important;
+  transition: color 0.15s ease-in-out !important;
+}
+
+#side-bar-navigation nav button:hover svg,
+.dark #side-bar-navigation nav button:hover svg {
+  color: #ffffff !important;
+}
+
+#side-bar-navigation nav button[class*="bg-[#f58220]"] svg,
+#side-bar-navigation nav button[class*="bg-[#0a457c]"] svg {
+  color: #ffffff !important;
+}
+
+/* Custom arrow indicators inside flat menu */
+#side-bar-navigation nav button[class*="space-x-3"]:not([class*="justify-between"]):after,
+.dark #side-bar-navigation nav button[class*="space-x-3"]:not([class*="justify-between"]):after {
+  content: '›' !important;
+  font-size: 1.15rem !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  margin-left: auto !important;
+  margin-right: 4px !important;
+  font-weight: normal !important;
+  transition: transform 0.2s, color 0.15s !important;
+}
+
+#side-bar-navigation nav button[class*="space-x-3"]:not([class*="justify-between"]):hover:after,
+.dark #side-bar-navigation nav button[class*="space-x-3"]:not([class*="justify-between"]):hover:after {
+  color: #ffffff !important;
+  transform: translateX(2px) !important;
+}
+
+#side-bar-navigation nav button[class*="space-x-3"][class*="bg-[#f58220]"]:after,
+#side-bar-navigation nav button[class*="space-x-[#0a457c]"]:after {
+  color: #ffffff !important;
+  font-weight: bold !important;
+  transform: translateX(2px) !important;
+}
+
+/* Submenu layout custom text colors to white */
+#orders-submenu button text,
+#orders-submenu span,
+#orders-submenu div {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Relocated head controls footer section inside sidebar */
+#relocated-head-controls,
+.dark #relocated-head-controls {
+  background-color: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+#relocated-head-controls button,
+.dark #relocated-head-controls button {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+#relocated-head-controls button:hover,
+.dark #relocated-head-controls button:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Premium White branding launcher emblem with emerald-green text */
+#side-bar-navigation div[class*="bg-[#f58220]"],
+#side-bar-navigation div[class*="bg-orange-500"] {
+  background-color: #ffffff !important;
+  color: #05725e !important;
+}
+
+#side-bar-navigation div[class*="bg-[#f58220]"] div,
+#side-bar-navigation div[class*="bg-[#f58220]"] span {
+  color: #05725e !important;
+}
+
+#side-bar-navigation span[class*="text-[#f58220]"] {
+  color: #ffffff !important;
+}
+
+/* Right workspace bento box card styling */
+#admin-workspace-scroll-container {
+  background-color: #ffffff !important;
+  border-radius: 0px !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-height: calc(100vh - 48px) !important;
+}
+.dark #admin-workspace-scroll-container {
+  background-color: #05070a !important;
+}
+
+@media (max-width: 1024px) {
+  #admin-workspace-scroll-container {
+    border-radius: 0px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Remove outer borders and shadows from main workspace card blocks as requested by the user */
+#master-admin-root main .bg-white.border.border-zinc-200.rounded-xl,
+#master-admin-root main div[class*="bg-white"][class*="border"][class*="border-zinc-200"][class*="rounded-xl"],
+#master-admin-root main form[class*="bg-white"][class*="border"][class*="border-zinc-200"][class*="rounded-xl"] {
+  border: none !important;
+  box-shadow: none !important;
+}
+

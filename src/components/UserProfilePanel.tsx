@@ -132,6 +132,42 @@ export default function UserProfilePanel({
     );
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm(language === 'bn' ? "আপনি কি নিশ্চিতভাবে এই অর্ডারটি ডিলিট করতে চান? এটি চিরতরে মুছে যাবে।" : "Are you sure you want to delete this order? It will be permanently removed.")) {
+      return;
+    }
+
+    try {
+      // 1. Delete from Server database to prevent automatic re-creation during next sync cycles
+      await fetch(`/api/orders/${orderId}`, {
+        method: "DELETE"
+      });
+      
+      // We also update locally
+      const updatedOrders = orders.filter(o => o.id !== orderId);
+      setOrders(updatedOrders);
+      localStorage.setItem("nabik_orders", JSON.stringify(updatedOrders));
+
+      triggerToast(
+        language === 'bn'
+          ? "অর্ডারটি সফলভাবে ডিলিট করা হয়েছে!"
+          : "Order deleted successfully!"
+      );
+    } catch (err) {
+      console.error("Error deleting order:", err);
+      // Fallback local delete
+      const updatedOrders = orders.filter(o => o.id !== orderId);
+      setOrders(updatedOrders);
+      localStorage.setItem("nabik_orders", JSON.stringify(updatedOrders));
+      
+      triggerToast(
+        language === 'bn'
+          ? "অর্ডারটি ডিলিট করা হয়েছে (অফলাইন)!"
+          : "Order deleted locally (offline mode)!"
+      );
+    }
+  };
+
   const statusProgress = {
     placed: 1,
     processing: 2,
@@ -441,16 +477,28 @@ export default function UserProfilePanel({
                             {language === 'bn' ? 'আনুমানিক ডেলিভারি সময়:' : 'Est. Arrival Date:'} <strong className="text-zinc-800 font-mono">{order.estimatedDelivery}</strong>
                           </p>
 
-                          {order.status === 'placed' && !isCancelled && (
+                          <div className="flex items-center gap-2">
+                            {order.status === 'placed' && !isCancelled && (
+                              <button
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="px-3.5 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg text-[10.5px] font-bold uppercase tracking-wider flex items-center space-x-1 bg-transparent cursor-pointer transition"
+                                id={`cancel-order-${order.id}`}
+                              >
+                                <X size={12} className="stroke-[2.5px]" />
+                                <span>{language === 'bn' ? 'বাতিল করুন' : 'Cancel Order'}</span>
+                              </button>
+                            )}
+
                             <button
-                              onClick={() => handleCancelOrder(order.id)}
-                              className="px-3.5 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg text-[10.5px] font-bold uppercase tracking-wider flex items-center space-x-1 bg-transparent cursor-pointer transition"
-                              id={`cancel-order-${order.id}`}
+                              onClick={() => handleDeleteOrder(order.id)}
+                              type="button"
+                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-lg text-[10.5px] uppercase tracking-wider flex items-center space-x-1 cursor-pointer transition"
+                              id={`delete-order-${order.id}`}
                             >
-                              <X size={12} className="stroke-[2.5px]" />
-                              <span>{language === 'bn' ? 'বাতিল করুন' : 'Cancel Order'}</span>
+                              <Trash2 size={12} className="text-rose-650" />
+                              <span>{language === 'bn' ? 'মুছে ফেলুন' : 'Delete'}</span>
                             </button>
-                          )}
+                          </div>
                         </div>
 
                       </div>
