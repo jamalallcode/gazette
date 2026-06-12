@@ -480,6 +480,14 @@ export default function Navbar({
         setProfileDropdownOpen(false);
       }
 
+      // Admin Dropdown handling
+      if (
+        !target.closest('#mobile-admin-demo-dropdown') &&
+        !target.closest('#desktop-admin-demo-dropdown')
+      ) {
+        setAdminDropdownOpen(false);
+      }
+
       // Menu dropdown (such as Brand dropdown) handling
       if (openDropdownIdRef.current) {
         if (!target.closest(`#nav-menu-item-${openDropdownIdRef.current}`)) {

@@ -2234,7 +2234,7 @@ export default function AdminPanel({
               </button>
             )}
 
-             {!currentUser?.is_demo_user && (!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
+             {currentUser?.email === 'jamaluddinkh3424@gmail.com' && (!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
                <button 
                  onClick={() => setActiveTab('reseller-hub')}
                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition ${activeTab === 'reseller-hub' ? 'bg-[#f58220] text-white font-black' : 'text-zinc-250 text-zinc-100 hover:bg-[#0a457c] hover:text-white'}`}
@@ -2722,18 +2722,20 @@ export default function AdminPanel({
                       <span className="truncate whitespace-nowrap">Shopping Cart Recovery</span>
                     </button>
 
-                    <button 
-                      onClick={() => {
-                        setProfileDropdownOpen(false);
-                        setActiveTab('reseller-hub');
-                        const event = new CustomEvent("app-toast", { detail: "Redirecting to activation portal..." });
-                        window.dispatchEvent(event);
-                      }}
-                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
-                    >
-                      <span>🔑</span>
-                      <span className="truncate whitespace-nowrap">License Key & Activation Code</span>
-                    </button>
+                    {currentUser?.email === 'jamaluddinkh3424@gmail.com' && (
+                      <button 
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          setActiveTab('reseller-hub');
+                          const event = new CustomEvent("app-toast", { detail: "Redirecting to activation portal..." });
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
+                      >
+                        <span>🔑</span>
+                        <span className="truncate whitespace-nowrap">License Key & Activation Code</span>
+                      </button>
+                    )}
                     
                     <button 
                       onClick={() => {
@@ -3408,30 +3410,32 @@ export default function AdminPanel({
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1.5">
                     
                     {/* Option 1: License Key & Code Generator */}
-                    <div className="p-4 bg-zinc-50 hover:bg-orange-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="p-1.5 bg-orange-100 text-[#f58220] rounded-lg text-xs block">🔑</span>
-                          <span className="text-[9px] text-orange-600 font-extrabold uppercase bg-orange-100/40 px-1.5 py-0.5 rounded">Active</span>
+                    {currentUser?.email === 'jamaluddinkh3424@gmail.com' && (
+                      <div className="p-4 bg-zinc-50 hover:bg-orange-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="p-1.5 bg-orange-100 text-[#f58220] rounded-lg text-xs block">🔑</span>
+                            <span className="text-[9px] text-orange-600 font-extrabold uppercase bg-orange-100/40 px-1.5 py-0.5 rounded">Active</span>
+                          </div>
+                          <strong className="block text-xs font-black text-zinc-900 pt-1">
+                            {language === 'bn' ? "লাইসেন্স কী ও কোড জেনারেটর" : "License Key & Portal Keys"}
+                          </strong>
+                          <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                            {language === 'bn' ? "গ্রাহকদের নতুন সাইট আনলক করতে ভ্যালিডেশন কী ইস্যু করুন।" : "Issue, manage, and track unique licenses to validate customer stores."}
+                          </span>
                         </div>
-                        <strong className="block text-xs font-black text-zinc-900 pt-1">
-                          {language === 'bn' ? "লাইসেন্স কী ও কোড জেনারেটর" : "License Key & Portal Keys"}
-                        </strong>
-                        <span className="block text-[10.5px] text-zinc-400 leading-normal">
-                          {language === 'bn' ? "গ্রাহকদের নতুন সাইট আনলক করতে ভ্যালিডেশন কী ইস্যু করুন।" : "Issue, manage, and track unique licenses to validate customer stores."}
-                        </span>
+                        <button 
+                          onClick={() => {
+                            setActiveTab('reseller-hub');
+                            const event = new CustomEvent("app-toast", { detail: "License Keys Portal Mounted" });
+                            window.dispatchEvent(event);
+                          }}
+                          className="w-full py-1.5 bg-[#1f4172] hover:bg-[#1a3861] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                        >
+                          {language === 'bn' ? "কী ম্যানেজ করুন" : "Manage Client Keys"}
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => {
-                          setActiveTab('reseller-hub');
-                          const event = new CustomEvent("app-toast", { detail: "License Keys Portal Mounted" });
-                          window.dispatchEvent(event);
-                        }}
-                        className="w-full py-1.5 bg-[#1f4172] hover:bg-[#1a3861] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
-                      >
-                        {language === 'bn' ? "কী ম্যানেজ করুন" : "Manage Client Keys"}
-                      </button>
-                    </div>
+                    )}
 
                     {/* Option 2: Packages & Subscription Tiers */}
                     <div className="p-4 bg-zinc-50 hover:bg-emerald-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
@@ -8500,7 +8504,7 @@ export default function AdminPanel({
           )}
 
           {/* ============== TAB: RESELLER HUB ============== */}
-          {activeTab === 'reseller-hub' && (
+          {activeTab === 'reseller-hub' && currentUser?.email === 'jamaluddinkh3424@gmail.com' && (
             <div className="space-y-6 text-left font-sans" id="sell-sites-online-panel">
               <div className="bg-gradient-to-r from-[#063b6d] to-[#0a457c] text-white rounded-2xl p-6 shadow-md border border-zinc-850">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
