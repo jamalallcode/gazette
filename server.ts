@@ -223,12 +223,16 @@ app.get("/api/debug-server-logs", (req, res) => {
             console.error("Error reading demo order book:", e);
           }
         } else {
-          const seededOrders: any[] = [];
+          const defaultOrders = readOrdersFromDisk();
+          const seededOrders = defaultOrders.map(o => ({
+            ...o,
+            id: `DEMO-${o.id.replace("ORD-", "")}`,
+          }));
           try {
             fs.writeFileSync(demoPath, JSON.stringify(seededOrders, null, 2), "utf-8");
-            logDiagnostic(`[DEMO SEED] Created fresh empty order slate for user: ${cleanEmail}`);
+            logDiagnostic(`[DEMO SEED] Created & seeded isolated orders for user: ${cleanEmail}`);
           } catch (wErr) {
-            console.error("Error seeding empty demo orders:", wErr);
+            console.error("Error seeding demo orders:", wErr);
           }
           return seededOrders;
         }
@@ -270,13 +274,16 @@ app.get("/api/debug-server-logs", (req, res) => {
             console.error("Error reading demo subscriber book:", e);
           }
         } else {
-          // Empty subscriber slate for new demo users
-          const defaultDemoSubs: any[] = [];
+          // Default demo subscribers
+          const defaultDemoSubs = [
+            { email: "user-review-friend@gmail.com", date: new Date().toLocaleString() },
+            { email: "guest-test@yahoo.com", date: new Date().toLocaleString() }
+          ];
           try {
             fs.writeFileSync(demoPath, JSON.stringify(defaultDemoSubs, null, 2), "utf-8");
-            logDiagnostic(`[DEMO SEED] Created isolated empty subscribers for user: ${cleanEmail}`);
+            logDiagnostic(`[DEMO SEED] Created isolated subscribers for user: ${cleanEmail}`);
           } catch (wErr) {
-            console.error("Error seeding empty demo subscribers:", wErr);
+            console.error("Error seeding demo subscribers:", wErr);
           }
           return defaultDemoSubs;
         }
