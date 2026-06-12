@@ -15,7 +15,10 @@ import {
   Bell,
   Languages,
   Sun,
-  Moon
+  Moon,
+  MessageSquare,
+  Key,
+  Globe
 } from "lucide-react";
 import { TenantConfig, MenuItemConfig, MenuItemDropdownItem, DEFAULT_MENU_ITEMS } from "../data/tenantConfig";
 
@@ -690,13 +693,13 @@ export default function Navbar({
 
                   {profileDropdownOpen && (
                     <div 
-                      className="absolute top-full right-[-40px] pt-2 w-48 h-auto z-[9999]"
+                      className="absolute top-full right-[-40px] pt-2 w-56 h-auto z-[9999]"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="bg-white text-zinc-805 rounded-2xl shadow-xl border border-zinc-150 py-2 px-1 text-left font-sans overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
                         <div className="space-y-1">
                           <div className="px-3 pb-2 border-b border-zinc-100 mb-1">
-                            <p className="text-[10px] text-zinc-400 font-bold">{language === 'bn' ? 'স্বাগতম,' : 'Welcome,'}</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">Welcome,</p>
                             <p className="text-xs font-black text-zinc-900 truncate leading-tight mt-0.5">{currentUser.firstName}</p>
                           </div>
                           <button 
@@ -705,9 +708,9 @@ export default function Navbar({
                               setCurrentTab('orders');
                               setProfileDropdownOpen(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer whitespace-nowrap flex items-center gap-2"
                           >
-                            My Order
+                            <span>My Orders</span>
                           </button>
                           <button 
                             type="button"
@@ -715,19 +718,63 @@ export default function Navbar({
                               setProfileModalOpen(true);
                               setProfileDropdownOpen(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer whitespace-nowrap flex items-center gap-2"
                           >
-                            My Profile
+                            <span>My Profile</span>
                           </button>
+                          
+                          {/* Messages option requested by user */}
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setCurrentTab('admin');
+                              const event = new CustomEvent("set-admin-tab", { detail: 'messages' });
+                              window.dispatchEvent(event);
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                          >
+                            <MessageSquare size={11} className="text-zinc-500 shrink-0" />
+                            <span>Messages</span>
+                          </button>
+
+                          {/* Cart option requested by user */}
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (onOpenCart) onOpenCart();
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                          >
+                            <ShoppingCart size={11} className="text-zinc-500 shrink-0" />
+                            <span>Shopping Cart</span>
+                          </button>
+
+                          {/* License Activation / Sell Site option requested by user */}
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setCurrentTab('admin');
+                              const event = new CustomEvent("set-admin-tab", { detail: 'reseller-hub' });
+                              window.dispatchEvent(event);
+                              setProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                          >
+                            <Key size={11} className="text-zinc-550 shrink-0" />
+                            <span>Licensing & Sell Sites</span>
+                          </button>
+
                           <button 
                             type="button"
                             onClick={() => {
                               setCurrentTab('ai-advisor');
                               setProfileDropdownOpen(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs font-black text-[#f58220] hover:bg-orange-50 hover:text-orange-700 transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                            className="w-full text-left px-4 py-2 text-xs font-black text-[#f58220] hover:bg-orange-50 hover:text-orange-700 transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
                           >
-                            <Sparkles size={11} className="text-amber-500 fill-amber-200" />
+                            <Sparkles size={11} className="text-amber-500 fill-amber-200 shrink-0" />
                             <span>Aura AI Assistant</span>
                           </button>
                           {currentUser?.role === 'admin' && (
@@ -737,9 +784,9 @@ export default function Navbar({
                                 setCurrentTab('admin');
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-705 hover:bg-[#f58220]/5 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-705 hover:bg-[#f58220]/5 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
                             >
-                              <ShieldCheck size={11} className="text-zinc-550" />
+                              <ShieldCheck size={11} className="text-zinc-550 shrink-0" />
                               <span>Admin Control</span>
                             </button>
                           )}
@@ -752,9 +799,9 @@ export default function Navbar({
                               triggerToast("Successfully cleared active session.");
                               setProfileDropdownOpen(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer"
+                            className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer whitespace-nowrap flex items-center gap-2"
                           >
-                            Logout
+                            <span>Logout</span>
                           </button>
                         </div>
                       </div>
@@ -1016,7 +1063,7 @@ export default function Navbar({
                       setSearchQuery(e.target.value);
                       if (currentTab !== 'shop') setCurrentTab('shop');
                     }}
-                    className="w-full px-4 text-xs text-zinc-800 bg-transparent placeholder-zinc-400 focus:outline-none focus:ring-0 border-0 outline-none font-sans font-semibold"
+                    className="w-full px-4 text-xs text-zinc-805 bg-transparent placeholder-zinc-400 focus:outline-none focus:ring-0 border-0 outline-none font-sans font-semibold"
                   />
                   <button 
                     type="button"
@@ -1034,7 +1081,7 @@ export default function Navbar({
                   <div 
                     onMouseEnter={() => setIsHoveringSuggestions(true)}
                     onMouseLeave={() => setIsHoveringSuggestions(false)}
-                    className="absolute top-full left-0 right-0 mt-1 bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-1.5 z-[1000] max-h-[300px] overflow-y-auto divide-y divide-zinc-100 font-sans"
+                    className="absolute top-full left-0 right-0 mt-1 bg-white text-zinc-805 rounded-xl shadow-2xl border border-zinc-200 py-1.5 z-[1000] max-h-[300px] overflow-y-auto divide-y divide-zinc-100 font-sans"
                   >
                     {brandList
                       .filter((b) => {
@@ -1111,7 +1158,7 @@ export default function Navbar({
                         className="absolute top-full right-0 pt-2 w-72 h-auto z-[9999]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="bg-white text-zinc-850 rounded-2xl shadow-xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-250">
+                        <div className="bg-white text-zinc-855 rounded-2xl shadow-xl border border-zinc-200 py-3 px-3 text-left font-sans animate-in fade-in slide-in-from-top-3 duration-250 font-sans">
                           <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2">
                             <span className="text-xs font-black text-[#f58220] tracking-tight">
                               {language === 'bn' ? `নতুন অর্ডার (${unreadNotifications.length})` : `New Orders (${unreadNotifications.length})`}
@@ -1169,13 +1216,13 @@ export default function Navbar({
 
                     {profileDropdownOpen && (
                       <div 
-                        className="absolute top-full right-0 pt-2 w-48 h-auto z-[9999]"
+                        className="absolute top-full right-0 pt-2 w-56 h-auto z-[9999]"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="bg-white text-zinc-805 rounded-2xl shadow-xl border border-zinc-150 py-2 px-1 text-left font-sans overflow-hidden animate-in fade-in slide-in-from-top-3 duration-250 font-sans">
                           <div className="space-y-1">
                             <div className="px-3 pb-2 border-b border-zinc-100 mb-1">
-                              <p className="text-[10px] text-zinc-400 font-bold">{language === 'bn' ? 'স্বাগতম,' : 'Welcome,'}</p>
+                              <p className="text-[10px] text-zinc-400 font-bold">Welcome,</p>
                               <p className="text-xs font-black text-zinc-900 truncate leading-tight mt-0.5">{currentUser.firstName}</p>
                             </div>
                             <button 
@@ -1184,9 +1231,9 @@ export default function Navbar({
                                 setCurrentTab('orders');
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-800 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-808 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer whitespace-nowrap flex items-center gap-2"
                             >
-                              {language === 'bn' ? 'আমার অর্ডারসমূহ' : 'My Orders'}
+                              <span>My Orders</span>
                             </button>
                             <button 
                               type="button"
@@ -1194,19 +1241,63 @@ export default function Navbar({
                                 setProfileModalOpen(true);
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer"
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer whitespace-nowrap flex items-center gap-2"
                             >
-                              {language === 'bn' ? 'প্রোফাইল সম্পাদন' : 'My Profile'}
+                              <span>My Profile</span>
                             </button>
+
+                            {/* Messages option requested by user */}
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab('admin');
+                                const event = new CustomEvent("set-admin-tab", { detail: 'messages' });
+                                window.dispatchEvent(event);
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                            >
+                              <MessageSquare size={11} className="text-zinc-500 shrink-0" />
+                              <span>Messages</span>
+                            </button>
+
+                            {/* Cart option requested by user */}
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                if (onOpenCart) onOpenCart();
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                            >
+                              <ShoppingCart size={11} className="text-zinc-500 shrink-0" />
+                              <span>Shopping Cart</span>
+                            </button>
+
+                            {/* License Activation / Sell Site option requested by user */}
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setCurrentTab('admin');
+                                const event = new CustomEvent("set-admin-tab", { detail: 'reseller-hub' });
+                                window.dispatchEvent(event);
+                                setProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                            >
+                              <Key size={11} className="text-zinc-550 shrink-0" />
+                              <span>Licensing & Sell Sites</span>
+                            </button>
+
                             <button 
                               type="button"
                               onClick={() => {
                                 setCurrentTab('ai-advisor');
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-black text-[#f58220] hover:bg-orange-50 hover:text-orange-700 transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                              className="w-full text-left px-4 py-2 text-xs font-[#f58220] hover:bg-orange-50 hover:text-orange-700 transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
                             >
-                              <Sparkles size={11} className="text-amber-500 fill-amber-200" />
+                              <Sparkles size={11} className="text-amber-500 fill-amber-200 shrink-0" />
                               <span>Aura AI Assistant</span>
                             </button>
                             <button 
@@ -1215,9 +1306,9 @@ export default function Navbar({
                                 setCurrentTab('admin');
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-100 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center space-x-2"
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-100 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
                             >
-                              <ShieldCheck size={11} className="text-zinc-550" />
+                              <ShieldCheck size={11} className="text-zinc-550 shrink-0" />
                               <span>Admin Control</span>
                             </button>
                             <div className="border-t border-zinc-100 my-1"></div>
@@ -1229,9 +1320,9 @@ export default function Navbar({
                                 triggerToast("Successfully cleared active session.");
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer"
+                              className="w-full text-left px-4 py-2 text-xs font-extrabold text-rose-500 hover:bg-rose-50 transition border-0 bg-transparent cursor-pointer whitespace-nowrap flex items-center gap-2"
                             >
-                              Logout
+                              <span>Logout</span>
                             </button>
                           </div>
                         </div>

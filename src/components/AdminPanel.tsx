@@ -147,6 +147,17 @@ export default function AdminPanel({
     return () => clearInterval(timer);
   }, [currentUser, alert15Fired, alert5Fired, language, setCurrentUser]);
 
+  useEffect(() => {
+    const handleSetTab = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setActiveTab(customEvent.detail);
+      }
+    };
+    window.addEventListener("set-admin-tab", handleSetTab);
+    return () => window.removeEventListener("set-admin-tab", handleSetTab);
+  }, []);
+
   const handleLicenseActivate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!licenseCode || !licenseCode.trim()) {
@@ -301,106 +312,10 @@ export default function AdminPanel({
   }, [messagesDropdownOpen, cartsDropdownOpen, profileDropdownOpen, adminBellDropdownOpen]);
 
   // State-driven interactive client messages
-  const [clientInquiries, setClientInquiries] = useState([
-    {
-      id: "msg-1",
-      sender: "Karim Islam",
-      avatar: "KI",
-      textBn: "আমি ১০০ কেজি প্রিমিয়াম ঘি নিতে চাই, কোনো হোলসেল ডিসকাউন্ট আছে?",
-      textEn: "I want to buy 100 kg premium ghee, is there any wholesale discount?",
-      timeBn: "১০ মিনিট আগে",
-      timeEn: "10m ago",
-      resolved: false,
-    },
-    {
-      id: "msg-2",
-      sender: "Shafiqul Alam",
-      avatar: "SA",
-      textBn: "অর্ডার নং #২৪৫২ ঢাকা সিটির বাইরে কতদিনে ডেলিভারি হবে?",
-      textEn: "How long will Order #2452 take to deliver outside Dhaka City?",
-      timeBn: "২৫ মিনিট আগে",
-      timeEn: "25m ago",
-      resolved: false,
-    },
-    {
-      id: "msg-3",
-      sender: "Nusrat Jahan",
-      avatar: "NJ",
-      textBn: "টি-শার্টের কালার কি ১০০% গ্যারান্টি? প্রথমবার নিচ্ছি তাই জিজ্ঞেস করলাম।",
-      textEn: "Is the T-shirt color 100% guaranteed? Asking since it's my first purchase.",
-      timeBn: "১ ঘণ্টা আগে",
-      timeEn: "1h ago",
-      resolved: false,
-    },
-    {
-      id: "msg-4",
-      sender: "Dr. Rafiq",
-      avatar: "DR",
-      textBn: "আপনাদের সুগন্ধি দুধে কোনো প্রকার প্রিজারভেটিভ বা কেমিক্যাল মেশানো নেই তো?",
-      textEn: "Is there any preservative or chemical in your flavored milk?",
-      timeBn: "৩ ঘণ্টা আগে",
-      timeEn: "3h ago",
-      resolved: false,
-    },
-    {
-      id: "msg-5",
-      sender: "Arif Hasan",
-      avatar: "AH",
-      textBn: "কালকে অর্ডার করলে কি রবিবারের মধ্যে খুলনাতে পাওয়া যাবে?",
-      textEn: "If I order tomorrow, will I get it in Khulna by Sunday?",
-      timeBn: "৫ ঘণ্টা আগে",
-      timeEn: "5h ago",
-      resolved: false,
-    }
-  ]);
+  const [clientInquiries, setClientInquiries] = useState<any[]>([]);
 
   // State-driven abandoned shopping carts
-  const [abandonedCarts, setAbandonedCarts] = useState([
-    {
-      id: "cart-1",
-      customer: "Anisur Rahman",
-      phone: "01724905075",
-      itemsBn: "২x প্রিমিয়াম ঘি, ১x খাঁটি মধু",
-      itemsEn: "2x Premium Ghee, 1x Pure Honey",
-      total: 3250,
-      timeBn: "১২ মিনিট আগে",
-      timeEn: "12 mins ago",
-      status: "pending"
-    },
-    {
-      id: "cart-2",
-      customer: "Mariam Begum",
-      phone: "01815904832",
-      itemsBn: "১x এক্সক্লুসিভ টি-শার্ট",
-      itemsEn: "1x Exclusive T-Shirt",
-      total: 950,
-      timeBn: "৪৫ মিনিট আগে",
-      timeEn: "45 mins ago",
-      status: "pending"
-    },
-    {
-      id: "cart-3",
-      customer: "Fahim Tazwar",
-      phone: "01987541235",
-      itemsBn: "৩x স্মার্ট স্পোর্টস ওয়াচ",
-      itemsEn: "3x Smart Sport Watch",
-      total: 8700,
-      timeBn: "২ ঘণ্টা আগে",
-      timeEn: "2 hours ago",
-      status: "pending"
-    },
-    {
-      id: "cart-4",
-      customer: "Tanzina Sultana",
-      phone: "01567123490",
-      itemsBn: "২x খাঁটি সরিষার তেল",
-      itemsEn: "2x Pure Mustard Oil",
-      total: 1980,
-      timeBn: "৫ ঘণ্টা আগে",
-      timeEn: "5 hours ago",
-      status: "pending"
-    }
-  ]);
+  const [abandonedCarts, setAbandonedCarts] = useState<any[]>([]);
 
   // Modern Invoice System states
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
@@ -897,21 +812,23 @@ export default function AdminPanel({
     const itemTotalBDT = orders.reduce((sum, o) => sum + o.totalBDT, 0);
 
     return {
-      totalSale: BASE_STATS.totalSale + liveSellCount,
-      totalStores: BASE_STATS.totalStores,
-      totalProducts: BASE_STATS.totalProducts + products.length - 8,
-      totalCustomers: BASE_STATS.totalCustomers + Math.min(liveSellCount, 5),
-      pending: BASE_STATS.pending + orders.filter(o => o.status === 'placed').length,
-      confirmed: BASE_STATS.confirmed + orders.filter(o => o.status === 'processing').length,
-      packaging: BASE_STATS.packaging + orders.filter(o => o.status === 'shipped').length,
-      outForDelivery: BASE_STATS.outForDelivery,
-      delivered: BASE_STATS.delivered + orders.filter(o => o.status === 'delivered').length,
-      canceled: BASE_STATS.canceled,
-      returned: BASE_STATS.returned,
-      failed: BASE_STATS.failed,
-      inHouseEarning: BASE_STATS.inHouseEarning + itemTotalBDT,
-      commissionEarned: BASE_STATS.commissionEarned + (itemTotalBDT * 0.05),
-      deliveryChargeEarned: BASE_STATS.deliveryChargeEarned + (liveSellCount * 60)
+      totalSale: liveSellCount,
+      totalStores: 1,
+      totalProducts: products.length,
+      totalCustomers: new Set(orders.map(o => o.customerInfo?.phone || o.customerInfo?.name || Math.random().toString())).size,
+      pending: orders.filter(o => o.status === 'placed').length,
+      confirmed: orders.filter(o => o.status === 'processing').length,
+      packaging: orders.filter(o => o.status === 'shipped').length,
+      outForDelivery: orders.filter(o => (o.status as string) === 'out_for_delivery').length,
+      delivered: orders.filter(o => o.status === 'delivered').length,
+      canceled: orders.filter(o => (o.status as string) === 'canceled').length,
+      returned: orders.filter(o => (o.status as string) === 'returned').length,
+      failed: orders.filter(o => (o.status as string) === 'failed').length,
+      inHouseEarning: itemTotalBDT,
+      commissionEarned: itemTotalBDT * 0.05,
+      deliveryChargeEarned: orders.filter(o => o.status === 'shipped' || o.status === 'delivered').length * 60,
+      totalTax: 0,
+      pendingAmount: orders.filter(o => o.status === 'placed').reduce((sum, o) => sum + o.totalBDT, 0)
     };
   }, [orders, products]);
 
@@ -2375,83 +2292,8 @@ export default function AdminPanel({
       <div 
         ref={workspaceRef}
         id="admin-workspace-scroll-container" 
-        className="flex-1 flex flex-col min-w-0 overflow-y-auto"
+        className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden w-full max-w-full"
       >
-        
-        {currentUser?.is_demo_user && (
-          <div className="bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white py-2.5 px-4 text-xs font-bold font-sans flex flex-col md:flex-row items-center justify-between gap-3 border-b border-orange-700 shadow-md">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-white/20 px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider animate-pulse border border-white/25">
-                {language === 'bn' ? "ডেমো মোড" : "DEMO SANDBOX"}
-              </span>
-              <span className="text-[11.5px] font-semibold text-red-50">
-                {language === 'bn' ? "আপনি এখন একজন ফুল অ্যাক্টিভ অ্যাডমিন হিসেবে টেস্ট মুডে আছেন।" : "You are currently exploring all administrative live features under isolated Sandbox Mode."}
-              </span>
-              <span className="flex items-center gap-1 font-mono bg-black/35 px-3 py-1 rounded-full text-white font-extrabold border border-white/10 shrink-0 text-sm animate-pulse ml-2">
-                ⏱️ {timeLeft}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-              {!showActivationInput ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowActivationInput(true)}
-                    className="bg-white hover:bg-zinc-50 text-red-700 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide transition border-0 cursor-pointer text-zinc-950 shadow-sm"
-                  >
-                    🚀 {language === 'bn' ? "কোড পেস্ট করে সাইটের মালিকানা নিজের করুন" : "Paste License Code to Claim Ownership"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsLicensePurchaseModalOpen(true)}
-                    className="bg-zinc-950 hover:bg-zinc-900 text-white px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wide border border-white/25 transition cursor-pointer shadow-sm flex items-center gap-1.5 shrink-0"
-                  >
-                    <span>🔑</span>
-                    <span>{language === 'bn' ? "কোড কিনুন" : "Buy Key"}</span>
-                  </button>
-                </div>
-              ) : (
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleLicenseActivate();
-                  }} 
-                  className="flex items-center gap-1 bg-white/10 rounded-full p-0.5 pr-1 border border-white/25 animate-in fade-in zoom-in-95 duration-200"
-                >
-                  <input
-                    type="text"
-                    value={licenseCode}
-                    onChange={(e) => setLicenseCode(e.target.value)}
-                    placeholder={language === 'bn' ? "লাইসেন্স কোডটি লিখুন..." : "Enter Professional Key..."}
-                    className="bg-transparent text-white placeholder-zinc-300 text-xs font-mono font-bold border-0 outline-none focus:ring-0 pl-3.5 w-40 py-1 uppercase font-semibold"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isActivating}
-                    className="bg-white hover:bg-zinc-100 disabled:opacity-50 text-red-700 font-extrabold text-[11px] px-3.5 py-1 rounded-full border-0 transition uppercase cursor-pointer"
-                  >
-                    {isActivating ? "Verifying..." : (language === 'bn' ? "সেভ করুন" : "Save Key")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsLicensePurchaseModalOpen(true)}
-                    className="text-white hover:text-orange-200 text-[10.5px] font-extrabold cursor-pointer transition border-0 bg-transparent px-1.5 underline shrink-0 whitespace-nowrap"
-                  >
-                    {language === 'bn' ? "কোড কিনুন?" : "Buy Key?"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowActivationInput(false)}
-                    className="text-white/70 hover:text-white bg-transparent border-0 cursor-pointer p-1"
-                  >
-                    ✕
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Floating Sidebar Trigger for Mobile/Tablets */}
         {!sidebarOpen && (
@@ -2465,16 +2307,19 @@ export default function AdminPanel({
         )}
 
         {/* TOP NAVBAR */}
-        <header className="hidden relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0">
+        <header className="relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0 font-sans shadow-xs">
           <div className="flex items-center space-x-1 sm:space-x-4">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-zinc-600 hover:text-zinc-900 p-2 hover:bg-zinc-100 rounded-lg cursor-pointer"
-            >
-              <Menu size={18} />
-            </button>
-            <div className="text-zinc-400 text-xs hidden sm:block">
-              Time: {new Date().toLocaleDateString()} (BST) • Portal v3.82
+            <div className="flex items-center space-x-2 pl-0">
+              <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0">
+                <BarChart3 size={14} />
+              </div>
+              <span className="font-black text-sm sm:text-base md:text-lg text-black uppercase tracking-wider">
+                DASHBOARD
+              </span>
+              <div className="flex items-center space-x-1.5 text-[9.5px] sm:text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-250 px-2.5 py-0.5 rounded-full select-none shadow-xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{language === 'bn' ? "লাইভ মনিটর হচ্ছে" : "Live Store Monitoring Active"}</span>
+              </div>
             </div>
           </div>
 
@@ -2612,9 +2457,9 @@ export default function AdminPanel({
                 className="relative p-1.5 hover:bg-zinc-100 rounded-full transition cursor-pointer border-0 bg-transparent flex items-center justify-center"
               >
                 <ShoppingCart className="text-zinc-600 hover:text-[#063b6d] h-5 w-5" />
-                {(52 - abandonedCarts.filter(c => c.status === 'recovered').length) > 0 && (
+                {abandonedCarts.filter(c => c.status !== 'recovered').length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-cyan-600 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse">
-                    {52 - abandonedCarts.filter(c => c.status === 'recovered').length}
+                    {abandonedCarts.filter(c => c.status !== 'recovered').length}
                   </span>
                 )}
               </button>
@@ -2628,7 +2473,7 @@ export default function AdminPanel({
                   <div className="flex justify-between items-center pb-2 border-b border-zinc-100 mb-2.5">
                     <span className="text-xs font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
                       <ShoppingCart size={13} className="text-cyan-600" />
-                      <span>{language === 'bn' ? `পরিত্যক্ত কার্ট (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})` : `Abandoned Carts (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})`}</span>
+                      <span>{language === 'bn' ? `পরিত্যক্ত কার্ট (${abandonedCarts.filter(c => c.status !== 'recovered').length})` : `Abandoned Carts (${abandonedCarts.filter(c => c.status !== 'recovered').length})`}</span>
                     </span>
                     <button 
                       onClick={() => {
@@ -2826,7 +2671,7 @@ export default function AdminPanel({
               </button>
 
               {profileDropdownOpen && (
-                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-56 max-w-none sm:max-w-none bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
+                <div className="absolute top-[64px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 mt-3 sm:mt-4 w-auto sm:w-72 max-w-none sm:max-w-none bg-white border border-zinc-200 rounded-2xl shadow-2xl py-2 z-[9999] text-left font-sans animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-zinc-100 mb-1.5">
                     <p className="text-xs font-extrabold text-zinc-800 leading-tight">Gadget Bazar Admin</p>
                     <p className="text-[10px] font-bold text-zinc-400 mt-0.5">settlementregister@gmail.com</p>
@@ -2837,13 +2682,52 @@ export default function AdminPanel({
                       onClick={() => {
                         setActiveTab('dashboard');
                         setProfileDropdownOpen(false);
-                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "ড্যাশবোর্ডে আপনাকে স্বাগতম!" : "Switched to dashboard view" });
+                        const event = new CustomEvent("app-toast", { detail: "Switched to dashboard view" });
                         window.dispatchEvent(event);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
                     >
                       <span>📊</span>
-                      <span>{language === 'bn' ? "ড্যাশবোর্ড ওভারভিউ" : "Dashboard Overview"}</span>
+                      <span className="truncate whitespace-nowrap">Dashboard Overview</span>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setMessagesDropdownOpen(true);
+                        setCartsDropdownOpen(false);
+                        setAdminBellDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
+                    >
+                      <span>💬</span>
+                      <span className="truncate whitespace-nowrap">Customer Inbox Messages</span>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setCartsDropdownOpen(true);
+                        setMessagesDropdownOpen(false);
+                        setAdminBellDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
+                    >
+                      <span>🛒</span>
+                      <span className="truncate whitespace-nowrap">Shopping Cart Recovery</span>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setActiveTab('reseller-hub');
+                        const event = new CustomEvent("app-toast", { detail: "Redirecting to activation portal..." });
+                        window.dispatchEvent(event);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
+                    >
+                      <span>🔑</span>
+                      <span className="truncate whitespace-nowrap">License Key & Activation Code</span>
                     </button>
                     
                     <button 
@@ -2851,40 +2735,40 @@ export default function AdminPanel({
                         setAdminSettingsModalOpen(true);
                         setProfileDropdownOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-zinc-700 hover:bg-zinc-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
                     >
                       <span>⚙️</span>
-                      <span>{language === 'bn' ? "প্রোফাইল ও সেটিংস" : "Profile & Settings"}</span>
+                      <span className="truncate whitespace-nowrap">Profile & System Settings</span>
                     </button>
 
                     <button 
                       onClick={() => {
-                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "লাইভ স্টোর ভিউ লোড হচ্ছে..." : "Redirection to live storefront..." });
+                        const event = new CustomEvent("app-toast", { detail: "Redirection to live storefront..." });
                         window.dispatchEvent(event);
                         setProfileDropdownOpen(false);
                         const shopBtn = document.querySelector('[id*="back-to-shop-button"]') || document.querySelector('button[id*="store"]');
                         if (shopBtn) (shopBtn as HTMLButtonElement).click();
                       }}
-                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-[#f58220] hover:bg-orange-50/50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-[#f58220] hover:bg-orange-50/50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
                     >
-                      <span>🛒</span>
-                      <span>{language === 'bn' ? "লাইভ কাস্টমার স্টোর" : "Live Customer Store"}</span>
+                      <span>✨</span>
+                      <span className="truncate whitespace-nowrap">Live Customer Store</span>
                     </button>
 
                     <div className="border-t border-zinc-100 my-1 pt-1">
                       <button 
                         onClick={() => {
                           setProfileDropdownOpen(false);
-                          const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "সফলভাবে লগআউট করা হয়েছে!" : "Successfully logged out from session!" });
+                          const event = new CustomEvent("app-toast", { detail: "Successfully logged out from session!" });
                           window.dispatchEvent(event);
                           if (setCurrentUser) {
                             setCurrentUser(null);
                           }
                         }}
-                        className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-red-600 hover:bg-red-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2"
+                        className="w-full text-left px-3 py-1.5 text-xs font-extrabold text-red-600 hover:bg-red-50 rounded-lg border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap truncate"
                       >
                         <span>🚪</span>
-                        <span>{language === 'bn' ? "লগ আউট করুন" : "Logout Session"}</span>
+                        <span className="truncate whitespace-nowrap">Logout Session</span>
                       </button>
                     </div>
                   </div>
@@ -2895,7 +2779,7 @@ export default function AdminPanel({
         </header>
 
         {/* WORKSPACE CONTENT AREA */}
-        <main className="pl-4 pr-1 md:pl-6 md:pr-1 lg:pl-0 pb-4 md:pb-6 pt-0 sm:pt-0 md:pt-0 mt-[-8px] flex-1 space-y-4">
+        <main className="pl-4 pr-1 md:pl-6 md:pr-1 lg:pl-0 pb-4 md:pb-6 pt-0 sm:pt-0 md:pt-0 mt-[-8px] flex-1 space-y-4 overflow-x-hidden max-w-full w-full">
 
           {/* Success messages alerts */}
           {successMsg && (
@@ -2924,16 +2808,22 @@ export default function AdminPanel({
 
 
               {/* Business Analytics Container */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4 text-left">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-2 pb-2 border-b border-zinc-100">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-                      <BarChart3 size={14} />
+              <div className="hidden bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4 text-left">
+                <div className="hidden">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+                        <BarChart3 size={14} />
+                      </div>
+                      <span className="font-black text-lg md:text-xl text-black dark:text-black uppercase tracking-wider" id="dash-board-title-label">DashBoard</span>
                     </div>
-                    <span className="font-black text-lg md:text-xl text-black dark:text-black uppercase tracking-wider" id="dash-board-title-label">DashBoard</span>
+                    <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full select-none shadow-xs">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{language === 'bn' ? "লাইভ মনিটর হচ্ছে" : "Live Store Monitoring Active"}</span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 sm:gap-5 text-sm w-full sm:w-auto justify-end ml-auto">
+                  <div className="hidden flex-wrap items-center gap-4 sm:gap-5 text-sm w-full sm:w-auto justify-end ml-auto">
                     {/* Interactive Messages Dropdown */}
                     <div 
                       className="relative" 
@@ -3067,9 +2957,9 @@ export default function AdminPanel({
                         title="Abandoned Checkouts"
                       >
                         <ShoppingCart className="text-zinc-500 dark:text-zinc-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 h-5 w-5 transition-colors duration-300 ease-in-out" />
-                        {(52 - abandonedCarts.filter(c => c.status === 'recovered').length) > 0 && (
+                        {abandonedCarts.filter(c => c.status !== 'recovered').length > 0 && (
                           <span className="absolute top-0 right-0 bg-cyan-600 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse shadow-sm">
-                            {52 - abandonedCarts.filter(c => c.status === 'recovered').length}
+                            {abandonedCarts.filter(c => c.status !== 'recovered').length}
                           </span>
                         )}
                       </button>
@@ -3083,7 +2973,7 @@ export default function AdminPanel({
                           <div className="flex justify-between items-center pb-2 border-b border-zinc-100 dark:border-zinc-800 mb-2.5">
                             <span className="text-xs font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-1.5">
                               <ShoppingCart size={13} className="text-cyan-600" />
-                              <span>{language === 'bn' ? `পরিত্যক্ত কার্ট (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})` : `Abandoned Carts (${52 - abandonedCarts.filter(c => c.status === 'recovered').length})`}</span>
+                              <span>{language === 'bn' ? `পরিত্যক্ত কার্ট (${abandonedCarts.filter(c => c.status !== 'recovered').length})` : `Abandoned Carts (${abandonedCarts.filter(c => c.status !== 'recovered').length})`}</span>
                             </span>
                             <button 
                               onClick={() => {
@@ -3454,7 +3344,7 @@ export default function AdminPanel({
                       <div className="space-y-0.5">
                         <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Delivery Charge Earned</span>
                         <strong className="text-md font-black text-zinc-800 block">
-                          ৳{BASE_STATS.deliveryChargeEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ৳{stats.deliveryChargeEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </strong>
                       </div>
                       <span className="p-2 bg-orange-50 text-orange-500 rounded-lg text-xs font-bold">🚚</span>
@@ -3464,7 +3354,7 @@ export default function AdminPanel({
                       <div className="space-y-0.5">
                         <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Total Tax Collected</span>
                         <strong className="text-md font-black text-zinc-800 block">
-                          ৳{BASE_STATS.totalTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ৳{stats.totalTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </strong>
                       </div>
                       <span className="p-2 bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold">💸</span>
@@ -3474,7 +3364,7 @@ export default function AdminPanel({
                       <div className="space-y-0.5">
                         <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Pending Amount</span>
                         <strong className="text-md font-black text-zinc-800 block">
-                          ৳{BASE_STATS.pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ৳{stats.pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </strong>
                       </div>
                       <span className="p-2 bg-teal-50 text-teal-500 rounded-lg text-xs font-bold">⏳</span>
@@ -3484,6 +3374,134 @@ export default function AdminPanel({
 
                 </div>
 
+              </div>
+
+              {/* ONLINE SITE RESELLER & SELLING STUDIO (CORE BUSINESS MODEL GATEWAYS) */}
+              <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4" id="dashboard-reseller-studio-portal">
+                <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+                  <div className="flex items-center space-x-2">
+                    <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                      <Globe size={14} className="animate-pulse" />
+                    </div>
+                    <span className="font-bold text-sm text-zinc-800">
+                      {language === 'bn' ? "অনলাইন সাইট রিসেলার ও বিক্রয় হাব" : "Online Site Reseller & White-Label Sales"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
+                    {language === 'bn' ? "প্রধান ব্যবসা প্ল্যান" : "Core Business Plan"}
+                  </span>
+                </div>
+
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  {language === 'bn' ? "আপনার গ্রাহকদের কাছে প্রি-কনফিগার করা অনলাইন ই-কমার্স সাইট তৈরি ও লাইসেন্স কী বিক্রির মূল অপশনসমূহ। নিচ থেকে যেকোনো মডিউল অ্যাক্টিভেট করুন:" : "Deploy pre-configured e-commerce websites, configure reseller pricing rules, issue license validation keys, and custom brand your clients' platforms:"}
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1.5">
+                  
+                  {/* Option 1: License Key & Code Generator */}
+                  <div className="p-4 bg-zinc-50 hover:bg-orange-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="p-1.5 bg-orange-100 text-[#f58220] rounded-lg text-xs block">🔑</span>
+                        <span className="text-[9px] text-orange-600 font-extrabold uppercase bg-orange-100/40 px-1.5 py-0.5 rounded">Active</span>
+                      </div>
+                      <strong className="block text-xs font-black text-zinc-900 pt-1">
+                        {language === 'bn' ? "লাইসেন্স কী ও কোড জেনারেটর" : "License Key & Portal Keys"}
+                      </strong>
+                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                        {language === 'bn' ? "গ্রাহকদের নতুন সাইট আনলক করতে ভ্যালিডেশন কী ইস্যু করুন।" : "Issue, manage, and track unique licenses to validate customer stores."}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setActiveTab('reseller-hub');
+                        const event = new CustomEvent("app-toast", { detail: "License Keys Portal Mounted" });
+                        window.dispatchEvent(event);
+                      }}
+                      className="w-full py-1.5 bg-[#1f4172] hover:bg-[#1a3861] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                    >
+                      {language === 'bn' ? "কী ম্যানেজ করুন" : "Manage Client Keys"}
+                    </button>
+                  </div>
+
+                  {/* Option 2: Packages & Subscription Tiers */}
+                  <div className="p-4 bg-zinc-50 hover:bg-emerald-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="p-1.5 bg-emerald-105 text-emerald-600 rounded-lg text-xs block">🛡️</span>
+                        <span className="text-[9px] text-emerald-600 font-extrabold uppercase bg-emerald-100/40 px-1.5 py-0.5 rounded">Pricing</span>
+                      </div>
+                      <strong className="block text-xs font-black text-zinc-900 pt-1">
+                        {language === 'bn' ? "প্যাকেজ ও রিসেলিং সাবস্ক্রিপশন" : "White-Label Subscription Tiers"}
+                      </strong>
+                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                        {language === 'bn' ? "অনলাইনে সাইট বিক্রির জন্য নিজস্ব মূল্য এবং ডোমেইন প্যাকেট সেট করুন।" : "Configure subscription rates, limits, and server-tier configurations."}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setActiveTab('reseller-hub');
+                        const event = new CustomEvent("app-toast", { detail: language === 'bn' ? "মূল্যতালিকা কনফিগারেশন লোড হচ্ছে" : "Loading Price Configurator" });
+                        window.dispatchEvent(event);
+                      }}
+                      className="w-full py-1.5 bg-[#f58220] hover:bg-orange-600 text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                    >
+                      {language === 'bn' ? "প্যাকেজ রেট চেঞ্জ" : "Set Subscription Rates"}
+                    </button>
+                  </div>
+
+                  {/* Option 3: Branding & Store Custom themes */}
+                  <div className="p-4 bg-zinc-50 hover:bg-blue-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="p-1.5 bg-blue-100 text-blue-600 rounded-lg text-xs block">✨</span>
+                        <span className="text-[9px] text-blue-600 font-extrabold uppercase bg-blue-105/40 px-1.5 py-0.5 rounded">Branding</span>
+                      </div>
+                      <strong className="block text-xs font-black text-zinc-900 pt-1">
+                        {language === 'bn' ? "ক্লাইন্ট সাইট থিম ও ব্র্যান্ডিং" : "Themes & Logo Styling"}
+                      </strong>
+                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                        {language === 'bn' ? "রিসেলারের সাব-স্টোরগুলোর লোগো, থিম ও ব্যানার ডিজাইন কাস্টমাইজ করুন।" : "Customize templates, layout presets, headers, and colors for sold sites."}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setAdminSettingsModalOpen(true);
+                        setAdminSettingsTab('reseller');
+                        setProfileDropdownOpen(false);
+                      }}
+                      className="w-full py-1.5 bg-[#063b6d] hover:bg-[#052b50] text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                    >
+                      {language === 'bn' ? "থিম ও ব্র্যান্ডিং লোগো" : "Customize Branding"}
+                    </button>
+                  </div>
+
+                  {/* Option 4: Quick-Access Multi-Tenant Configuration Panel */}
+                  <div className="p-4 bg-zinc-50 hover:bg-purple-50/50 border border-zinc-200 rounded-xl transition duration-200 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="p-1.5 bg-purple-100 text-purple-600 rounded-lg text-xs block">⚙️</span>
+                        <span className="text-[9px] text-purple-600 font-extrabold uppercase bg-purple-100/40 px-1.5 py-0.5 rounded">Settings</span>
+                      </div>
+                      <strong className="block text-xs font-black text-zinc-900 pt-1">
+                        {language === 'bn' ? "রিসেলার ফুল কনফিগারেশন প্যানেল" : "White-Label Setup Panel"}
+                      </strong>
+                      <span className="block text-[10.5px] text-zinc-400 leading-normal">
+                        {language === 'bn' ? "আপনার ব্রাউজার সেশনে স্পেশাল রিসেলার হাব সম্পূর্ণ কাস্টমাইজ করুন।" : "Modify validation keys, system domain names, and reseller networks."}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        const event = new CustomEvent("open-reseller-panel");
+                        window.dispatchEvent(event);
+                      }}
+                      className="w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10.5px] font-bold rounded-lg border-0 cursor-pointer transition text-center"
+                    >
+                      {language === 'bn' ? "ডাইরেক্ট কনফিগ প্যানেল" : "Launch Configuration"}
+                    </button>
+                  </div>
+
+                </div>
               </div>
 
               {/* EARNING STATISTICS (RECHARTS BAR CHART REPLICATED IN PURE RICH RESPONSIVE CSS) */}

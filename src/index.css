@@ -237,6 +237,23 @@ body {
 }
 
 /* Premium Menu Bar Custom Brand Styling */
+#sticky-header-menu #desktop-search-container button,
+[id="sticky-header-menu"] #desktop-search-container button {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+#sticky-header-menu #desktop-search-container button:hover,
+[id="sticky-header-menu"] #desktop-search-container button:hover {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+#sticky-header-menu #desktop-search-container button svg,
+[id="sticky-header-menu"] #desktop-search-container button svg {
+  color: #ffffff !important;
+}
+
 #sticky-header-menu,
 [id="sticky-header-menu"] {
   background-color: #05725e !important; /* Premium brand green, perfectly matching the sidebar */
