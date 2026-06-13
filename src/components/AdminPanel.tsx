@@ -2667,6 +2667,9 @@ export default function AdminPanel({
                                     href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu Alaikum, I am the admin. I received your order ${order.id} and am checking to confirm it!`)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                    }}
                                     className="bg-emerald-500 hover:bg-emerald-600 text-white rounded px-2 py-1 text-[9px] font-black uppercase whitespace-nowrap no-underline flex items-center justify-center cursor-pointer border-0"
                                     title="Contact on WhatsApp"
                                   >
@@ -2674,7 +2677,8 @@ export default function AdminPanel({
                                   </a>
 
                                   <button
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       setSelectedInvoiceOrder(order);
                                       setIsInvoiceModalOpen(true);
                                     }}
@@ -3174,6 +3178,9 @@ export default function AdminPanel({
                                           href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu Alaikum, I am the admin. I received your order ${order.id} and am checking to confirm it!`)}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                          }}
                                           className="bg-emerald-500 hover:bg-emerald-600 text-white rounded px-2 py-1 text-[9px] font-black uppercase whitespace-nowrap no-underline flex items-center justify-center cursor-pointer border-0"
                                           title="Contact on WhatsApp"
                                         >
@@ -3181,7 +3188,8 @@ export default function AdminPanel({
                                         </a>
 
                                         <button
-                                          onClick={() => {
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             setSelectedInvoiceOrder(order);
                                             setIsInvoiceModalOpen(true);
                                           }}
