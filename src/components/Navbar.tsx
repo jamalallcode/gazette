@@ -180,6 +180,11 @@ export default function Navbar({
     setSelectedCategory('all');
     setSearchQuery("");
     setMobileMenuOpen(false);
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
 
     if (newHistory.length >= 23) {
       const last23 = newHistory.slice(-23);
@@ -379,6 +384,11 @@ export default function Navbar({
         setSelectedCategory('all');
         setSearchQuery('');
       }
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        window.scrollTo(0, 0);
+      }
     } else if (item.actionType === 'scroll') {
       if (item.actionValue === 'home-blogs-section') {
         onScrollToBlog?.();
@@ -412,6 +422,11 @@ export default function Navbar({
       if (dpItem.actionValue === 'shop') {
         setSelectedCategory('all');
         setSearchQuery('');
+      }
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        window.scrollTo(0, 0);
       }
     } else if (dpItem.actionType === 'scroll') {
       if (dpItem.actionValue === 'home-blogs-section') {

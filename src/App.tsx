@@ -596,6 +596,14 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
+  }, [currentTab]);
+
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState<boolean>(false);
   const [isLicenseHighlighted, setIsLicenseHighlighted] = useState<boolean>(false);
