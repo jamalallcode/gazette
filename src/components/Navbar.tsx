@@ -690,7 +690,7 @@ export default function Navbar({
             <div className="flex items-center space-x-1.5">
 
               {/* ADVANCED ADMIN MOB DEMO BUTTON & REGISTRATION DROPDOWN */}
-              <div className="relative font-sans lg:hidden" id="mobile-admin-demo-dropdown">
+              <div className="font-sans lg:hidden" id="mobile-admin-demo-dropdown">
                 <button
                   type="button"
                   onClick={() => {
