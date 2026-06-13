@@ -1224,7 +1224,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-zinc-800 flex flex-col font-sans" id="app-root-frame">
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-grow" id="boxed-app-container">
+      <div className={`${currentTab === 'admin' ? 'max-w-none px-1.5 sm:px-3 md:px-4 lg:px-6' : 'max-w-[1550px] px-2.5 sm:px-4 lg:px-8'} w-full mx-auto flex flex-col flex-grow transition-all duration-300`} id="boxed-app-container">
         
         {/* Persistent Demo Administrator Warning Header Red Bar */}
         {currentUser?.is_demo_user && (
@@ -2687,7 +2687,7 @@ export default function App() {
 
       {/* Footer copyright frame */}
       <footer className="bg-[#5c5d60] text-white pt-12 pb-8 mt-6" id="portal-footer">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 space-y-8">
+        <div className={`${currentTab === 'admin' ? 'max-w-none px-3 md:px-6' : 'max-w-[1550px] px-4 md:px-6'} mx-auto space-y-8`}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 text-left">
             
             <div className="md:col-span-4 flex flex-col space-y-4">

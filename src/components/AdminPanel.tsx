@@ -59,6 +59,32 @@ const BASE_STATS = {
   pendingAmount: 10.71
 };
 
+const getAdminTabsList = (lang: string) => [
+  { value: 'dashboard', label: lang === 'bn' ? '📊 ড্যাশবোর্ড' : '📊 Dashboard' },
+  { value: 'orders', label: lang === 'bn' ? '🛒 অর্ডারস' : '🛒 Orders' },
+  { value: 'pos', label: lang === 'bn' ? '🏪 পিওএস সেলস' : '🏪 POS Sales' },
+  { value: 'category-setup', label: lang === 'bn' ? '🗂️ ক্যাটাগরি সেটআপ' : '🗂️ Category Setup' },
+  { value: 'brands', label: lang === 'bn' ? '⭐ ব্র্যান্ডস' : '⭐ Brands' },
+  { value: 'in-house', label: lang === 'bn' ? '📦 ইন-হাউজ প্রোডাক্টস' : '📦 In-House Products' },
+  { value: 'messages', label: lang === 'bn' ? '📬 গ্রাহক বার্তা' : '📬 Inquiries' },
+  { value: 'suppliers', label: lang === 'bn' ? '🏢 সাপ্লায়ার পোর্টাল' : '🏢 Suppliers' },
+  { value: 'affiliate', label: lang === 'bn' ? '👥 অ্যাফিলিয়েট' : '👥 Affiliate' },
+  { value: 'offers-deals', label: lang === 'bn' ? '🎟️ অফার ও ডিলস' : '🎟️ Offers & Deals' },
+  { value: 'notifications', label: lang === 'bn' ? '🔔 নোটিফিকেশনস' : '🔔 Notifications' },
+  { value: 'announcements', label: lang === 'bn' ? '📢 বিশেষ ঘোষণা' : '📢 Announcements' },
+  { value: 'support-ticket', label: lang === 'bn' ? '🎫 সাপোর্ট টিকেট' : '🎫 Support Tickets' },
+  { value: 'sales-report', label: lang === 'bn' ? '📈 সেলস রিপোর্ট' : '📈 Sales Report' },
+  { value: 'customers', label: lang === 'bn' ? '👥 গ্রাহক তালিকা' : '👥 Customers' },
+  { value: 'sellers', label: lang === 'bn' ? '🏪 পার্টনার সেলারস' : '🏪 Partner Sellers' },
+  { value: 'delivery-man', label: lang === 'bn' ? '🏍️ ডেলিভারি স্কোয়াড' : '🏍️ Delivery Men' },
+  { value: 'employees', label: lang === 'bn' ? '👔 কর্মকর্তা ডিরেক্টরি' : '👔 Employees' },
+  { value: 'web-design', label: lang === 'bn' ? '🎨 ওয়েবসাইট ডিজাইন' : '🎨 Web Design' },
+  { value: 'courier', label: lang === 'bn' ? '🚚 কুরিয়ার সেটিংস' : '🚚 Courier Setup' },
+  { value: 'pixel-gtm', label: lang === 'bn' ? '💻 পিক্সেল ও জিটিএম' : '💻 Pixel & GTM' },
+  { value: 'subscribers', label: lang === 'bn' ? '📧 সাবস্ক্রাইবার্স' : '📧 Subscribers' },
+  { value: 'reseller-hub', label: lang === 'bn' ? '🌐 রিসেলার হাব' : '🌐 Reseller Hub' },
+];
+
 export default function AdminPanel({
   products,
   setProducts,
@@ -2300,35 +2326,48 @@ export default function AdminPanel({
         className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden w-full max-w-full"
       >
 
-        {/* Floating Sidebar Trigger for Mobile/Tablets */}
-        {!sidebarOpen && (
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="fixed top-3 left-3 z-[1000] p-2 bg-[#063b6d] text-white hover:bg-[#0c4a85] rounded-full shadow-lg border-0 cursor-pointer lg:hidden flex items-center justify-center transition duration-150 transform active:scale-95 animate-in fade-in"
-            title="Open Sidebar Menu"
-          >
-            <Menu size={18} />
-          </button>
-        )}
-
         {/* TOP NAVBAR */}
-        <header className="relative bg-white border-b border-zinc-200 h-16 px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0 font-sans shadow-xs">
-          <div className="flex items-center space-x-1 sm:space-x-4">
-            <div className="flex items-center space-x-2 pl-0">
-              <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0">
-                <BarChart3 size={14} />
+        <header className="relative bg-white border-b border-zinc-200 h-16 px-4 md:px-5 lg:px-6 flex items-center justify-between shrink-0 font-sans shadow-xs">
+          <div className="flex items-center">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 pl-0">
+              <div className="hidden lg:flex h-6 w-6 rounded-full bg-orange-100 items-center justify-center text-orange-500 shrink-0">
+                <BarChart3 size={12} />
               </div>
-              <span className="font-black text-sm sm:text-base md:text-lg text-black uppercase tracking-wider">
-                DASHBOARD
+              
+              {/* Desktop view text active tab indicator */}
+              <span className="hidden lg:inline-block font-black text-xs md:text-sm lg:text-base text-black uppercase tracking-wider">
+                {activeTab.replace('-', ' ')}
               </span>
-              <div className="flex items-center space-x-1.5 text-[9.5px] sm:text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-250 px-2.5 py-0.5 rounded-full select-none shadow-xs">
+
+              {/* Mobile custom quick-nav page selector */}
+              <div className="lg:hidden relative flex items-center">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value)}
+                  className="bg-[#063b6d] text-white text-[10px] sm:text-xs font-bold rounded-lg pl-2 pr-5 py-1 border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-orange-450 appearance-none max-w-[130px] sm:max-w-[200px]"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 6px center',
+                    backgroundSize: '10px'
+                  }}
+                >
+                  {getAdminTabsList(language).map((t) => (
+                    <option key={t.value} value={t.value} className="text-zinc-800 font-sans font-medium text-xs bg-white">
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="hidden sm:flex items-center space-x-1.5 text-[9.5px] sm:text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-250 px-2.5 py-0.5 rounded-full select-none shadow-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>{language === 'bn' ? "লাইভ মনিটর হচ্ছে" : "Live Store Monitoring Active"}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-5 text-sm">
+          <div className="flex items-center space-x-1.5 sm:space-x-4 md:space-x-5 text-sm">
             {/* Interactive Messages Dropdown */}
             <div 
               className="sm:relative" 
@@ -2663,7 +2702,7 @@ export default function AdminPanel({
                   setMessagesDropdownOpen(false);
                   setCartsDropdownOpen(false);
                 }}
-                className="flex items-center space-x-1.5 text-left border-0 bg-transparent hover:bg-zinc-50 rounded-xl p-1 -m-1 transition cursor-pointer select-none"
+                className="flex items-center space-x-1 sm:space-x-1.5 text-left border-0 bg-transparent hover:bg-zinc-50 rounded-xl p-0.5 transition cursor-pointer select-none"
               >
                 <div className="w-8 h-8 rounded-full bg-[#063b6d] text-white flex items-center justify-center font-bold text-xs shrink-0">
                   GB
@@ -2672,7 +2711,7 @@ export default function AdminPanel({
                   <span className="text-xs font-black text-zinc-900 block">Gadget Bazar</span>
                   <span className="text-[9px] font-semibold text-zinc-400 block mt-0.5">Master Admin</span>
                 </div>
-                <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform duration-200 hidden md:block ${profileDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {profileDropdownOpen && (
@@ -2789,7 +2828,7 @@ export default function AdminPanel({
         </header>
 
         {/* WORKSPACE CONTENT AREA */}
-        <main className="pl-4 pr-1 md:pl-6 md:pr-1 lg:pl-0 pb-4 md:pb-6 pt-0 sm:pt-0 md:pt-0 mt-[-8px] flex-1 space-y-4 overflow-x-hidden max-w-full w-full">
+        <main className="px-1.5 sm:px-3 md:px-4 lg:px-6 pb-4 md:pb-6 pt-0 sm:pt-0 md:pt-0 mt-[-8px] flex-1 space-y-4 overflow-x-hidden max-w-full w-full">
 
           {/* Success messages alerts */}
           {successMsg && (
@@ -3161,144 +3200,21 @@ export default function AdminPanel({
                       </div>
                     )}
                   </div>
-
-                    {adminBellDropdownOpen && (
-                      <div 
-                        className="absolute top-full right-0 pt-2 w-72 sm:w-80 z-[9990]" 
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="bg-white dark:bg-[#151d2a] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl py-3.5 px-4 text-left font-sans text-zinc-800 dark:text-zinc-200 animate-in fade-in slide-in-from-top-3 duration-250">
-                          <div className="flex justify-between items-center pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                            <span className="text-xs font-black text-zinc-800 dark:text-white tracking-tight flex items-center gap-1.5">
-                              <Bell size={13} className="text-[#f58220]" />
-                              <span>{language === 'bn' ? `রিয়েল-টাইম নোটিফিকেশন (${unreadNotifications.length})` : `Live Alerts (${unreadNotifications.length})`}</span>
-                            </span>
-                            {unreadNotifications.length > 0 && (
-                              <button 
-                                onClick={() => setUnreadNotifications && setUnreadNotifications([])}
-                                className="bg-transparent border-0 text-[10px] text-zinc-500 hover:text-[#f58220] font-black uppercase cursor-pointer"
-                              >
-                                {language === 'bn' ? "সব পঠিত" : "Clear All"}
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1">
-                            {unreadNotifications.length === 0 ? (
-                              <div className="py-6 text-center space-y-1.5 text-zinc-400">
-                                <span className="text-xl font-bold">🔔</span>
-                                <p className="text-[11px] font-bold">
-                                  {language === 'bn' ? "নতুন কোনো অনলাইন অর্ডার নেই" : "No new online orders right now"}
-                                </p>
-                                <p className="text-[9px] text-zinc-400 max-w-[200px] mx-auto leading-relaxed">
-                                  {language === 'bn' ? "গ্রাহকেরা অর্ডার করলে এইখানে সাথে সাথে অ্যালার্ট বাজবে।" : "New client orders will trigger live auditory alert bells here."}
-                                </p>
-                              </div>
-                            ) : (
-                              unreadNotifications.map((order: any) => {
-                                const orderAmt = currency === 'BDT' ? `৳${order.totalBDT.toLocaleString()}` : `$${order.totalUSD}`;
-                                return (
-                                  <div key={order.id} className="bg-amber-50/80 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl p-3 space-y-2.5 transition">
-                                    <div className="flex justify-between items-start gap-1">
-                                      <div className="text-left space-y-0.5">
-                                        <strong className="text-xs text-zinc-900 dark:text-white block font-sans truncate max-w-[140px]">{order.customerInfo.name}</strong>
-                                        <span className="text-[9.5px] text-zinc-400 font-mono block">{order.id} | {order.date}</span>
-                                      </div>
-                                      <span className="text-xs font-black font-mono text-[#f58220] shrink-0">{orderAmt}</span>
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-[10.5px]">
-                                      <span className="text-zinc-500 truncate max-w-[124px] font-mono font-semibold">{order.customerInfo.phone}</span>
-                                      <div className="flex items-center gap-1.5 font-bold">
-                                        <a 
-                                          href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu Alaikum, I am the admin. I received your order ${order.id} and am checking to confirm it!`)}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded px-2 py-1 text-[9px] font-black uppercase whitespace-nowrap no-underline flex items-center justify-center cursor-pointer border-0"
-                                          title="Contact on WhatsApp"
-                                        >
-                                          💬 WhatsApp
-                                        </a>
-
-                                        <button
-                                          onClick={() => {
-                                            setSelectedInvoiceOrder(order);
-                                            setIsInvoiceModalOpen(true);
-                                          }}
-                                          className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded px-2 py-1 text-[9px] cursor-pointer font-black uppercase border-0 flex items-center justify-center"
-                                        >
-                                          Invoice 🖨️
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-
                 </div>
-                </div>
-
-                {/* 4 PRIMARY STATISTICS BOXES */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-2">
-                  <div className="bg-zinc-50 hover:bg-zinc-100/70 p-4 rounded-xl border border-zinc-100 transition flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block">Total Sale</span>
-                      <strong className="text-xl font-bold font-mono text-zinc-805 block leading-none pt-1">{stats.totalSale}</strong>
-                    </div>
-                    <div className="p-3 bg-red-100/50 rounded-xl text-red-500">
-                      <Coins size={22} className="stroke-[2.5]" />
-                    </div>
-                  </div>
-
-                  <div className="bg-zinc-50 hover:bg-zinc-100/70 p-4 rounded-xl border border-zinc-100 transition flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block">Total Stores</span>
-                      <strong className="text-xl font-bold font-mono text-zinc-805 block leading-none pt-1">{stats.totalStores}</strong>
-                    </div>
-                    <div className="p-3 bg-blue-100/50 rounded-xl text-blue-500">
-                      <Store size={22} className="stroke-[2.5]" />
-                    </div>
-                  </div>
-
-                  <div className="bg-zinc-50 hover:bg-zinc-100/70 p-4 rounded-xl border border-zinc-100 transition flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block">Total Products</span>
-                      <strong className="text-xl font-bold font-mono text-zinc-805 block leading-none pt-1">{stats.totalProducts}</strong>
-                    </div>
-                    <div className="p-3 bg-orange-100/50 rounded-xl text-orange-500">
-                      <ShoppingBag size={22} className="stroke-[2.5]" />
-                    </div>
-                  </div>
-
-                  <div className="bg-zinc-50 hover:bg-zinc-100/70 p-4 rounded-xl border border-zinc-100 transition flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block">Total Customers</span>
-                      <strong className="text-xl font-bold font-mono text-zinc-805 block leading-none pt-1">{stats.totalCustomers}</strong>
-                    </div>
-                    <div className="p-3 bg-teal-100/50 rounded-xl text-teal-500">
-                      <Users size={22} className="stroke-[2.5]" />
-                    </div>
-                  </div>
-                </div>
+              </div>
+            </div>
 
                 {/* 8 GRID STATUS CARDS PLOTTED WITH PIXEL PRECISION */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
                   {[
-                    { label: "Pending", val: stats.pending, bg: "bg-[#fffbf2] border-[#fdecd5] dark:bg-amber-950/20 dark:border-amber-900/30", txt: "text-black dark:text-black", bullet: "bg-amber-500", valClr: "text-[#1f4172] dark:text-amber-400" },
-                    { label: "Confirmed", val: stats.confirmed, bg: "bg-[#f5fcf8] border-[#daf2e3] dark:bg-emerald-950/20 dark:border-emerald-900/30", txt: "text-black dark:text-black", bullet: "bg-green-500", valClr: "text-[#1f4172] dark:text-emerald-400" },
-                    { label: "Packaging", val: stats.packaging, bg: "bg-[#fef7f6] border-[#fbdcd0] dark:bg-orange-950/20 dark:border-orange-900/30", txt: "text-black dark:text-black", bullet: "bg-red-400", valClr: "text-red-500 dark:text-orange-400" },
-                    { label: "Out for delivery", val: stats.outForDelivery, bg: "bg-[#f5fbfc] border-[#daf0f5] dark:bg-cyan-950/20 dark:border-cyan-900/30", txt: "text-black dark:text-black", bullet: "bg-cyan-500", valClr: "text-emerald-600 dark:text-cyan-400" },
-                    { label: "Delivered", val: stats.delivered, bg: "bg-[#f5fcf8] border-[#daf2e3] dark:bg-green-950/20 dark:border-green-900/30", txt: "text-black dark:text-black", bullet: "bg-[#10b981]", valClr: "text-blue-700 dark:text-green-400" },
-                    { label: "Canceled", val: stats.canceled, bg: "bg-[#fdf9f9] border-[#fbd4d4] dark:bg-zinc-900/50 dark:border-zinc-800", txt: "text-black dark:text-black", bullet: "bg-zinc-400", valClr: "text-red-500 dark:text-zinc-400" },
-                    { label: "Returned", val: stats.returned, bg: "bg-[#fcf8fb] border-[#f2daeb] dark:bg-pink-950/20 dark:border-pink-900/30", txt: "text-black dark:text-black", bullet: "bg-[#fa42aa]", valClr: "text-[#1f4172] dark:text-pink-400" },
-                    { label: "Failed to delivery", val: stats.failed, bg: "bg-[#fffcfc] border-[#fbd4d4] dark:bg-rose-950/20 dark:border-rose-900/30", txt: "text-black dark:text-black", bullet: "bg-red-500", valClr: "text-red-650 dark:text-rose-400" }
+                    { label: "Pending", val: stats.pending, bg: "bg-[#fffbf2] border-[#fdecd5] dark:bg-amber-950/20 dark:border-amber-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-amber-500", valClr: "text-[#1f4172] dark:text-[#1f4172]" },
+                    { label: "Confirmed", val: stats.confirmed, bg: "bg-[#f5fcf8] border-[#daf2e3] dark:bg-emerald-950/20 dark:border-emerald-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-green-500", valClr: "text-[#1f4172] dark:text-[#1f4172]" },
+                    { label: "Packaging", val: stats.packaging, bg: "bg-[#fef7f6] border-[#fbdcd0] dark:bg-orange-950/20 dark:border-orange-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-red-400", valClr: "text-red-500 dark:text-orange-400" },
+                    { label: "Out for delivery", val: stats.outForDelivery, bg: "bg-[#f5fbfc] border-[#daf0f5] dark:bg-cyan-950/20 dark:border-cyan-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-cyan-500", valClr: "text-emerald-600 dark:text-cyan-400" },
+                    { label: "Delivered", val: stats.delivered, bg: "bg-[#f5fcf8] border-[#daf2e3] dark:bg-green-950/20 dark:border-green-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-[#10b981]", valClr: "text-blue-700 dark:text-green-400" },
+                    { label: "Canceled", val: stats.canceled, bg: "bg-[#fdf9f9] border-[#fbd4d4] dark:bg-zinc-900/50 dark:border-zinc-800", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-zinc-400", valClr: "text-red-500 dark:text-zinc-400" },
+                    { label: "Returned", val: stats.returned, bg: "bg-[#fcf8fb] border-[#f2daeb] dark:bg-pink-950/20 dark:border-pink-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-[#fa42aa]", valClr: "text-[#1f4172] dark:text-pink-400" },
+                    { label: "Failed to delivery", val: stats.failed, bg: "bg-[#fffcfc] border-[#fbd4d4] dark:bg-rose-950/20 dark:border-rose-900/30", txt: "text-zinc-900 dark:text-zinc-900", bullet: "bg-red-500", valClr: "text-red-655 dark:text-rose-400" }
                   ].map((sub, i) => (
                     <div key={i} className={`flex items-center justify-between px-3.5 py-3 ${sub.bg} border rounded-lg shadow-2xs`}>
                       <div className="flex items-center space-x-2">
@@ -3311,80 +3227,80 @@ export default function AdminPanel({
                 </div>
 
                 {/* ADMIN WALLET LAYOUT CONTRASTS */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4">
-                <div className="flex items-center space-x-2 pb-1 border-b border-zinc-100">
-                  <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-                    <Coins size={14} />
-                  </div>
-                  <span className="font-bold text-sm text-zinc-800">Admin Wallet</span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  
-                  {/* Left big block (col-span-5) */}
-                  <div className="lg:col-span-5 bg-gradient-to-br from-[#063b6d] to-[#04213f] rounded-xl p-6 text-white flex flex-col justify-between shadow-xs min-h-[160px]">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-[10px] uppercase font-black text-opacity-80 tracking-widest text-[#a1c2ff]">In-House Earning</span>
-                        <strong className="block text-2xl font-black font-sans text-white tracking-tight mt-1">
-                          ৳{stats.inHouseEarning.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </strong>
-                      </div>
-                      <div className="p-2.5 bg-white/10 rounded-lg text-white">
-                        <Coins size={20} />
-                      </div>
+                <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm text-left space-y-4">
+                  <div className="flex items-center space-x-2 pb-1 border-b border-zinc-100">
+                    <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+                      <Coins size={14} />
                     </div>
-                    <p className="text-[10px] text-zinc-300 leading-none">Calculated dynamically based on processing invoices</p>
+                    <span className="font-bold text-sm text-zinc-920">Admin Wallet</span>
                   </div>
 
-                  {/* Right small blocks (col-span-7) */}
-                  <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                     
-                    <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Commission Earned</span>
-                        <strong className="text-md font-black text-zinc-800 block">
-                          ৳{stats.commissionEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </strong>
+                    {/* Left big block (col-span-5) */}
+                    <div className="lg:col-span-5 bg-gradient-to-br from-[#063b6d] to-[#04213f] rounded-xl p-6 text-white flex flex-col justify-between shadow-xs min-h-[160px]">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-[10px] uppercase font-black text-opacity-80 tracking-widest text-[#a1c2ff]">In-House Earning</span>
+                          <strong className="block text-2xl font-black font-sans text-white tracking-tight mt-1">
+                            ৳{stats.inHouseEarning.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </strong>
+                        </div>
+                        <div className="p-2.5 bg-white/10 rounded-lg text-white">
+                          <Coins size={20} />
+                        </div>
                       </div>
-                      <span className="p-2 bg-red-50 text-red-500 rounded-lg text-xs font-bold">৳</span>
+                      <p className="text-[10px] text-zinc-300 leading-none">Calculated dynamically based on processing invoices</p>
                     </div>
 
-                    <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Delivery Charge Earned</span>
-                        <strong className="text-md font-black text-zinc-800 block">
-                          ৳{stats.deliveryChargeEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </strong>
+                    {/* Right small blocks (col-span-7) */}
+                    <div className="lg:col-span-7 grid grid-cols-2 gap-2 sm:gap-3.5">
+                      
+                      <div className="bg-zinc-50 border border-zinc-200 p-2.5 sm:p-4 rounded-xl flex items-center justify-between">
+                        <div className="space-y-0.5 min-w-0">
+                          <span className="text-[9px] sm:text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block truncate">Commission Earned</span>
+                          <strong className="text-[11.5px] sm:text-md font-black text-zinc-900 block truncate">
+                            ৳{stats.commissionEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </strong>
+                        </div>
+                        <span className="p-1 sm:p-2 bg-red-50 text-red-500 rounded-lg text-[10px] sm:text-xs font-bold leading-none shrink-0 flex items-center justify-center h-6 w-6 sm:h-auto sm:w-auto">৳</span>
                       </div>
-                      <span className="p-2 bg-orange-50 text-orange-500 rounded-lg text-xs font-bold">🚚</span>
-                    </div>
 
-                    <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Total Tax Collected</span>
-                        <strong className="text-md font-black text-zinc-800 block">
-                          ৳{stats.totalTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </strong>
+                      <div className="bg-zinc-50 border border-zinc-200 p-2.5 sm:p-4 rounded-xl flex items-center justify-between">
+                        <div className="space-y-0.5 min-w-0">
+                          <span className="text-[9px] sm:text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block truncate">Delivery Charge Earned</span>
+                          <strong className="text-[11.5px] sm:text-md font-black text-zinc-900 block truncate">
+                            ৳{stats.deliveryChargeEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </strong>
+                        </div>
+                        <span className="p-1 sm:p-2 bg-orange-50 text-orange-500 rounded-lg text-[10px] sm:text-xs font-bold leading-none shrink-0 flex items-center justify-center h-6 w-6 sm:h-auto sm:w-auto">🚚</span>
                       </div>
-                      <span className="p-2 bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold">💸</span>
-                    </div>
 
-                    <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <span className="text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block">Pending Amount</span>
-                        <strong className="text-md font-black text-zinc-800 block">
-                          ৳{stats.pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </strong>
+                      <div className="bg-zinc-50 border border-zinc-200 p-2.5 sm:p-4 rounded-xl flex items-center justify-between">
+                        <div className="space-y-0.5 min-w-0">
+                          <span className="text-[9px] sm:text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block truncate">Total Tax Collected</span>
+                          <strong className="text-[11.5px] sm:text-md font-black text-zinc-900 block truncate">
+                            ৳{stats.totalTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </strong>
+                        </div>
+                        <span className="p-1 sm:p-2 bg-zinc-100 text-zinc-600 rounded-lg text-[10px] sm:text-xs font-bold leading-none shrink-0 flex items-center justify-center h-6 w-6 sm:h-auto sm:w-auto">💸</span>
                       </div>
-                      <span className="p-2 bg-teal-50 text-teal-500 rounded-lg text-xs font-bold">⏳</span>
+
+                      <div className="bg-zinc-50 border border-zinc-200 p-2.5 sm:p-4 rounded-xl flex items-center justify-between">
+                        <div className="space-y-0.5 min-w-0">
+                          <span className="text-[9px] sm:text-[10.5px] font-bold text-zinc-400 uppercase tracking-wide block truncate">Pending Amount</span>
+                          <strong className="text-[11.5px] sm:text-md font-black text-zinc-900 block truncate">
+                            ৳{stats.pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </strong>
+                        </div>
+                        <span className="p-1 sm:p-2 bg-teal-50 text-teal-500 rounded-lg text-[10px] sm:text-xs font-bold leading-none shrink-0 flex items-center justify-center h-6 w-6 sm:h-auto sm:w-auto">⏳</span>
+                      </div>
+
                     </div>
 
                   </div>
 
                 </div>
-
-              </div>
 
               {/* ONLINE SITE RESELLER & SELLING STUDIO (CORE BUSINESS MODEL GATEWAYS) */}
               {!currentUser?.is_demo_user && (

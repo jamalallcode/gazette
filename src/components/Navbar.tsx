@@ -628,12 +628,12 @@ export default function Navbar({
   const activeCategoryLabel = categoriesList.find(c => c.id === selectedCategory)?.[language === 'bn' ? 'nameBn' : 'name'] || "Categories";
 
   return (
-    <header className="w-full flex flex-col font-sans text-zinc-805" id="gadget-bazar-header">
+    <header className="w-full flex flex-col font-sans text-zinc-855" id="gadget-bazar-header">
       
       {/* 1. Mint/Green Top Offer Banner */}
       {showEidBanner && activeTenant?.enableDiscountedProducts && (
         <div className="order-5 mt-2 -mb-1 bg-gradient-to-r from-[#064e3b] via-[#047857] to-[#064e3b] text-white text-xs py-1 px-4 select-none relative transition-all duration-300 border-b border-green-950/40">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className={`${currentTab === 'admin' ? 'max-w-none px-2.5' : 'max-w-[1550px]'} mx-auto w-full flex items-center justify-between`}>
             {/* Left aligned fixed premium ribbon badge */}
             <div className="flex items-center space-x-2 shrink-0 z-10 mr-4">
               <span className="inline-flex items-center bg-gradient-to-r from-emerald-650 from-emerald-600 via-teal-505 via-teal-500 to-green-505 to-green-500 text-white text-[11px] font-black tracking-widest px-3 py-1 rounded-lg shadow-[0_0_12px_rgba(16,185,129,0.4)] border border-green-400/30">
@@ -673,7 +673,7 @@ export default function Navbar({
         id="mobile-ribbon-header"
         className="order-4 bg-zinc-50/95 backdrop-blur-md py-2.5 px-4.5 border-b border-zinc-200 shadow-sm animate-fade-in lg:hidden z-50 transition-all duration-300 fixed top-0 left-0 right-0 h-[56px] flex items-center"
       >
-        <div className="max-w-7xl mx-auto w-full">
+        <div className={`${currentTab === 'admin' ? 'max-w-none px-1' : 'max-w-[1550px]'} mx-auto w-full`}>
           
           {/* Top Brand Bar Row */}
           <div className="flex items-center justify-between w-full">
@@ -714,7 +714,8 @@ export default function Navbar({
 
                 {adminDropdownOpen && (
                   <div 
-                    className="absolute top-full right-[-40px] mt-2 w-72 bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-3.5 px-3.5 z-[99999] animate-in fade-in slide-in-from-top-3 duration-250 font-sans"
+                    id="mobile-admin-dropdown-menu-box"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white text-zinc-800 rounded-xl shadow-2xl border border-zinc-200 py-3.5 px-3.5 z-[99999] animate-in fade-in slide-in-from-top-3 duration-250 font-sans"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {currentUser?.role === 'admin' ? (
@@ -1060,7 +1061,7 @@ export default function Navbar({
                 const isDropdownOpen = openDropdownId === item.id;
 
                 return (
-                  <div key={item.id} className="w-full">
+                  <div key={item.id} id={`nav-menu-item-${item.id}`} className="w-full">
                     {hasDropdown ? (
                       <>
                         <button 
@@ -1166,12 +1167,12 @@ export default function Navbar({
       <div 
         className={`order-3 bg-[#f0fdf4] text-emerald-950 hidden lg:block transition-all duration-300 ease-in-out border-b border-green-100 ${
           isSticky 
-            ? "fixed top-0 left-0 right-0 max-w-7xl mx-auto z-50 shadow-xl bg-[#f0fdf4]/95 backdrop-blur-md border-b border-green-200 py-1" 
+            ? `fixed top-0 left-0 right-0 ${currentTab === 'admin' ? 'max-w-none' : 'max-w-[1550px]'} mx-auto z-50 shadow-xl bg-[#f0fdf4]/95 backdrop-blur-md border-b border-green-200 py-1` 
             : "relative shadow-md py-0"
         }`} 
         id="sticky-header-menu"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between sm:px-6 lg:px-8">
+        <div className={`${currentTab === 'admin' ? 'max-w-none px-4' : 'max-w-[1550px]'} mx-auto w-full flex items-center justify-between sm:px-6 lg:px-8`}>
           
           <div className="flex items-center w-full justify-between">
             
@@ -1991,7 +1992,7 @@ export default function Navbar({
 
       {/* 3. Mobile Search Tray - Scrolls with the page, goes behind the fixed top logo header */}
       <div className="order-4 lg:hidden bg-white dark:bg-white pb-3 pt-2 px-4.5 border-b border-zinc-200 dark:border-zinc-200 shadow-sm relative z-40">
-        <div className="max-w-7xl mx-auto w-full">
+        <div className={`${currentTab === 'admin' ? 'max-w-none px-1' : 'max-w-[1550px]'} mx-auto w-full`}>
           <div className="relative">
             <div id="mobile-search-container" className="flex items-center overflow-hidden bg-white dark:bg-[#111827] rounded-xl border border-zinc-250 dark:border-[#283752] focus-within:border-[#f58220] focus-within:ring-2 focus-within:ring-orange-100 shadow-sm transition-all duration-300 h-[40px] w-full px-3.5">
               <Search size={15} className="text-zinc-400 dark:text-zinc-550 stroke-[2.5px] mr-2 shrink-0 animate-pulse" />
