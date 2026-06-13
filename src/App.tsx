@@ -586,6 +586,7 @@ export default function App() {
 
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState<boolean>(false);
+  const [isLicenseHighlighted, setIsLicenseHighlighted] = useState<boolean>(false);
   const [activePlayingVideoId, setActivePlayingVideoId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(() => {
     const saved = localStorage.getItem("nabik_current_user");
@@ -596,6 +597,13 @@ export default function App() {
   const [demoTimeLeft, setDemoTimeLeft] = useState<string>("02:00:00");
   const [demoActivationCode, setDemoActivationCode] = useState<string>("");
   const [isDemoActivating, setIsDemoActivating] = useState<boolean>(false);
+
+  const triggerLicenseHighlight = () => {
+    setIsLicenseHighlighted(true);
+    setTimeout(() => {
+      setIsLicenseHighlighted(false);
+    }, 4000);
+  };
 
   useEffect(() => {
     if (!currentUser?.is_demo_user || !currentUser?.expires_at) return;
@@ -643,6 +651,7 @@ export default function App() {
   const handleActivateDemoLicense = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!demoActivationCode || !demoActivationCode.trim()) {
+      triggerLicenseHighlight();
       const msg = language === 'bn' ? "দয়া করে একটি লাইসেন্স কোড লিখুন" : "Please enter a valid license code";
       const event = new CustomEvent("app-toast", { detail: msg });
       window.dispatchEvent(event);
@@ -1250,10 +1259,14 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsLicenseModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs px-4 py-1.5 rounded-lg border border-emerald-400 select-none cursor-pointer shadow-md hover:shadow-emerald-500/20 transition-all flex items-center gap-1.5 uppercase font-sans font-black"
+                className={`transition-all duration-300 flex items-center gap-1.5 uppercase font-sans font-black text-xs px-4 py-1.5 rounded-lg border select-none cursor-pointer shadow-md active:scale-95 ${
+                  isLicenseHighlighted 
+                    ? "bg-amber-400 hover:bg-amber-300 text-zinc-950 border-amber-300 scale-115 shadow-xl shadow-amber-400/50 ring-4 ring-amber-300/40 animate-pulse font-black" 
+                    : "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 hover:shadow-emerald-500/20"
+                }`}
                 title="Click to generate your dynamic premium activation key"
               >
-                <Key size={13} className="text-zinc-100" />
+                <Key size={13} className={isLicenseHighlighted ? "text-zinc-950" : "text-zinc-100"} />
                 <span>License Code</span>
               </button>
             </div>
@@ -1264,6 +1277,7 @@ export default function App() {
                 type="text"
                 value={demoActivationCode}
                 onChange={(e) => setDemoActivationCode(e.target.value)}
+                onClick={() => triggerLicenseHighlight()}
                 placeholder={language === 'bn' ? "লাইসেন্স কোড (যেমন: LICENSE-GBAZAR-2026)" : "Enter key (e.g. LICENSE-GBAZAR-2026)"}
                 className="bg-white text-zinc-900 placeholder-zinc-400 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-60 md:w-56 tracking-tight border border-zinc-200 shadow-sm"
               />
