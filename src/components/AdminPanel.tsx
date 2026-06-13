@@ -103,6 +103,22 @@ export default function AdminPanel({
 }: AdminPanelProps) {
   // Navigation inside panel
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  
+  // --- Reseller Hub states for Tier 1 Reseller ---
+  const [resellName, setResellName] = useState("");
+  const [resellEmail, setResellEmail] = useState("");
+  const [resellWhatsapp, setResellWhatsapp] = useState("");
+  const [resellPrice, setResellPrice] = useState("4500");
+  const [justGeneratedKey, setJustGeneratedKey] = useState("");
+  const [resellerKeysHistory, setResellerKeysHistory] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem("gb_reseller_generated_keys");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
   const [adminBellDropdownOpen, setAdminBellDropdownOpen] = useState(false);
   
   // Dynamic Subscribers State
@@ -213,11 +229,17 @@ export default function AdminPanel({
       if (response.ok && data.success) {
         // Upgrade current user
         if (setCurrentUser && currentUser) {
-          setCurrentUser({
+          const userTier = data.tier || 1;
+          const updatedUser = {
             ...currentUser,
             is_demo_user: false,
-            expires_at: undefined
-          });
+            expires_at: undefined,
+            is_reseller: userTier === 1,
+            reseller_tier: userTier,
+            reseller_quota_remaining: userTier === 1 ? 3 : 0
+          };
+          setCurrentUser(updatedUser);
+          localStorage.setItem("nabik_current_user", JSON.stringify(updatedUser));
         }
         const msg = language === 'bn' 
           ? "অভিনন্দন! আপনার সাইটের স্থায়ী লাইসেন্স সক্রিয় হয়েছে ও ডেমো মোড বাতিল করা হয়েছে।" 
@@ -2273,7 +2295,7 @@ export default function AdminPanel({
               </button>
             )}
 
-             {currentUser?.email === 'jamaluddinkh3424@gmail.com' && (!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
+             {(currentUser?.email === 'jamaluddinkh3424@gmail.com' || (currentUser?.is_reseller === true && currentUser?.reseller_tier === 1)) && (!searchQuery || "reseller".includes(searchQuery.toLowerCase()) || "license".includes(searchQuery.toLowerCase()) || "site sell".includes(searchQuery.toLowerCase()) || "সাইট বিক্রি".includes(searchQuery.toLowerCase()) || "লাইসেন্স".includes(searchQuery.toLowerCase())) && (
                <button 
                  onClick={() => setActiveTab('reseller-hub')}
                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold border-0 transition ${activeTab === 'reseller-hub' ? 'bg-[#f58220] text-white font-black' : 'text-zinc-250 text-zinc-100 hover:bg-[#0a457c] hover:text-white'}`}
@@ -8441,123 +8463,445 @@ export default function AdminPanel({
           )}
 
           {/* ============== TAB: RESELLER HUB ============== */}
-          {activeTab === 'reseller-hub' && currentUser?.email === 'jamaluddinkh3424@gmail.com' && (
+          {activeTab === 'reseller-hub' && (currentUser?.email === 'jamaluddinkh3424@gmail.com' || (currentUser?.is_reseller && currentUser?.reseller_tier === 1)) && (
             <div className="space-y-6 text-left font-sans" id="sell-sites-online-panel">
+              
+              {/* BRANDED HEADER */}
               <div className="bg-gradient-to-r from-[#063b6d] to-[#0a457c] text-white rounded-2xl p-6 shadow-md border border-zinc-850">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <span className="text-[10px] bg-amber-500 text-zinc-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      {language === 'bn' ? "হোয়াইট-লেবেল ই-কমার্স ডিলিং" : "SaaS White-Label Portal"}
+                      {currentUser?.email === 'jamaluddinkh3424@gmail.com' 
+                        ? (language === 'bn' ? "সুপার এডমিন লাইসেন্স ডিলার" : "Super Admin SaaS Vendor")
+                        : (language === 'bn' ? "হোয়াইট-লেবেল রিসেলার পোর্টাল" : "White-Label Partner Console")
+                      }
                     </span>
                     <h1 className="text-xl font-extrabold text-white tracking-tight mt-1.5 flex items-center gap-2">
-                       💼 {language === 'bn' ? "অনলাইনে সাইট বিক্রি ও লাইসেন্স প্যানেল" : "White-Label Site Retail & Licensing"}
+                       💼 {language === 'bn' ? "অনলাইনে সাইট বিক্রি ও লাইসেন্স হাব" : "White-Label Site Retail & Licensing"}
                     </h1>
                     <p className="text-xs text-zinc-200 leading-relaxed max-w-xl">
-                      {language === 'bn'
-                        ? "আপনার তৈরি করা গেজেট বাজার পোর্টালটি লাইভ ডেমো বা স্থায়ীভাবে অনাবৃত করে যেকোনো ক্লায়েন্টের সাথে চুক্তি স্থাপন করুন। গ্রাহকের অর্ডারের বিবরণ, সংক্রিয় কোড ডিস্ট্রিবিউশন এবং হোয়াটসঅ্যাপ সার্ভিস গেটওয়ে এখান থেকেই তদারকি করুন।"
-                        : "Turn this e-commerce software into private-labeled SaaS instances. Pitch custom branding presets to potential clients, configure White-label parameters, and manage active licenses."
+                      {currentUser?.email === 'jamaluddinkh3424@gmail.com'
+                        ? (language === 'bn'
+                            ? "আপনার তৈরি করা গেজেট বাজার পোর্টালটি লাইভ ডেমো বা স্থায়ীভাবে অনাবৃত করে যেকোনো ক্লায়েন্টের সাথে চুক্তি স্থাপন করুন। গ্রাহকের অর্ডারের বিবরণ, সংক্রিয় কোড ডিস্ট্রিবিউশন এবং হোয়াটসঅ্যাপ সার্ভিস গেটওয়ে এখান থেকেই তদারকি করুন।"
+                            : "Turn this e-commerce software into private-labeled SaaS instances. Pitch custom branding presets to potential clients, configure White-label parameters, and manage active licenses."
+                          )
+                        : (language === 'bn'
+                            ? "আপনার সক্রিয় রিসেলার লাইসেন্স ব্যবহার করে ক্লায়েন্টদের জন্য ৩টি সম্পূর্ণ তৈরি ওয়েবসাইট বিক্রি করুন। নতুন লাইসেন্স জেনারেট করে ক্লায়েন্টদের প্রদান করুন।"
+                            : "Use your authorized partner reseller status to provision custom online e-commerce stores for up to 3 clients under your own custom pricing plans!"
+                          )
                       }
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const event = new CustomEvent("open-reseller-panel");
-                      window.dispatchEvent(event);
-                    }}
-                    className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black rounded-xl text-xs uppercase tracking-wide cursor-pointer transition shadow-sm border-0 shrink-0 flex items-center justify-center gap-1.5"
-                  >
-                    <span>⚙️</span>
-                    <span>{language === 'bn' ? 'রিসেলার থিম প্যানেল মেলুন' : 'Open Reseller Theme panel'}</span>
-                  </button>
+                  
+                  {currentUser?.email === 'jamaluddinkh3424@gmail.com' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const event = new CustomEvent("open-reseller-panel");
+                        window.dispatchEvent(event);
+                      }}
+                      className="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-black rounded-xl text-xs uppercase tracking-wide cursor-pointer transition shadow-sm border-0 shrink-0 flex items-center justify-center gap-1.5"
+                    >
+                      <span>⚙️</span>
+                      <span>{language === 'bn' ? 'রিসেলার থিম প্যানেল মেলুন' : 'Open Reseller Theme panel'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Grid with statistics and keys */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                {/* Active License keys */}
-                <div className="bg-white border rounded-2xl p-5 border-orange-200 bg-orange-50/15 shadow-sm text-left">
-                  <span className="text-[10px] uppercase text-orange-600 font-extrabold tracking-wider block">
-                    {language === 'bn' ? "গ্রাহক অ্যাক্টিভেশন চাবি" : "Client Activation Keys"}
-                  </span>
-                  <p className="text-xs text-zinc-500 mt-1 block">
-                    {language === 'bn' 
-                      ? "আপনার ক্লায়েন্টকে ডেমো মোড বাতিল করে চিরস্থায়ী করতে নিচের চাবিগুলো হস্তান্তর করুন:" 
-                      : "Provide these master keys to upgrade client sandbox stores into permanent paid licenses:"}
-                  </p>
-                  
-                  <div className="space-y-2.5 mt-3.5 block">
-                    {[
-                      { key: "GB-PRO-ACTIVE", desc: language === 'bn' ? "প্রিমিয়াম প্রো অ্যাক্টিভ" : "Premium Pro Active" },
-                      { key: "LICENSE-GBAZAR-2026", desc: language === 'bn' ? "এন্টারপ্রাইজ স্ট্যান্ডার্ড" : "Enterprise Standard" },
-                      { key: "ECOM-MATRIX-KEY", desc: language === 'bn' ? "আল্টিমেট ম্যাট্রিক্স চাবি" : "Ultimate Matrix Token" }
-                    ].map((item) => (
-                      <div key={item.key} className="flex items-center justify-between bg-white border border-zinc-200 rounded-xl p-2.5 hover:border-orange-300 hover:bg-orange-50/30 transition-colors">
-                        <div className="min-w-0">
-                          <span className="font-mono text-xs font-black text-zinc-800 select-all block truncate">{item.key}</span>
-                          <span className="text-[9.5px] text-zinc-400 font-bold block">{item.desc}</span>
+              {/* DUAL RENDER CONDITION: MASTER ADMIN VS PARTNER RESELLER */}
+              {currentUser?.email === 'jamaluddinkh3424@gmail.com' ? (
+                /* MASTER ADMIN ORIGINAL ROOT INTERFACE */
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Active License keys */}
+                  <div className="bg-white border rounded-2xl p-5 border-orange-200 bg-orange-50/15 shadow-sm text-left">
+                    <span className="text-[10px] uppercase text-orange-600 font-extrabold tracking-wider block">
+                      {language === 'bn' ? "মাস্টার গ্রাহক অ্যাক্টিভেশন চাবি" : "Master Client Keys"}
+                    </span>
+                    <p className="text-xs text-zinc-500 mt-1 block">
+                      {language === 'bn' 
+                        ? "আপনার ক্লায়েন্টকে ডেমো মোড বাতিল করে চিরস্থায়ী করতে নিচের চাবিগুলো হস্তান্তর করুন:" 
+                        : "Provide these master keys to upgrade client sandbox stores into permanent paid licenses:"}
+                    </p>
+                    
+                    <div className="space-y-2.5 mt-3.5 block">
+                      {[
+                        { key: "GB-PRO-ACTIVE", desc: language === 'bn' ? "প্রিমিয়াম প্রো অ্যাক্টিভ" : "Premium Pro Active" },
+                        { key: "LICENSE-GBAZAR-2026", desc: language === 'bn' ? "এন্টারপ্রাইজ স্ট্যান্ডার্ড" : "Enterprise Standard" },
+                        { key: "ECOM-MATRIX-KEY", desc: language === 'bn' ? "আল্টিমেট ম্যাট্রিক্স চাবি" : "Ultimate Matrix Token" }
+                      ].map((item) => (
+                        <div key={item.key} className="flex items-center justify-between bg-white border border-zinc-200 rounded-xl p-2.5 hover:border-orange-300 hover:bg-orange-50/30 transition-colors">
+                          <div className="min-w-0">
+                            <span className="font-mono text-xs font-black text-zinc-800 select-all block truncate">{item.key}</span>
+                            <span className="text-[9.5px] text-zinc-400 font-bold block">{item.desc}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.key);
+                              const msg = language === 'bn' 
+                                ? `কপি করা হয়েছে: ${item.key}` 
+                                : `Copied: ${item.key}`;
+                              window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
+                            }}
+                            className="px-2 py-1 bg-zinc-50 hover:bg-orange-500 text-zinc-600 hover:text-white border-0 rounded text-[10px] font-black cursor-pointer transition shrink-0 flex items-center gap-1"
+                          >
+                            <Copy size={10} />
+                            {language === 'bn' ? "কপি" : "Copy"}
+                          </button>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Whitespace configuration parameters / quick presets */}
+                  <div className="bg-white border rounded-2xl p-5 shadow-sm text-left col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-extrabold text-zinc-900 block leading-tight">{language === 'bn' ? "হোয়াইট-লেবেল স্ট্যাটাস কনসোল" : "Private-Label Parameters"}</h3>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">{language === 'bn' ? "লাইভ রি-ব্র্যান্ডিং এবং ইন্টিগ্রেশন প্যারামিটার মনিটর" : "Monitor live white-label metrics & theme configuration assets"}</p>
+                      </div>
+                      <span className="text-[9.5px] bg-[#e6f4ea] text-[#137333] border border-[#1b8043]/15 font-black px-2 py-0.5 rounded">
+                        🟢 {language === 'bn' ? "সার্ভার অনলাইন" : "Server Online"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+                      <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block">
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "চলতি স্টোর আইডি" : "Active Tenant"}</span>
+                        <strong className="text-xs text-zinc-800 font-black block mt-1 truncate">{activeTenant.id}</strong>
+                      </div>
+                      <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block">
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "স্টোর শিরোনাম" : "Brand Name"}</span>
+                        <strong className="text-xs text-zinc-800 font-black block mt-1 truncate">{language === 'bn' ? activeTenant.shopNameBn : activeTenant.shopName}</strong>
+                      </div>
+                      <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block col-span-2 md:col-span-1">
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "প্যালেট কালার" : "Primary Palette"}</span>
+                        <strong className="text-xs text-zinc-800 font-black block mt-1 flex items-center gap-1.5">
+                          <span className="h-3 w-3 rounded-full border border-zinc-300 inline-block shrink-0" style={{ backgroundColor: activeTenant.primaryColor }} />
+                          <span className="font-mono text-[11px] font-semibold">{activeTenant.primaryColor}</span>
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50/30 border border-blue-150 p-3.5 rounded-xl text-xs text-zinc-600 leading-relaxed block text-left">
+                      <strong className="text-[#063b6d] block mb-1">📢 {language === 'bn' ? "ডকুমেন্টেশন ও স্যান্ডবক্স গাইডলাইন:" : "Deployment & Sandbox Rules:"}</strong>
+                      {language === 'bn'
+                        ? "নিরাপত্তা রক্ষার জন্য আমরা এই টেমপ্লেটে ৩ জন রি-সেলের সীমা প্যারামিটার যোগ করেছি। আপনার প্রথম স্তরের রিসেলার কাস্টমার নিজের পোর্টাল থেকে ৩ বার পর্যন্ত সাব-লাইসেন্স তৈরি করে সাইটটি অন্যত্র resell করতে পারবেন।"
+                        : "To enforce structural licensing limitations, Tier-1 business buyer nodes are restricted to 3 sublicense generation credits. When credits run out, they must buy another master code to refill!"
+                      }
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* TIER 1 BUYER / RESELLER INTERFACE (Sales quota 3 limit) */
+                <div className="space-y-6">
+                  
+                  {/* JUST GENERATED KEY HIGHLIGHT BOX */}
+                  {justGeneratedKey && (
+                    <div className="bg-[#fff9e6] border border-amber-300 rounded-2xl p-5 text-left space-y-3 shadow-md animate-bounce duration-500">
+                      <div className="flex items-center gap-2 text-amber-800 font-extrabold text-sm">
+                        <span>✨</span>
+                        <span>{language === 'bn' ? "নতুন গ্রাহক লাইসেন্স সফলভাবে তৈরি হয়েছে!" : "Client Sublicense key generated successfully!"}</span>
+                      </div>
+                      <p className="text-xs text-zinc-600">
+                        {language === 'bn' 
+                          ? "নিচের চমৎকার সাব-লাইসেন্স কোডটি কপি করে আপনার ক্লায়েন্টকে প্রদান করুন। কোডটি ক্লায়েন্টের ডেমো সাইটের লাইসেন্স বক্সে অ্যাক্টিভেট করলেই তার সাইট আজীবনের জন্য কোনো ডেমো বা সীমা ছাড়াই চালু হবে!"
+                          : "Copy this custom license key and hand it over to your customer. They can paste it inside their store banner to activate their lifetime site!"}
+                      </p>
+                      <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-zinc-200">
+                        <span className="font-mono text-base font-black text-zinc-800 select-all block tracking-widest">{justGeneratedKey}</span>
                         <button
                           type="button"
                           onClick={() => {
-                            navigator.clipboard.writeText(item.key);
-                            const msg = language === 'bn' 
-                              ? `কপি করা হয়েছে: ${item.key}` 
-                              : `Copied: ${item.key}`;
+                            navigator.clipboard.writeText(justGeneratedKey);
+                            const msg = language === 'bn' ? "কোড কপি করা হয়েছে!" : "Key copied to clipboard!";
                             window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
                           }}
-                          className="px-2 py-1 bg-zinc-50 hover:bg-orange-500 text-zinc-600 hover:text-white border-0 rounded text-[10px] font-black cursor-pointer transition shrink-0 flex items-center gap-1"
+                          className="px-4 py-2 bg-[#f58220] hover:bg-[#d66b11] text-white font-bold text-xs rounded-lg border-0 cursor-pointer transition flex items-center gap-1.5"
                         >
-                          <Copy size={10} />
-                          {language === 'bn' ? "কপি" : "Copy"}
+                          <Copy size={12} />
+                          {language === 'bn' ? "কপি করুন" : "Copy Key"}
                         </button>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Whitespace configuration parameters / quick presets */}
-                <div className="bg-white border rounded-2xl p-5 shadow-sm text-left col-span-2 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-extrabold text-zinc-900 block leading-tight">{language === 'bn' ? "হোয়াইট-লেবেল স্ট্যাটাস কনসোল" : "Private-Label Parameters"}</h3>
-                      <p className="text-[10px] text-zinc-400 mt-0.5">{language === 'bn' ? "লাইভ রি-ব্র্যান্ডিং এবং ইন্টিগ্রেশন প্যারামিটার মনিটর" : "Monitor live white-label metrics & theme configuration assets"}</p>
                     </div>
-                    <span className="text-[9.5px] bg-[#e6f4ea] text-[#137333] border border-[#1b8043]/15 font-black px-2 py-0.5 rounded">
-                      🟢 {language === 'bn' ? "সক্রিয় সেশন" : "Session Active"}
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    {/* QUOTA METER CARD */}
+                    <div className="bg-white border text-left rounded-2xl p-5 border-zinc-200 shadow-sm flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <span className="text-[10px] uppercase text-[#063b6d] font-black tracking-wider block">
+                          📊 {language === 'bn' ? "আপনার অবশিষ্ট বিক্রয় সীমা" : "SaaS License quota limit"}
+                        </span>
+                        <h3 className="text-base font-bold text-zinc-800 block">
+                          {language === 'bn' ? "৩টি কোটা সীমা প্যাকেজ" : "3-Credits Reseller Package"}
+                        </h3>
+                        <p className="text-xs text-zinc-500">
+                          {language === 'bn' 
+                            ? "আপনি আমাদের মূল মালিকের নিকট থেকে লাইসেন্স কিনে সাইটটি সক্রিয় করেছেন। আপনার অনুমোদিত ৩টি বিক্রয় কোটার হিসাব নিচে দেওয়া হলো:"
+                            : "Your active reseller credit accounts are bounded by our license agreement. View your statistics below:"}
+                        </p>
+                      </div>
+
+                      {/* Meter bar */}
+                      <div className="py-4 space-y-2 select-none">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[11px] font-bold text-zinc-500">{language === 'bn' ? "অবশিষ্ট কোটা:" : "Quota Left:"}</span>
+                          <span className={`text-xl font-black ${(currentUser?.reseller_quota_remaining ?? 0) > 0 ? "text-emerald-600" : "text-rose-500 animate-pulse"}`}>
+                            {currentUser?.reseller_quota_remaining ?? 0} / 3 {language === 'bn' ? "টি" : "Units"}
+                          </span>
+                        </div>
+                        <div className="w-full bg-zinc-100 h-4 rounded-full overflow-hidden border border-zinc-200">
+                          <div 
+                            className={`h-full transition-all duration-500 ${
+                              (currentUser?.reseller_quota_remaining ?? 0) === 3 ? "bg-emerald-500" :
+                              (currentUser?.reseller_quota_remaining ?? 0) > 0 ? "bg-amber-500" : "bg-rose-500"
+                            }`} 
+                            style={{ width: `${((currentUser?.reseller_quota_remaining ?? 0) / 3) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Quota Exhausted Alert */}
+                      {(currentUser?.reseller_quota_remaining ?? 0) <= 0 ? (
+                        <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 text-[11px] text-rose-800 font-medium leading-relaxed">
+                          ⚠️ {language === 'bn' 
+                            ? "আপনার ৩টি বিক্রয় কোটা শেষ হয়ে গেছে! কোনো নতুন সাইট তৈরি করতে হলে দয়া করে মূল সফটওয়্যার মালিকের থেকে আরেকটি লাইসেন্স কী সংগ্রহ করে আপনার মেইন স্যান্ডবক্স এক্টিভেটর বক্সে সক্রিয় করুন।"
+                            : "Your authorized sales limit is reached! To gain another 3 credits, please satisfy terms and purchase another key from the original software owner."}
+                        </div>
+                      ) : (
+                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-[11px] text-emerald-800 font-medium select-none">
+                          🟢 {language === 'bn' 
+                            ? "সম্পূর্ণ বিক্রয় ক্ষমতা অনুমোদিত! আপনি আপনার ক্লায়েন্টের ব্রাউজারে বা পোর্টালে ব্যবহারের জন্য নতুন লাইসেন্স কোড তৈরি করতে পারবেন।"
+                            : "Reselling rights active! You can utilize the generator box on the right to grant licensing access to your clients."}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* GENERATE LICENSE CODE FORM CARD */}
+                    <div className="bg-white border text-left rounded-2xl p-5 border-zinc-200 shadow-sm col-span-2">
+                      <span className="text-[10px] uppercase text-[#f58220] font-black tracking-wider block mb-1">
+                        🔑 {language === 'bn' ? "নতুন ক্লায়েন্ট কোড জেনারেটর" : "Client Sublicense key Generator"}
+                      </span>
+                      <h3 className="text-base font-extrabold text-zinc-900 leading-tight block">
+                        {language === 'bn' ? "গ্রাহক সাইট অ্যাক্টিভেশন কী তৈরি" : "Generate Custom Site Sublicense Code"}
+                      </h3>
+                      <p className="text-[11px] text-zinc-400 block mt-0.5 mb-4">
+                        {language === 'bn' 
+                          ? "নিচে আপনার নতুন কাস্টমারের বিবরণ সাবমিট করুন। সাবমিট করার সাথে সাথেই একটি নতুন ২য় স্তরের সাব-লাইসেন্স জেনারেট হবে এবং আপনার কোটা ১ পয়েন্ট কমে যাবে।" 
+                          : "Provide the buyer details below. A secure sub-license will be crafted and bounded under Tier-2 (No further reselling module)."}
+                      </p>
+
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        // Call generation handler inside state
+                        if (!resellName.trim() || !resellEmail.trim() || !resellWhatsapp.trim()) {
+                          const msg = language === 'bn' ? "দয়া করে সব ঘর পূরণ করুন।" : "Please fill out all fields.";
+                          window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
+                          return;
+                        }
+                        
+                        const quota = currentUser?.reseller_quota_remaining ?? 3;
+                        if (quota <= 0) {
+                          const msg = language === 'bn' ? "আপনার বিক্রয় কোটা শেষ হয়ে গেছে! অনুগ্রহ করে নতুন লাইসেন্স কিনে সীমা পরিবর্তন করুন।" : "Your sales quota is exhausted. Please renew from main owner.";
+                          window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
+                          return;
+                        }
+
+                        // Generate sub-license starting with GB-PRO-SUBL-
+                        const block1 = Math.floor(1000 + Math.random() * 9000).toString(16).toUpperCase();
+                        const block2 = Math.floor(1000 + Math.random() * 9000).toString(16).toUpperCase();
+                        const subLicenseKey = `GB-PRO-SUBL-${block1}-${block2}`;
+
+                        // Update current state
+                        const newQuota = Math.max(0, quota - 1);
+                        if (setCurrentUser && currentUser) {
+                          const updatedUser = {
+                            ...currentUser,
+                            reseller_quota_remaining: newQuota
+                          };
+                          setCurrentUser(updatedUser);
+                          localStorage.setItem("nabik_current_user", JSON.stringify(updatedUser));
+                        }
+
+                        // Save in local list
+                        const newRecord = {
+                          id: "SUB-" + Math.floor(100 + Math.random() * 900),
+                          clientName: resellName,
+                          email: resellEmail,
+                          whatsapp: resellWhatsapp,
+                          licenseKey: subLicenseKey,
+                          priceBDT: Number(resellPrice) || 4500,
+                          createdAt: new Date().toISOString()
+                        };
+
+                        const updatedHistory = [newRecord, ...resellerKeysHistory];
+                        setResellerKeysHistory(updatedHistory);
+                        localStorage.setItem("gb_reseller_generated_keys", JSON.stringify(updatedHistory));
+
+                        // Also register inside normal license-system store so it renders in order logs
+                        const simulatedOrder = {
+                          id: "LO-SUB-" + Math.floor(1000 + Math.random() * 9000),
+                          customerName: resellName,
+                          email: resellEmail,
+                          whatsapp: resellWhatsapp,
+                          licenseKey: subLicenseKey,
+                          paymentMethod: "bKash" as const,
+                          paymentStatus: "completed" as const,
+                          paymentTxid: "TXN-SUB" + Math.random().toString(36).substr(2, 6).toUpperCase(),
+                          requestedAt: new Date().toISOString(),
+                          priceBDT: Number(resellPrice) || 4500,
+                          isWhatsAppSent: true
+                        };
+                        try {
+                          const currentOrdersRaw = localStorage.getItem("gb_license_orders_registry");
+                          const currentOrders = currentOrdersRaw ? JSON.parse(currentOrdersRaw) : [];
+                          currentOrders.unshift(simulatedOrder);
+                          localStorage.setItem("gb_license_orders_registry", JSON.stringify(currentOrders));
+                          window.dispatchEvent(new CustomEvent("gb-license-orders-updated"));
+                        } catch (e) {
+                          console.error(e);
+                        }
+
+                        setJustGeneratedKey(subLicenseKey);
+                        setResellName("");
+                        setResellEmail("");
+                        setResellWhatsapp("");
+
+                        const successMsg = language === 'bn' 
+                          ? `সফলভাবে লাইসেন্স সক্রিয় চাবি তৈরি করা হয়েছে: ${subLicenseKey}` 
+                          : `Sublicense successfully generated: ${subLicenseKey}`;
+                        window.dispatchEvent(new CustomEvent("app-toast", { detail: successMsg }));
+                      }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-zinc-500 font-bold uppercase block">{language === 'bn' ? "গ্রাহকের নাম" : "Customer Full Name"}</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={resellName}
+                            onChange={(e) => setResellName(e.target.value)}
+                            placeholder="Ex. আব্দুল করিম"
+                            className="w-full bg-white border border-zinc-300 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-800"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-zinc-500 font-bold uppercase block">{language === 'bn' ? "গ্রাহকের ইমেইল" : "Customer Email Address"}</label>
+                          <input 
+                            type="email" 
+                            required
+                            value={resellEmail}
+                            onChange={(e) => setResellEmail(e.target.value)}
+                            placeholder="Ex. karim99@gmail.com"
+                            className="w-full bg-white border border-zinc-300 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-800"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-zinc-500 font-bold uppercase block">{language === 'bn' ? "গ্রাহকের হোয়াটসঅ্যাপ নম্বর" : "Customer WhatsApp"}</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={resellWhatsapp}
+                            onChange={(e) => setResellWhatsapp(e.target.value)}
+                            placeholder="Ex. 018XXXXXXXX"
+                            className="w-full bg-white border border-[#cccccc] rounded-xl px-3 py-2 text-xs font-semibold text-zinc-805"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-zinc-500 font-bold uppercase block">{language === 'bn' ? "বিক্রয় দর (BDT)" : "Sale Budget (BDT)"}</label>
+                          <input 
+                            type="number" 
+                            required
+                            value={resellPrice}
+                            onChange={(e) => setResellPrice(e.target.value)}
+                            placeholder="Ex. 4500"
+                            className="w-full bg-white border border-zinc-300 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-800"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2 pt-2 flex justify-end">
+                          <button
+                            type="submit"
+                            disabled={(currentUser?.reseller_quota_remaining ?? 0) <= 0}
+                            className={`px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                              (currentUser?.reseller_quota_remaining ?? 0) <= 0 
+                                ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                                : "bg-[#f58220] hover:bg-[#d66b11] text-white"
+                            }`}
+                          >
+                            <span>🔑</span>
+                            <span>{language === 'bn' ? "সাইট লাইসেন্স ও কোড তৈরি করুন" : "Generate Client Sublicense"}</span>
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                  </div>
+
+                  {/* HISTORY REPORT TABLE */}
+                  <div className="bg-white border rounded-2xl p-5 border-zinc-200 shadow-sm text-left">
+                    <span className="text-[10px] uppercase text-zinc-400 font-black tracking-wider block mb-1">
+                      📜 {language === 'bn' ? "আপনার পূর্ববর্তী বিক্রয় বিবরণী" : "Local Sales History"}
                     </span>
+                    <h3 className="text-sm font-extrabold text-zinc-900 block leading-tight mb-3">
+                      {language === 'bn' ? "হোয়াইট-লেবেল ক্লায়েন্টদের লাইসেন্স তালিকা" : "Authorized Client Sublicenses"}
+                    </h3>
+
+                    {resellerKeysHistory.length === 0 ? (
+                      <div className="text-center py-8 text-zinc-400 border border-dashed rounded-xl select-none text-xs">
+                        {language === 'bn' ? "এখনো পর্যন্ত আপনার মাধ্যমে কোনো সাইট বিক্রি করা হয়নি।" : "No sub-license licenses created yet."}
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-extrabold">
+                              <th className="p-3">{language === 'bn' ? "গ্রাহক" : "Client Info"}</th>
+                              <th className="p-3">WhatsApp</th>
+                              <th className="p-3">{language === 'bn' ? "লাইসেন্স কোড" : "Sublicense Code"}</th>
+                              <th className="p-3">{language === 'bn' ? "মূল্য (টাকা)" : "Amount BDT"}</th>
+                              <th className="p-3">{language === 'bn' ? "তারিখ" : "Authorized At"}</th>
+                              <th className="p-3">{language === 'bn' ? "অ্যাকশন" : "Action"}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-100">
+                            {resellerKeysHistory.map((rec, idx) => (
+                              <tr key={idx} className="hover:bg-zinc-50/50">
+                                <td className="p-3">
+                                  <span className="font-bold text-zinc-800 block">{rec.clientName}</span>
+                                  <span className="text-[10px] text-zinc-400 block">{rec.email}</span>
+                                </td>
+                                <td className="p-3 font-mono font-semibold text-zinc-600">{rec.whatsapp}</td>
+                                <td className="p-3">
+                                  <span className="bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded font-mono text-[10.5px] font-black">{rec.licenseKey}</span>
+                                </td>
+                                <td className="p-3 font-mono font-bold text-orange-600">৳{rec.priceBDT}</td>
+                                <td className="p-3 text-zinc-400">{new Date(rec.createdAt).toLocaleDateString()}</td>
+                                <td className="p-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(rec.licenseKey);
+                                      const msg = language === 'bn' ? "লাইসেন্স কী কপি করা হয়েছে!" : "Key copied!";
+                                      window.dispatchEvent(new CustomEvent("app-toast", { detail: msg }));
+                                    }}
+                                    className="px-2 py-0.5 bg-zinc-100 hover:bg-[#f58220] hover:text-white rounded text-[10px] font-bold border-0 cursor-pointer transition flex items-center gap-1"
+                                  >
+                                    <Copy size={9} />
+                                    {language === 'bn' ? "কপি" : "Copy"}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-1">
-                    <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block">
-                      <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "চলতি স্টোর আইডি" : "Active Tenant"}</span>
-                      <strong className="text-xs text-zinc-800 font-black block mt-1 truncate">{activeTenant.id}</strong>
-                    </div>
-                    <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block">
-                      <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "স্টোর শিরোনাম" : "Brand Name"}</span>
-                      <strong className="text-xs text-zinc-800 font-black block mt-1 truncate">{language === 'bn' ? activeTenant.shopNameBn : activeTenant.shopName}</strong>
-                    </div>
-                    <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-150 block col-span-2 md:col-span-1">
-                      <span className="text-[10px] text-zinc-400 font-bold uppercase block">{language === 'bn' ? "প্যালেট কালার" : "Primary Palette"}</span>
-                      <strong className="text-xs text-zinc-800 font-black block mt-1 flex items-center gap-1.5">
-                        <span className="h-3 w-3 rounded-full border border-zinc-300 inline-block shrink-0" style={{ backgroundColor: activeTenant.primaryColor }} />
-                        <span className="font-mono text-[11px] font-semibold">{activeTenant.primaryColor}</span>
-                      </strong>
-                    </div>
-                  </div>
-
-                  {/* Guide list */}
-                  <div className="bg-blue-50/30 border border-blue-150 p-3.5 rounded-xl text-xs text-zinc-600 leading-relaxed block text-left">
-                    <strong className="text-[#063b6d] block mb-1">📢 {language === 'bn' ? "মাস্টার ডোমেইন হোস্টিং ও উইথড্রয়াল পিরিয়ড:" : "Deployment & Sandbox Rules:"}</strong>
-                    {language === 'bn'
-                      ? "পদ্ধতিগত নিরাপত্তা রক্ষার জন্য আমরা ১০ এবং ১৫ মিনিটের দুটি ডেমো সতর্কীকরণ সংকেত ডোমেইন এ যুক্ত করেছি। আপনার ক্লায়েন্ট কোনো কোড সক্রিয় না করেই সাইটটির সমস্ত ড্যাশবোর্ড এবং POS ফিচার টেবিলে রিয়েল-টাইম পরীক্ষা করতে পারবে।"
-                      : "For sandbox evaluation purposes, simulated time-limits and alert triggers are pre-configured. Once your client satisfies licensing terms, share their preferred key to unblock all session expirations permanently."
-                    }
-                  </div>
                 </div>
-
-              </div>
+              )}
 
               {/* The Live licensing orders tracker component */}
               <div className="w-full">

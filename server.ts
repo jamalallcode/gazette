@@ -425,12 +425,20 @@ app.get("/api/debug-server-logs", (req, res) => {
         logDiagnostic(`[LICENSE SUCCESS] Valid license activation for: ${email}. Code matches: ${cleanKey}`);
         return res.json({
           success: true,
-          message: "License matches perfectly! System upgraded to Lifetime Professional Ownership."
+          message: "License matches perfectly! System upgraded to Lifetime Professional Ownership.",
+          tier: 1
+        });
+      } else if (cleanKey.startsWith("GB-PRO-SUBL-")) {
+        logDiagnostic(`[LICENSE SUCCESS] Valid sub-license key activation for: ${email}. Code matches: ${cleanKey}`);
+        return res.json({
+          success: true,
+          message: "Valid sub-license key activation! System upgraded to Lifetime Professional Ownership under Reseller channel.",
+          tier: 2
         });
       } else {
         logDiagnostic(`[LICENSE FAILURE] Invalid license key attempt: '${cleanKey}' for account: ${email}`);
         return res.status(400).json({
-          error: "Invalid license code! Please paste a valid ownership key (e.g. GB-PRO-ACTIVE)."
+          error: "Invalid license code! Please paste a valid ownership key (e.g. GB-PRO-ACTIVE or valid reseller code)."
         });
       }
     } catch (err: any) {

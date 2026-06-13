@@ -81,8 +81,8 @@ export const DEFAULT_MENU_ITEMS: MenuItemConfig[] = [
   },
   {
     id: "discount",
-    label: "Discounted Products",
-    labelBn: "ডিসকাউন্ট প্রোডাক্টস",
+    label: "Landing Page",
+    labelBn: "ল্যান্ডিং পেজ",
     enabled: true,
     actionType: "tab",
     actionValue: "landing",

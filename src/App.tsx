@@ -584,6 +584,18 @@ export default function App() {
     localStorage.setItem("gadget_bazar_local_wishlist", JSON.stringify(localWishlist));
   }, [localWishlist]);
 
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam) {
+        setCurrentTab(tabParam);
+      }
+    } catch (e) {
+      console.error("Error checking URL search param on mount", e);
+    }
+  }, []);
+
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState<boolean>(false);
   const [isLicenseHighlighted, setIsLicenseHighlighted] = useState<boolean>(false);
@@ -672,10 +684,14 @@ export default function App() {
       const data = await response.json();
       if (response.ok && data.success) {
         // Upgrade current user
+        const userTier = data.tier || 1;
         const upgradedUser = {
           ...currentUser,
           is_demo_user: false,
-          expires_at: undefined
+          expires_at: undefined,
+          is_reseller: userTier === 1,
+          reseller_tier: userTier,
+          reseller_quota_remaining: userTier === 1 ? 3 : 0
         };
         localStorage.setItem("nabik_current_user", JSON.stringify(upgradedUser));
         setCurrentUser(upgradedUser);
@@ -1155,7 +1171,10 @@ export default function App() {
         brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         brandNameBn.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesCategory = selectedCategory === "all" || p.category === selectedCategory;
+      let matchesCategory = selectedCategory === "all" || p.category === selectedCategory;
+      if (selectedCategory === "discounted") {
+        matchesCategory = (p.originalPriceBDT ? p.originalPriceBDT > p.priceBDT : false) || (p.originalPriceUSD ? p.originalPriceUSD > p.priceUSD : false);
+      }
 
       return matchesSearch && matchesCategory;
     })
@@ -1438,6 +1457,7 @@ export default function App() {
               >
                 <div className="divide-y divide-white/10 lg:h-full lg:flex lg:flex-col lg:justify-between py-0 rounded-xl overflow-hidden font-sans">
                   {[
+                    { id: "discounted", name: language === 'bn' ? "% স্পেশাল ছাড়ের পণ্যসমূহ" : "% Discounted Products", filterQuery: "discounted", icon: "🔥", hasChevron: false },
                     { id: "tshirt", name: "T-Shirt", filterQuery: "T-Shirt", icon: "👕", hasChevron: true },
                     { id: "laptop", name: "Laptop & Notebooks", filterQuery: "Laptop", icon: "💻", hasChevron: true },
                     { id: "appliances", name: "Home Appliance", filterQuery: "Appliance", icon: "🔌", hasChevron: true },
@@ -1467,7 +1487,7 @@ export default function App() {
                           }
                         }}
                         onClick={() => {
-                          if (cat.id === "tshirt" || cat.id === "laptop" || cat.id === "appliances") {
+                          if (cat.id === "tshirt" || cat.id === "laptop" || cat.id === "appliances" || cat.id === "discounted") {
                             setSelectedCategory(cat.id);
                             setSearchQuery("");
                           } else {

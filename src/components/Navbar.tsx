@@ -44,10 +44,10 @@ const GazzetteLogo = ({ isMobile = false, isDarkBg = false }: { isMobile?: boole
       
       {/* Brand Text Styling */}
       <div className="flex flex-col text-left justify-center gazzette-brand-text">
-        <span className={`font-sans font-black tracking-tight uppercase leading-none ${isDarkBg ? 'text-white' : 'text-zinc-900'} ${isMobile ? 'text-[16px]' : 'text-[18px]'} tracking-[0.03em]`}>
+        <span className={`font-sans font-black tracking-tight uppercase leading-none ${isDarkBg ? 'text-white' : 'text-zinc-900'} ${isMobile ? 'text-[13px]' : 'text-[15px]'} tracking-[0.03em]`}>
           Gadget Bazar
         </span>
-        <span className={`${isDarkBg ? 'text-black/80 font-black' : 'text-[#f58220] font-black'} tracking-[0.14em] leading-none ${isMobile ? 'text-[7.5px] mt-1' : 'text-[8px] mt-1.5'} font-sans uppercase`}>
+        <span className={`${isDarkBg ? 'text-black/80 font-black' : 'text-[#f58220] font-black'} tracking-[0.14em] leading-none ${isMobile ? 'text-[6.5px] mt-1' : 'text-[7px] mt-1.5'} font-sans uppercase`}>
           PREMIUM STORE
         </span>
       </div>
@@ -975,10 +975,14 @@ export default function Navbar({
                               window.dispatchEvent(event);
                               setProfileDropdownOpen(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                            className={`w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer items-center gap-2 whitespace-nowrap ${currentUser?.reseller_tier === 2 ? "hidden" : "flex"}`}
                           >
-                            <Key size={11} className="text-zinc-550 shrink-0" />
-                            <span>Licensing & Sell Sites</span>
+                            {currentUser?.reseller_tier !== 2 && (
+                              <>
+                                <Key size={11} className="text-zinc-550 shrink-0" />
+                                <span>Licensing & Sell Sites</span>
+                              </>
+                            )}
                           </button>
 
                           <button 
@@ -1280,6 +1284,15 @@ export default function Navbar({
                     }}
                     className="w-full px-4 text-xs text-zinc-805 bg-transparent placeholder-zinc-400 focus:outline-none focus:ring-0 border-0 outline-none font-sans font-semibold"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="text-zinc-400 hover:text-zinc-700 bg-transparent border-0 px-2.5 py-1 font-bold text-xs cursor-pointer flex items-center justify-center h-full mr-1 shrink-0"
+                    >
+                      ✕
+                    </button>
+                  )}
                   <button 
                     type="button"
                     onClick={() => {
@@ -1301,6 +1314,12 @@ export default function Navbar({
                     {brandList
                       .filter((b) => {
                         if (!searchQuery) return true;
+                        const isExactMatch = brandList.some(
+                          (brand) => 
+                            brand.name.toLowerCase() === searchQuery.toLowerCase() || 
+                            brand.nameBn.toLowerCase() === searchQuery.toLowerCase()
+                        );
+                        if (isExactMatch) return true;
                         return b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                                b.nameBn.toLowerCase().includes(searchQuery.toLowerCase());
                       })
@@ -1636,10 +1655,14 @@ export default function Navbar({
                                 window.dispatchEvent(event);
                                 setProfileDropdownOpen(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-orange-50 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                              className={`w-full text-left px-4 py-2 text-xs font-bold text-zinc-805 hover:bg-[#f58220]/5 hover:text-[#f58220] transition border-0 bg-transparent cursor-pointer items-center gap-2 whitespace-nowrap ${currentUser?.reseller_tier === 2 ? "hidden" : "flex"}`}
                             >
-                              <Key size={11} className="text-zinc-550 shrink-0" />
-                              <span>Licensing & Sell Sites</span>
+                              {currentUser?.reseller_tier !== 2 && (
+                                <>
+                                  <Key size={11} className="text-zinc-550 shrink-0" />
+                                  <span>Licensing & Sell Sites</span>
+                                </>
+                              )}
                             </button>
 
                             <button 
@@ -2030,6 +2053,12 @@ export default function Navbar({
                 {brandList
                   .filter((b) => {
                     if (!searchQuery) return true;
+                    const isExactMatch = brandList.some(
+                      (brand) => 
+                        brand.name.toLowerCase() === searchQuery.toLowerCase() || 
+                        brand.nameBn.toLowerCase() === searchQuery.toLowerCase()
+                    );
+                    if (isExactMatch) return true;
                     return b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            b.nameBn.toLowerCase().includes(searchQuery.toLowerCase());
                   })
