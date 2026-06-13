@@ -98,18 +98,42 @@ export function LicensePurchaseModal({ isOpen, onClose, language }: LicensePurch
         <div className="p-5 overflow-y-auto max-h-[80vh]">
           {step === 1 && (
             <form onSubmit={handleInfoSubmit} className="space-y-4">
-              <div className="text-center pb-2 select-none">
+              <div className="text-center pb-1 select-none">
                 <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-0.5 font-bold rounded-sm uppercase tracking-wide border border-emerald-150">
                   {language === 'bn' ? "রিয়েল-টাইম অটো সেটিং" : "Instant Active Sync"}
                 </span>
-                <p className="text-xs text-zinc-500 font-semibold mt-1.5 leading-relaxed">
-                  {language === 'bn' 
-                    ? "ডেমো সাইটের মেয়াদ শেষ হওয়ার আগে চিরস্থায়ী অ্যাক্টিভেশনের জন্য আপনার কন্টাক্ট ইনফরমেশন প্রদান করুন।" 
-                    : "Enter your whatsapp and contact credentials so we can route your custom license verification code."}
-                </p>
               </div>
 
-              <div className="space-y-3.5">
+              {/* Beautiful message detailing everything about the license code */}
+              <div className="bg-[#fdf6f0] border border-orange-200 rounded-xl p-3.5 space-y-2 select-none">
+                <h4 className="text-xs font-black text-orange-700 uppercase flex items-center gap-1.5 leading-relaxed">
+                  📢 {language === 'bn' ? "লাইসেন্স কোড সংগ্রহ নির্দেশিকা ও সুবিধা সমূহ" : "License Code Claims Guideline"}
+                </h4>
+                <ul className="text-[11px] text-zinc-700 space-y-1.5 list-disc pl-4 font-semibold leading-relaxed">
+                  {language === 'bn' ? (
+                    <>
+                      <li><strong>টাইমার লকার অপসারণ:</strong> ওয়েবসাইটের ওপরে লাল রঙের টেম্পোরারি ডেমো স্যান্ডবক্স বার এবং কাউন্টডাউন টাইমার চিরতরে বন্ধ হবে।</li>
+                      <li><strong>ফুল ফিচার অ্যাক্টিভেশন:</strong> কাস্টমার অর্ডার এসএমএস নোটিফিকেশন, গেটওয়ে ট্র্যাকিং, এবং কাস্টম রিসেলার প্যানেল সম্পূর্ণ আনলক হবে।</li>
+                      <li><strong>স্বয়ংক্রিয় লাইসেন্স ডেলিভারি:</strong> বিকাশ/নগদ/রকেটে নির্ধারিত টাকা পাঠানোর সাথে সাথেই সিস্টেম অটোমেটিক আপনার কাঙ্ক্ষিত কোডটি জেনারেট করে আপনার দেওয়া হোয়াটসঅ্যাপ নম্বরে মেসেজ আকারে এবং এখানে স্ক্রিনে প্রদর্শন করবে।</li>
+                      <li><strong>আজীবন ফ্রি আপডেট:</strong> একবার কোডটি নিয়ে সক্রিয় করলে সাইট সম্পূর্ণভাবে রেডি থাকবে। আপনাকে ম্যানুয়ালি কিছু করতে হবে না, শুধু মাঝে মাঝে আপনার বিকাশ/নগদ একাউন্ট চেক করবেন।</li>
+                    </>
+                  ) : (
+                    <>
+                      <li><strong>Remove Trial Banner:</strong> Permanently disable the sessional countdown notice on top of the store page.</li>
+                      <li><strong>Unlock Enterprise Modules:</strong> Turn on active customer notification alerts, order dispatch SMS logs, and the custom seller console.</li>
+                      <li><strong>Automated Dispatch:</strong> Our backend immediately creates, formats, and releases your license code via WhatsApp as soon as payment is confirmed.</li>
+                      <li><strong>Fully Automated Setup:</strong> Zero manual intervention required from your end. Simply verify your transaction reports!</li>
+                    </>
+                  )}
+                </ul>
+                <div className="border-t border-orange-100 pt-1.5 mt-2 flex justify-between items-center text-[10.5px] font-bold text-orange-900">
+                  <span>{language === 'bn' ? "এককালীন আজীবন সক্রিয় ফি:" : "One-time Lifetime License Fee:"}</span>
+                  <span className="font-mono text-xs font-extrabold text-orange-700 bg-orange-100 px-2 py-0.5 rounded">৳৪,৫০০ BDT</span>
+                </div>
+              </div>
+
+              {/* Information Forms */}
+              <div className="space-y-3">
                 <div className="space-y-1 block text-left">
                   <label className="text-[10px] uppercase font-black text-zinc-500">
                     {language === 'bn' ? "আপনার পুরো নাম" : "Your Full Name"}
@@ -136,10 +160,10 @@ export function LicensePurchaseModal({ isOpen, onClose, language }: LicensePurch
                     placeholder="e.g. 017XXXXXXXX"
                     className="w-full bg-white border border-[#cccccc] rounded-lg px-3 py-2 text-xs font-semibold font-mono focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/25 text-zinc-800"
                   />
-                  <span className="text-[9.5px] text-zinc-400 block font-medium">
+                  <span className="text-[9px] text-zinc-400 block font-medium">
                     {language === 'bn' 
-                      ? "* এই হোয়াটসঅ্যাপ নম্বরে পেমেন্ট সফল হওয়ার পরপরই লাইসেন্স চাবি চলে যাবে।" 
-                      : "* Your license activation string is instantly pushed to this number upon payment validation."}
+                      ? "* এই হোয়াটসঅ্যাপ নম্বরে পেমেন্ট সফল হওয়ার পরপরই লাইসেন্স চাবি মেসেজ চলে যাবে।" 
+                      : "* Your license key is instantly dispatched to this number upon payment validation."}
                   </span>
                 </div>
 
@@ -161,9 +185,9 @@ export function LicensePurchaseModal({ isOpen, onClose, language }: LicensePurch
               <div className="pt-2 select-none">
                 <button
                   type="submit"
-                  className="w-full bg-[#f58220] hover:bg-orange-600 text-white font-extrabold text-xs py-2.5 rounded-xl cursor-pointer shadow-sm hover:shadow transition border-0"
+                  className="w-full bg-[#f58220] hover:bg-orange-600 active:scale-95 text-white font-extrabold text-xs py-2.5 rounded-xl cursor-pointer shadow-sm hover:shadow transition border-0 flex items-center justify-center gap-1"
                 >
-                  {language === 'bn' ? "পরবর্তী ধাপ (পেমেন্ট করুন)" : "Proceed to Secure Payment"}
+                  <span>{language === 'bn' ? "সম্মত (সম্মত আছি ও পেমেন্ট করুন)" : "সম্মত (I Agree & Proceed)"}</span>
                 </button>
               </div>
             </form>

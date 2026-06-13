@@ -18,6 +18,7 @@ import LiveTrackingSystem from "./components/LiveTrackingSystem";
 import AdminLogin from "./components/AdminLogin";
 import { TenantConfig, getSavedTenant, IS_RESELLER_ACTIVE, isResellerFeatureUnlocked } from "./data/tenantConfig";
 import ResellerConfigPanel from "./components/ResellerConfigPanel";
+import { LicensePurchaseModal } from "./components/license-system/LicensePurchaseModal";
 import { triggerOrderSmsNotification } from "./utils/smsHelper";
 import { playNotificationChime } from "./utils/audioHelper";
 import { 
@@ -41,6 +42,7 @@ import {
   Store,
   Building2,
   Lock,
+  Key,
   ArrowRight,
   Phone,
   MessageSquare,
@@ -583,6 +585,7 @@ export default function App() {
   }, [localWishlist]);
 
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState<boolean>(false);
   const [activePlayingVideoId, setActivePlayingVideoId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(() => {
     const saved = localStorage.getItem("nabik_current_user");
@@ -1241,6 +1244,20 @@ export default function App() {
                 ⏱️ {demoTimeLeft}
               </span>
             </div>
+
+            {/* Middle License Code Button */}
+            <div className="flex justify-center shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsLicenseModalOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs px-4 py-1.5 rounded-lg border border-emerald-400 select-none cursor-pointer shadow-md hover:shadow-emerald-500/20 transition-all flex items-center gap-1.5 uppercase font-sans font-black"
+                title="Click to generate your dynamic premium activation key"
+              >
+                <Key size={13} className="text-zinc-100" />
+                <span>License Code</span>
+              </button>
+            </div>
+
             {/* Right Col Activation Input Action */}
             <form onSubmit={handleActivateDemoLicense} className="flex items-center gap-1.5 w-full md:w-auto">
               <input
@@ -3479,6 +3496,13 @@ export default function App() {
           }}
         />
       )}
+
+      {/* 11. Custom License Key Automated Storefront Modal */}
+      <LicensePurchaseModal
+        isOpen={isLicenseModalOpen}
+        onClose={() => setIsLicenseModalOpen(false)}
+        language={language}
+      />
 
       </div>
     </div>
