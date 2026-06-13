@@ -314,24 +314,37 @@ export default function AdminPanel({
   }, [securityAttempts]);
 
   // Refs for auto-closing on clicking outside
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const cartsContainerRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef1 = useRef<HTMLDivElement>(null);
+  const messagesContainerRef2 = useRef<HTMLDivElement>(null);
+  const cartsContainerRef1 = useRef<HTMLDivElement>(null);
+  const cartsContainerRef2 = useRef<HTMLDivElement>(null);
   const profileContainerRef = useRef<HTMLDivElement>(null);
-  const bellContainerRef = useRef<HTMLDivElement>(null);
+  const bellContainerRef1 = useRef<HTMLDivElement>(null);
+  const bellContainerRef2 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (messagesDropdownOpen && messagesContainerRef.current && !messagesContainerRef.current.contains(target)) {
+      
+      const insideMsg1 = messagesContainerRef1.current && messagesContainerRef1.current.contains(target);
+      const insideMsg2 = messagesContainerRef2.current && messagesContainerRef2.current.contains(target);
+      if (messagesDropdownOpen && !insideMsg1 && !insideMsg2) {
         setMessagesDropdownOpen(false);
       }
-      if (cartsDropdownOpen && cartsContainerRef.current && !cartsContainerRef.current.contains(target)) {
+      
+      const insideCart1 = cartsContainerRef1.current && cartsContainerRef1.current.contains(target);
+      const insideCart2 = cartsContainerRef2.current && cartsContainerRef2.current.contains(target);
+      if (cartsDropdownOpen && !insideCart1 && !insideCart2) {
         setCartsDropdownOpen(false);
       }
+      
       if (profileDropdownOpen && profileContainerRef.current && !profileContainerRef.current.contains(target)) {
         setProfileDropdownOpen(false);
       }
-      if (adminBellDropdownOpen && bellContainerRef.current && !bellContainerRef.current.contains(target)) {
+      
+      const insideBell1 = bellContainerRef1.current && bellContainerRef1.current.contains(target);
+      const insideBell2 = bellContainerRef2.current && bellContainerRef2.current.contains(target);
+      if (adminBellDropdownOpen && !insideBell1 && !insideBell2) {
         setAdminBellDropdownOpen(false);
       }
     }
@@ -2371,7 +2384,7 @@ export default function AdminPanel({
             {/* Interactive Messages Dropdown */}
             <div 
               className="sm:relative" 
-              ref={messagesContainerRef}
+              ref={messagesContainerRef1}
               onMouseEnter={() => {
                 setMessagesDropdownOpen(true);
                 setCartsDropdownOpen(false);
@@ -2480,7 +2493,7 @@ export default function AdminPanel({
             {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
             <div 
               className="sm:relative" 
-              ref={cartsContainerRef}
+              ref={cartsContainerRef1}
               onMouseEnter={() => {
                 setCartsDropdownOpen(true);
                 setMessagesDropdownOpen(false);
@@ -2591,7 +2604,7 @@ export default function AdminPanel({
 
             {/* Real-time Order Notification Bell on Admin Panel */}
             <div 
-              ref={bellContainerRef}
+              ref={bellContainerRef1}
               onMouseEnter={() => setAdminBellDropdownOpen(true)}
               onMouseLeave={() => setAdminBellDropdownOpen(false)}
               onClick={() => {
@@ -2880,7 +2893,7 @@ export default function AdminPanel({
                     {/* Interactive Messages Dropdown */}
                     <div 
                       className="relative" 
-                      ref={messagesContainerRef}
+                      ref={messagesContainerRef2}
                       onMouseEnter={() => {
                         setMessagesDropdownOpen(true);
                         setCartsDropdownOpen(false);
@@ -2990,7 +3003,7 @@ export default function AdminPanel({
                   {/* Interactive Shopping Cart / Abandoned Sessions Recovery Dropdown */}
                     <div 
                       className="relative" 
-                      ref={cartsContainerRef}
+                      ref={cartsContainerRef2}
                       onMouseEnter={() => {
                         setCartsDropdownOpen(true);
                         setMessagesDropdownOpen(false);
@@ -3099,7 +3112,7 @@ export default function AdminPanel({
                   {/* Real-time Order Notification Bell on Admin Panel */}
                     <div 
                       className="relative" 
-                      ref={bellContainerRef}
+                      ref={bellContainerRef2}
                       onMouseEnter={() => {
                         setAdminBellDropdownOpen(true);
                         setMessagesDropdownOpen(false);
