@@ -19,6 +19,7 @@ import AdminLogin from "./components/AdminLogin";
 import { TenantConfig, getSavedTenant, IS_RESELLER_ACTIVE, isResellerFeatureUnlocked } from "./data/tenantConfig";
 import ResellerConfigPanel from "./components/ResellerConfigPanel";
 import { LicensePurchaseModal } from "./components/license-system/LicensePurchaseModal";
+import { CelebrationOverlay } from "./components/CelebrationOverlay";
 import { triggerOrderSmsNotification } from "./utils/smsHelper";
 import { playNotificationChime } from "./utils/audioHelper";
 import { 
@@ -710,6 +711,7 @@ export default function App() {
         const event = new CustomEvent("app-toast", { detail: msg });
         window.dispatchEvent(event);
         setDemoActivationCode("");
+        setShowCelebration(true);
       } else {
         const errorMsg = data.error || (language === 'bn' ? "ভুল লাইসেন্স কোড! আবার চেষ্টা করুন।" : "Activation failed! Please check your code.");
         const event = new CustomEvent("app-toast", { detail: errorMsg });
@@ -832,13 +834,6 @@ export default function App() {
             const uniques = trulyNewOrdersToNotify.filter(no => !prev.some(po => po.id === no.id));
             return [...uniques, ...prev];
           });
-        } else if (isInitialBoot) {
-          // On first boot, quietly load historical pending (placed) orders into unread notifications without chime spam
-          setUnreadNotificationOrders((prev) => {
-            const pendingOrders = mergedFromBackend.filter(o => o.status === 'placed');
-            const uniques = pendingOrders.filter(no => !prev.some(po => po.id === no.id));
-            return [...prev, ...uniques];
-          });
         }
 
         // Add all fetched orders to the seen/notified set so we don't alert again
@@ -916,6 +911,7 @@ export default function App() {
   const [timeSecs, setTimeSecs] = useState(1446736200); // 1674 Days countdown clock equivalent
   const [registeredMerchant, setRegisteredMerchant] = useState(false);
   const [merchantName, setMerchantName] = useState("");
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -3545,6 +3541,13 @@ export default function App() {
         onClose={() => setIsLicenseModalOpen(false)}
         language={language}
       />
+
+      {showCelebration && (
+        <CelebrationOverlay
+          onClose={() => setShowCelebration(false)}
+          language={language}
+        />
+      )}
 
       </div>
     </div>
