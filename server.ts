@@ -209,12 +209,34 @@ app.get("/api/debug-server-logs", (req, res) => {
     return { isDemo: true, isExpired: false };
   }
 
+  let lastActiveDemoEmail: string | null = null;
+  try {
+    const startupRecords = readDemoUsers();
+    if (startupRecords.length > 0) {
+      const rightNow = Date.now();
+      const validStartup = startupRecords.filter(r => r && r.email && new Date(r.expiresAt).getTime() > rightNow);
+      if (validStartup.length > 0) {
+        lastActiveDemoEmail = validStartup[0].email;
+        console.log(`[SERVER STARTUP] Seeded lastActiveDemoEmail with valid sandbox: ${lastActiveDemoEmail}`);
+      }
+    }
+  } catch (err) {
+    console.warn("Startup demo user lookup failure (benign):", err);
+  }
+
   function getOrdersForRequest(req: express.Request): any[] {
-    const demoEmail = req.headers["x-demo-user-email"];
+    let demoEmail = req.headers["x-demo-user-email"];
+    if (!demoEmail || typeof demoEmail !== "string" || !demoEmail.trim()) {
+      if (lastActiveDemoEmail) {
+        demoEmail = lastActiveDemoEmail;
+      }
+    }
     if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
       const cleanEmail = demoEmail.trim().toLowerCase();
       const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
       if (!isExpired) {
+        // Track as last active
+        lastActiveDemoEmail = cleanEmail;
         const demoPath = getDemoOrdersFilePath(cleanEmail);
         if (fs.existsSync(demoPath)) {
           try {
@@ -238,11 +260,17 @@ app.get("/api/debug-server-logs", (req, res) => {
   }
 
   function writeOrdersForRequest(req: express.Request, ordersList: any[]) {
-    const demoEmail = req.headers["x-demo-user-email"];
+    let demoEmail = req.headers["x-demo-user-email"];
+    if (!demoEmail || typeof demoEmail !== "string" || !demoEmail.trim()) {
+      if (lastActiveDemoEmail) {
+        demoEmail = lastActiveDemoEmail;
+      }
+    }
     if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
       const cleanEmail = demoEmail.trim().toLowerCase();
       const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
       if (!isExpired) {
+        lastActiveDemoEmail = cleanEmail;
         const demoPath = getDemoOrdersFilePath(cleanEmail);
         try {
           fs.writeFileSync(demoPath, JSON.stringify(ordersList, null, 2), "utf-8");
@@ -257,11 +285,17 @@ app.get("/api/debug-server-logs", (req, res) => {
   }
 
   function getSubscribersForRequest(req: express.Request): any[] {
-    const demoEmail = req.headers["x-demo-user-email"];
+    let demoEmail = req.headers["x-demo-user-email"];
+    if (!demoEmail || typeof demoEmail !== "string" || !demoEmail.trim()) {
+      if (lastActiveDemoEmail) {
+        demoEmail = lastActiveDemoEmail;
+      }
+    }
     if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
       const cleanEmail = demoEmail.trim().toLowerCase();
       const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
       if (!isExpired) {
+        lastActiveDemoEmail = cleanEmail;
         const demoPath = getDemoSubscribersFilePath(cleanEmail);
         if (fs.existsSync(demoPath)) {
           try {
@@ -286,11 +320,17 @@ app.get("/api/debug-server-logs", (req, res) => {
   }
 
   function writeSubscribersForRequest(req: express.Request, subscribersList: any[]) {
-    const demoEmail = req.headers["x-demo-user-email"];
+    let demoEmail = req.headers["x-demo-user-email"];
+    if (!demoEmail || typeof demoEmail !== "string" || !demoEmail.trim()) {
+      if (lastActiveDemoEmail) {
+        demoEmail = lastActiveDemoEmail;
+      }
+    }
     if (demoEmail && typeof demoEmail === "string" && demoEmail.trim()) {
       const cleanEmail = demoEmail.trim().toLowerCase();
       const { isExpired } = verifyAndCleanDemoUser(cleanEmail);
       if (!isExpired) {
+        lastActiveDemoEmail = cleanEmail;
         const demoPath = getDemoSubscribersFilePath(cleanEmail);
         try {
           fs.writeFileSync(demoPath, JSON.stringify(subscribersList, null, 2), "utf-8");
@@ -317,6 +357,9 @@ app.get("/api/debug-server-logs", (req, res) => {
 
       const cleanEmail = email.trim().toLowerCase();
       const cleanPass = password.trim();
+
+      // Track last active admin email for cross-device mobile orders sync
+      lastActiveDemoEmail = cleanEmail;
 
       // Check if this is a Demo Login / Sandbox Login
       if (cleanPass === "demo123" || cleanPass === "demoadmin123") {

@@ -120,7 +120,7 @@ export default function OrderSuccessModal({
   const confettiPieces = Array.from({ length: 28 });
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex justify-center items-start sm:items-center p-2 sm:p-4 bg-zinc-950/85 backdrop-blur-md overflow-y-auto scroll-smooth overscroll-contain">
       
       {/* Decorative Simulated Confetti Emitter */}
       {showConfetti && (
@@ -160,7 +160,7 @@ export default function OrderSuccessModal({
 
       {/* Main card box container */}
       <div 
-        className="relative w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.4)] border border-neutral-100 flex flex-col z-10 animate-scaleUp text-left"
+        className="relative w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.4)] border border-neutral-100 flex flex-col z-10 animate-scaleUp text-left my-2 sm:my-auto"
         id="order-success-modal-panel animate-in fade-in duration-200"
       >
         
@@ -229,7 +229,7 @@ export default function OrderSuccessModal({
         </div>
 
         {/* Detailed Receipt Bento Grid */}
-        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto max-h-[50vh]" id="printable-receipt-card">
+        <div className="p-4 sm:p-8 space-y-6 sm:overflow-y-auto sm:max-h-[50vh] overflow-visible" id="printable-receipt-card">
           
           {/* Copyable Order ID block */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-50 border border-zinc-150 rounded-2xl p-4.5">
@@ -267,7 +267,7 @@ export default function OrderSuccessModal({
                 </h3>
               </div>
 
-              <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 sm:max-h-[180px] sm:overflow-y-auto overflow-visible pr-1">
                 {order.items.map((item) => {
                   const itemPrice = currency === 'BDT'
                     ? `৳${item.product.priceBDT.toLocaleString(language === 'bn' ? 'bn-BD' : 'en-US')}`
