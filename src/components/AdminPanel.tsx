@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { LicensePurchaseModal } from "./license-system/LicensePurchaseModal";
 import { LicenseOrderManager } from "./license-system/LicenseOrderManager";
+import { getActiveDemoEmail } from "../utils/demoHelper";
 
 interface AdminPanelProps {
   products: Product[];
@@ -216,9 +217,15 @@ export default function AdminPanel({
 
     setIsActivating(true);
     try {
+      const actHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      const activeDemoEmail = getActiveDemoEmail();
+      if (activeDemoEmail) {
+        actHeaders["x-demo-user-email"] = activeDemoEmail;
+      }
+
       const response = await fetch("/api/admin/activate-license", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: actHeaders,
         body: JSON.stringify({
           email: currentUser?.email,
           licenseKey: licenseCode.trim()
@@ -264,7 +271,15 @@ export default function AdminPanel({
   useEffect(() => {
     if (activeTab === 'subscribers') {
       setLoadingSubscribers(true);
-      fetch("/api/subscribers")
+      const subHeaders: Record<string, string> = {};
+      const activeDemoEmail = getActiveDemoEmail();
+      if (activeDemoEmail) {
+        subHeaders["x-demo-user-email"] = activeDemoEmail;
+      }
+
+      fetch("/api/subscribers", {
+        headers: subHeaders
+      })
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {

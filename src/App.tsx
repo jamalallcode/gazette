@@ -20,6 +20,7 @@ import { TenantConfig, getSavedTenant, IS_RESELLER_ACTIVE, isResellerFeatureUnlo
 import ResellerConfigPanel from "./components/ResellerConfigPanel";
 import { LicensePurchaseModal } from "./components/license-system/LicensePurchaseModal";
 import { CelebrationOverlay } from "./components/CelebrationOverlay";
+import { getActiveDemoEmail, initializeUrlDemoContext } from "./utils/demoHelper";
 import { triggerOrderSmsNotification } from "./utils/smsHelper";
 import { playNotificationChime } from "./utils/audioHelper";
 import { 
@@ -587,6 +588,7 @@ export default function App() {
 
   useEffect(() => {
     try {
+      initializeUrlDemoContext();
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get("tab");
       if (tabParam) {
@@ -765,11 +767,17 @@ export default function App() {
         currentLocalOrders = JSON.parse(localSavedStr);
       } catch (_) {}
 
+      const syncHeaders: Record<string, string> = {
+        "Content-Type": "application/json"
+      };
+      const activeDemoEmail = getActiveDemoEmail();
+      if (activeDemoEmail) {
+        syncHeaders["x-demo-user-email"] = activeDemoEmail;
+      }
+
       const response = await fetch("/api/orders/sync", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: syncHeaders,
         body: JSON.stringify({ orders: currentLocalOrders })
       });
 
@@ -1110,10 +1118,16 @@ export default function App() {
   };
 
   const handleOrderSuccess = (newOrder: Order) => {
+    const orderHeaders: Record<string, string> = { "Content-Type": "application/json" };
+    const activeDemoEmail = getActiveDemoEmail();
+    if (activeDemoEmail) {
+      orderHeaders["x-demo-user-email"] = activeDemoEmail;
+    }
+
     // Save to server database immediately!
     fetch("/api/orders", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: orderHeaders,
       body: JSON.stringify(newOrder),
     }).catch(e => console.error("Error saving order to backend:", e));
 
