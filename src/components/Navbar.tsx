@@ -170,11 +170,42 @@ export default function Navbar({
   const [mobileBrandsOpen, setMobileBrandsOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [bellDropdownOpen, setBellDropdownOpen] = useState(false);
-  const [logoClickHistory, setLogoClickHistory] = useState<number[]>([]);
+  const [logoClickCount, setLogoClickCount] = useState(0);
+  const [lastLogoClickTime, setLastLogoClickTime] = useState(0);
+  const [ownerLoginModalOpen, setOwnerLoginModalOpen] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [ownerPassword, setOwnerPassword] = useState("");
+  const [ownerLoginLoading, setOwnerLoginLoading] = useState(false);
+  const [ownerLoginError, setOwnerLoginError] = useState("");
+
   const handleLogoClick = () => {
     const now = Date.now();
-    const newHistory = [...logoClickHistory, now].filter(t => now - t <= 45000);
-    setLogoClickHistory(newHistory);
+    let currentCount = 1;
+    if (now - lastLogoClickTime <= 1500) {
+      currentCount = logoClickCount + 1;
+    } else {
+      currentCount = 1;
+    }
+    setLogoClickCount(currentCount);
+    setLastLogoClickTime(now);
+
+    // If rapid clicks reach exactly 20, activate!
+    if (currentCount === 20) {
+      setLogoClickCount(0);
+      setOwnerLoginModalOpen(true);
+      setOwnerEmail("");
+      setOwnerPassword("");
+      setOwnerLoginError("");
+      
+      // Visual clue / Notification
+      window.dispatchEvent(
+        new CustomEvent("app-toast", { 
+          detail: language === 'bn' 
+            ? "🔑 ওনার সিক্রেট প্যানেল যুক্ত হয়েছে!" 
+            : "🔑 Secret Owner Panel Activated!" 
+        })
+      );
+    }
 
     setCurrentTab('shop');
     setSelectedCategory('all');
@@ -184,27 +215,6 @@ export default function Navbar({
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       window.scrollTo(0, 0);
-    }
-
-    if (newHistory.length >= 23) {
-      const last23 = newHistory.slice(-23);
-      const intervals: number[] = [];
-      for (let i = 0; i < last23.length - 1; i++) {
-        intervals.push(last23[i+1] - last23[i]);
-      }
-
-      // Check first 19 intervals (between the first 20 clicks) are rapid (<= 800ms)
-      const first20Fast = intervals.slice(0, 19).every(interval => interval <= 800);
-      // Check interval index 19 (pause between 20th and 21st click) is at home between 950ms and 6000ms
-      const pauseCorrect = intervals[19] >= 950 && intervals[19] <= 6000;
-      // Check last 2 intervals (between the last 3 clicks) are rapid (<= 800ms)
-      const last3Fast = intervals.slice(20, 22).every(interval => interval <= 800);
-
-      if (first20Fast && pauseCorrect && last3Fast) {
-        setLogoClickHistory([]);
-        setPasscodeModalOpen(true);
-        setPasscodeInput('');
-      }
     }
   };
   const [passcodeModalOpen, setPasscodeModalOpen] = useState(false);
@@ -278,6 +288,49 @@ export default function Navbar({
       setAdminLoginError(language === 'bn' ? "নেটওয়ার্ক কানেকশন এরর" : "Network error. Try again.");
     } finally {
       setAdminLoginLoading(false);
+    }
+  };
+
+  const handleOwnerLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ownerEmail.trim()) {
+      setOwnerLoginError(language === 'bn' ? "দয়া করে আপনার জিমেইল অ্যাকাউন্টটি লিখুন" : "Please enter your Gmail account");
+      return;
+    }
+    if (!ownerPassword.trim()) {
+      setOwnerLoginError(language === 'bn' ? "পাসওয়ার্ডটি লিখুন" : "Please enter your password");
+      return;
+    }
+
+    setOwnerLoginLoading(true);
+    setOwnerLoginError("");
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: ownerEmail, password: ownerPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (setCurrentUser) {
+          setCurrentUser(data.user);
+          // Sync active demo email or clear it to ensure they see master settings
+          localStorage.removeItem("active_demo_email");
+          localStorage.setItem("nabik_current_user", JSON.stringify(data.user));
+        }
+        setOwnerLoginModalOpen(false);
+        setOwnerEmail("");
+        setOwnerPassword("");
+        triggerToast(language === 'bn' ? "স্বাগতম! আপনি সফলভাবে মূল মালিক/এডমিন হিসেবে লগইন করেছেন।" : "Welcome Owner! Successfully logged in as Master Admin.");
+        setCurrentTab("admin");
+      } else {
+        setOwnerLoginError(data.error || (language === 'bn' ? "ভুল জিমেইল বা পাসওয়ার্ড!" : "Mismatched Gmail or Password!"));
+      }
+    } catch (err: any) {
+      setOwnerLoginError(language === 'bn' ? "নেটওয়ার্ক সংযোগ ত্রুটি" : "Network error, please try again.");
+    } finally {
+      setOwnerLoginLoading(false);
     }
   };
 
@@ -2290,6 +2343,100 @@ export default function Navbar({
                   className="w-1/2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-xs py-2.5 rounded-xl border-0 cursor-pointer shadow-md transition text-center"
                 >
                   {language === 'bn' ? 'নিশ্চিত করুন' : 'Confirm'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Spectacular Secret Master Owner Login Modal */}
+      {ownerLoginModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+          <div className="bg-zinc-950 border border-zinc-805 text-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative overflow-hidden animate-fade-in font-sans">
+            {/* Glowing top line with amber/gold gradient */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-[#f58220] to-yellow-400" />
+            
+            {/* Close Button */}
+            <button
+              onClick={() => setOwnerLoginModalOpen(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 p-1.5 rounded-full border-0 transition cursor-pointer"
+            >
+              <X size={15} />
+            </button>
+
+            <div className="flex items-center space-x-3 mb-5">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-[#f58220] flex items-center justify-center text-black shadow-lg">
+                <Key size={18} className="stroke-[2.5]" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-black text-white tracking-tight uppercase">
+                  {language === 'bn' ? 'মাস্টার ওনার পোর্টাল' : 'Master Owner Portal'}
+                </h3>
+                <p className="text-[9px] text-[#f58220] font-black uppercase tracking-widest mt-0.5">
+                  {language === 'bn' ? 'মূল মালিক যাচাইকরণ গেটওয়ে' : 'Owner Authorization Terminal'}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-zinc-300 leading-relaxed font-semibold mb-4 bg-zinc-900/60 p-3 rounded-xl border border-zinc-900">
+              {language === 'bn' 
+                ? 'এই পোর্টালটি শুধুমাত্র মূল মালিকদের জন্য সুরক্ষিত। ডেমো স্যান্ডবক্স মোড এড়াতে ক্রিপ্টোগ্রাফিক ওনার কী দিয়ে সাইন-ইন সম্পন্ন করুন।' 
+                : 'This gateway is restricted exclusively to primary store owners. Complete entry with master credentials to bypass sandbox limits.'}
+            </p>
+
+            {ownerLoginError && (
+              <div className="mb-4 bg-red-950/70 border border-red-800 text-red-200 text-xs px-3.5 py-2.5 rounded-xl text-left font-semibold">
+                ⚠️ {ownerLoginError}
+              </div>
+            )}
+
+            <form onSubmit={handleOwnerLoginSubmit} className="space-y-4">
+              <div className="text-left">
+                <label className="block text-[9px] uppercase font-black text-zinc-400 tracking-wider mb-1.5">
+                  {language === 'bn' ? 'ওনার জিমেইল এড্রেস' : 'OWNER GMAIL VALUE'}
+                </label>
+                <input 
+                  type="email" 
+                  value={ownerEmail}
+                  onChange={(e) => setOwnerEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  autoFocus
+                  className="w-full text-xs font-semibold bg-zinc-900 text-white placeholder-zinc-500 border border-zinc-800 focus:border-[#f58220] focus:ring-1 focus:ring-[#f58220]/20 rounded-xl px-3.5 py-2.5 transition"
+                />
+              </div>
+
+              <div className="text-left">
+                <label className="block text-[9px] uppercase font-black text-zinc-400 tracking-wider mb-1.5">
+                  {language === 'bn' ? 'পাসওয়ার্ড কোড' : 'SECURITY CREDENTIAL'}
+                </label>
+                <input 
+                  type="password" 
+                  value={ownerPassword}
+                  onChange={(e) => setOwnerPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full text-xs font-semibold bg-zinc-900 text-white placeholder-zinc-500 border border-zinc-800 focus:border-[#f58220] focus:ring-1 focus:ring-[#f58220]/20 rounded-xl px-3.5 py-2.5 transition"
+                />
+              </div>
+
+              <div className="flex space-x-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setOwnerLoginModalOpen(false)}
+                  className="w-1/2 bg-zinc-905 hover:bg-zinc-800 text-zinc-300 font-bold text-xs py-2.5 rounded-xl border-0 cursor-pointer transition text-center"
+                >
+                  {language === 'bn' ? 'বাতিল' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={ownerLoginLoading}
+                  className="w-1/2 bg-gradient-to-r from-amber-500 to-[#f58220] hover:from-amber-600 hover:to-orange-600 text-black font-extrabold text-xs py-2.5 rounded-xl border-0 cursor-pointer shadow-lg shadow-orange-500/10 transition text-center flex items-center justify-center space-x-1"
+                >
+                  {ownerLoginLoading ? (
+                    <span className="animate-pulse">{language === 'bn' ? 'প্রবেশ করা হচ্ছে...' : 'Signing active...'}</span>
+                  ) : (
+                    <span>{language === 'bn' ? 'মালিক প্যানেল প্রবেশ' : 'Sign In Master'}</span>
+                  )}
                 </button>
               </div>
             </form>

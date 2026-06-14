@@ -389,16 +389,20 @@ app.get("/api/debug-server-logs", (req, res) => {
       }
       
       // Explicit authorization check for specified Admin accounts
-      if ((cleanEmail === "settlementregister@gmail.com" || cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && cleanPass === "admin123") {
-        logDiagnostic(`[ADMIN LOGIN SUCCESS] Direct administrator login matched for: ${cleanEmail}`);
+      const isMasterOwner = (cleanEmail === "jamaluddinkh3424@gmail.com" && cleanPass === "80093424JAma@");
+      const isRegularAdmin = ((cleanEmail === "settlementregister@gmail.com" || cleanEmail === "jamaluddinkh3424@gmail.com" || cleanEmail === "admin@gmail.com") && cleanPass === "admin123");
+
+      if (isMasterOwner || isRegularAdmin) {
+        logDiagnostic(`[ADMIN LOGIN SUCCESS] Direct administrator login matched for: ${cleanEmail} (Master: ${isMasterOwner})`);
         return res.json({ 
           success: true, 
           user: { 
-            firstName: "Admin", 
+            firstName: isMasterOwner ? "Jamal Uddin" : "Admin", 
             lastName: "Owner", 
             email: cleanEmail, 
             role: "admin",
-            phone: "+8801784905075"
+            phone: "+8801784905075",
+            is_demo_user: false
           } 
         });
       } else {
